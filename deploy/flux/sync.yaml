@@ -7,7 +7,7 @@ spec:
   interval: 1m
   url: ssh://git@github.com/AndyStan112/cube_studio.git
   ref:
-    branch: master
+    branch: deployments
   secretRef:
     name: cube-studio-git
 ---

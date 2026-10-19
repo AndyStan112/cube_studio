@@ -31,12 +31,12 @@ The service worker caches the app, 3D assets, and public algorithm catalog. Prev
 - Tap or Space to start/stop the timer; manual time input accepts `24.53` and `1:02.45`.
 - Explicit save/discard, per-solve +2/DNF penalties, deletion, scramble history, best time, trimmed averages of 5/12, and session mean. Statistics use the most recent 1,000 saved solves across visits. One DNF can be discarded as the worst time in a trimmed average; two produce DNF.
 - Hardcoded Sune (`R U R' U R U2 R'`) and reverse Sune (`R U2 R' U' R U' R'`). Each starts at its inverse setup and ends solved.
-- Real animated layer turns, forward/back steps, move selection, reset, autoplay, playback speed, four camera presets, drag/pinch orbit controls, and see-through mode. Standard notation explanations use the perspective of the face being turned.
+- Real animated layer turns, forward/back steps, move selection, reset, autoplay, playback speed, a camera reset to yellow up / red front, drag/pinch orbit controls, and see-through mode. Standard notation explanations use the perspective of the face being turned.
 - Responsive layouts and mobile bottom navigation.
 
 ## Deployment
 
-See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` run tests and publish images; only successful builds update the running app.
+See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` run tests and publish images; only successful builds publish manifests to the generated `deployments` branch, which Flux watches. Automated commits stay off `master`.
 
 ## Local development
 
@@ -49,13 +49,14 @@ npm ci
 npm run dev
 ```
 
-To develop the backend directly (Python 3.13+), use a local MongoDB on port 27017. The Compose MongoDB is intentionally internal to the Docker network:
+To develop the backend directly with [uv](https://docs.astral.sh/uv/) (Python 3.13), use a local MongoDB on port 27017. The Compose MongoDB is intentionally internal to the Docker network:
 
 ```sh
-python -m venv .venv
-.venv/bin/pip install -r backend/requirements.txt
-MONGO_URL=mongodb://localhost:27017 .venv/bin/uvicorn app.main:app --app-dir backend --reload
+uv sync --project backend --locked
+MONGO_URL=mongodb://localhost:27017 uv run --project backend --locked uvicorn app.main:app --app-dir backend --reload
 ```
+
+`backend/pyproject.toml` declares dependencies and `backend/uv.lock` locks them. Use `uv add --project backend <package>` to add a runtime dependency, or add `--dev` for development tools. Docker installs only runtime dependencies; CI includes the development group.
 
 Vite proxies `/api` to localhost:8000. Override with `API_PROXY_TARGET` if needed.
 
@@ -69,9 +70,9 @@ npm run build
 ```
 
 ```sh
-PYTHONPATH=backend .venv/bin/pytest backend/tests
+uv run --project backend --locked pytest backend/tests
 # Include live integration tests against the running Compose stack:
-CUBE_API_URL=http://localhost:5173/api PYTHONPATH=backend .venv/bin/pytest backend/tests
+CUBE_API_URL=http://localhost:5173/api uv run --project backend --locked pytest backend/tests
 ```
 
 ## Architecture and expansion

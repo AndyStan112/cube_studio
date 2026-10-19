@@ -16,10 +16,14 @@ The script creates a separate kubeconfig at `/home/andy/.kube/cube-studio.yaml`.
 
 ## GitHub setup
 
-1. Add the public key printed by the bootstrap (also in the staged `setup/git-read.pub`) at repository **Settings → Deploy keys**. Keep **Allow write access** unchecked. Flux reads `master` over SSH; no personal SSH keys go into the cluster.
+1. Add the public key printed by the bootstrap (also in the staged `setup/git-read.pub`) at repository **Settings → Deploy keys**. Keep **Allow write access** unchecked. Flux reads `deployments` over SSH; no personal SSH keys go into the cluster.
 2. The `release` workflow tests the app with MongoDB and publishes `cube_studio-frontend` and `cube_studio-backend` to GHCR. Make these two packages public once at their package settings pages. The source repository is already public; GHCR packages initially default to private. No package token is stored on the server.
-3. After both images build successfully, the workflow uses its repository-scoped `GITHUB_TOKEN` to pin their commit tags in `deploy/app/kustomization.yaml`. These automated image-only commits have the message `deploy`. They do not trigger another build. Git remotes and Flux use SSH; the workflow uses GitHub's API to update the manifest without a Git SSH write key or a long-lived token.
-4. Flux checks Git every minute and applies the new images. A failed test or build leaves the deployed image references unchanged.
+3. After the image builds and integration tests pass, the workflow publishes a complete snapshot of `deploy/app/` from the tested source commit to the generated **`deployments` branch**, pinning both images to that source SHA. Commit messages use `chore(deploy): release <sha>`. The workflow creates the branch automatically if needed. Git remotes and Flux use SSH; the workflow uses GitHub’s API with its repository-scoped `GITHUB_TOKEN` and no long-lived write key.
+4. Flux checks `deployments` every minute and applies the snapshot. A failed test or build leaves that branch and the running release unchanged. Deployment branch updates do not trigger builds.
+
+Keep working on **`master`** and push normally. Do not merge `deployments` back into `master`; it contains generated manifests only, with its own release history. Every successful release copies added, changed, and deleted deployment manifests automatically. `deploy/app/kustomization.yaml` on `master` is a source template; the workflow supplies the release image tags on `deployments`. Documentation-only commits do not trigger releases; use the workflow’s Run workflow button on `master` if needed.
+
+For an existing installation, initialize `deployments` with the currently deployed manifests, then apply `deploy/flux/sync.yaml` using the owner kubeconfig to switch Flux. This migration is one-time; regular releases need no SSH or manual branch maintenance.
 
 ## Route the app
 
@@ -43,6 +47,6 @@ KUBECONFIG=$HOME/.kube/cube-studio.yaml kubectl -n cube-studio create job --from
 KUBECONFIG=$HOME/.kube/cube-studio.yaml kubectl -n cube-studio logs job/mongo-backup-check
 ```
 
-Roll back an app release by restoring the previous `newTag` values in `deploy/app/kustomization.yaml` and committing with a short message. That image-only change does not launch a new build; Flux applies it directly. Database migrations need a separate rollback plan. Deleting Flux's app Kustomization or GitRepository does not automatically delete its workloads. Do not delete the namespace or PVCs as part of application rollback.
+Roll back an app release by restoring the desired manifest snapshot on `deployments` and committing with a message such as `revert(deploy): restore previous release`. That branch does not launch builds; Flux applies it directly. The next successful release from `master` replaces the rollback with its tested snapshot. Database migrations need a separate rollback plan. Deleting Flux's app Kustomization or GitRepository does not automatically delete its workloads. Do not delete the namespace or PVCs as part of application rollback.
 
 A single node restarts failed pods, but does not provide host-level high availability. K3s also changes host networking rules, so check existing Docker apps and VPN access after installation.
