@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,7 +34,7 @@ jobs:
       - run: PYTHONPATH=backend pytest backend/tests
   build:
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -65,7 +65,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
   integration:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
@@ -86,6 +86,18 @@ jobs:
       - run: pip install -r backend/requirements.txt
       - run: docker compose -f compose.yaml -f compose.ci.yaml pull
       - run: docker compose -f compose.yaml -f compose.ci.yaml up -d --no-build
+      - name: Report container state
+        if: failure()
+        run: |
+          python - <<'PYTHON'
+          import json, subprocess
+          ids = subprocess.check_output(['docker', 'compose', '-f', 'compose.yaml', '-f', 'compose.ci.yaml', 'ps', '-aq'], text=True).split()
+          for container in ids:
+              data = json.loads(subprocess.check_output(['docker', 'inspect', container], text=True))[0]
+              state = data['State']
+              safe = {'container': data['Name'], 'status': state['Status'], 'exit_code': state['ExitCode'], 'health': state.get('Health', {}).get('Status')}
+              print('::error::' + json.dumps(safe))
+          PYTHON
       - name: Test API with MongoDB
         run: |
           for attempt in $(seq 1 60); do
@@ -99,7 +111,7 @@ jobs:
         if: always()
   deploy:
     needs: integration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
