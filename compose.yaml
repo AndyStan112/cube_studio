@@ -32,7 +32,15 @@ services:
       - mongo_data:/data/db
     healthcheck:
       test:
-        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+        [
+          "CMD",
+          "mongosh",
+          "--host",
+          "mongo",
+          "--quiet",
+          "--eval",
+          "db.adminCommand('ping').ok",
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
