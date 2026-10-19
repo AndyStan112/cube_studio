@@ -1,16 +1,34 @@
-import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import {
+  Suspense,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type ComponentRef,
+} from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Mesh, Quaternion, Vector3 } from "three";
+import { DoubleSide, Group, Quaternion } from "three";
 import { algorithmStates, moveInfo } from "../lib/cube";
 const colors = [
-  "#e9574e",
-  "#ff9c39",
+  "#6297ed",
+  "#65b99a",
   "#f5d54f",
   "#f5f5eb",
-  "#65b99a",
-  "#6297ed",
+  "#e9574e",
+  "#ff9c39",
 ];
+// Box face order: right, left, up, down, front, back.
+const faces = [
+  { position: [0.501, 0, 0], rotation: [0, Math.PI / 2, 0] },
+  { position: [-0.501, 0, 0], rotation: [0, -Math.PI / 2, 0] },
+  { position: [0, 0.501, 0], rotation: [-Math.PI / 2, 0, 0] },
+  { position: [0, -0.501, 0], rotation: [Math.PI / 2, 0, 0] },
+  { position: [0, 0, 0.501], rotation: [0, 0, 0] },
+  { position: [0, 0, -0.501], rotation: [0, Math.PI, 0] },
+] satisfies {
+  position: [number, number, number];
+  rotation: [number, number, number];
+}[];
 function Model({
   moves,
   step,
@@ -21,7 +39,7 @@ function Model({
   transparent: boolean;
 }) {
   const states = useMemo(() => algorithmStates(moves), [moves]);
-  const refs = useRef<(Mesh | null)[]>([]),
+  const refs = useRef<(Group | null)[]>([]),
     progress = useRef(0);
   useFrame((_, dt) => {
     const delta = step - progress.current;
@@ -50,14 +68,19 @@ function Model({
   return (
     <group>
       {states[0].map((c, i) => (
-        <mesh
+        <group
           key={c.id}
           ref={(el) => {
             refs.current[i] = el;
           }}
           scale={0.94}
         >
-          <boxGeometry args={[1, 1, 1]} />
+          {!transparent && (
+            <mesh>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#202c29" roughness={0.5} />
+            </mesh>
+          )}
           {colors.map((color, face) => {
             const exterior = [
               c.home[0] === 1,
@@ -67,53 +90,68 @@ function Model({
               c.home[2] === 1,
               c.home[2] === -1,
             ][face];
+            if (!exterior) return null;
             return (
-              <meshStandardMaterial
+              <mesh
                 key={face}
-                attach={`material-${face}`}
-                color={exterior ? color : "#202c29"}
-                roughness={0.36}
-                metalness={0.05}
-                transparent={transparent}
-                opacity={transparent ? (exterior ? 0.48 : 0.07) : 1}
-                depthWrite={!transparent}
-              />
+                position={faces[face].position}
+                rotation={faces[face].rotation}
+              >
+                <planeGeometry args={[0.9, 0.9]} />
+                <meshStandardMaterial
+                  color={color}
+                  roughness={0.36}
+                  metalness={0.05}
+                  side={DoubleSide}
+                  transparent={transparent}
+                  opacity={transparent ? 0.35 : 1}
+                  depthWrite={!transparent}
+                />
+              </mesh>
             );
           })}
-        </mesh>
+        </group>
       ))}
     </group>
   );
 }
-const views: [number, number, number][] = [
-  [5, 4.3, 5],
-  [-5, 4.3, 5],
-  [0.01, 7, 0],
-  [5, 3, -5],
-];
-function Camera({ angle }: { angle: number }) {
-  const { camera } = useThree();
+const defaultView: [number, number, number] = [5, 4.3, 5];
+function CameraControls({ resetView }: { resetView: number }) {
+  const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   useLayoutEffect(() => {
-    camera.position.copy(new Vector3(...views[angle]));
-    camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
-  }, [angle, camera]);
-  return null;
+    const orbit = controls.current;
+    if (!orbit) return;
+    // Flush drag momentum before reset so damping cannot shift the saved view.
+    const damping = orbit.enableDamping;
+    orbit.enableDamping = false;
+    orbit.update();
+    orbit.reset();
+    orbit.enableDamping = damping;
+  }, [resetView]);
+  return (
+    <OrbitControls
+      ref={controls}
+      makeDefault
+      enablePan={false}
+      minDistance={5}
+      maxDistance={14}
+    />
+  );
 }
 export default function Cube({
   moves,
   step,
   transparent,
-  angle,
+  resetView,
 }: {
   moves: string[];
   step: number;
   transparent: boolean;
-  angle: number;
+  resetView: number;
 }) {
   return (
     <Canvas
-      camera={{ position: views[0], fov: 38 }}
+      camera={{ position: defaultView, fov: 38 }}
       dpr={[1, 2]}
       fallback={<p>3D needs a browser with WebGL support.</p>}
     >
@@ -122,14 +160,7 @@ export default function Cube({
       <Suspense fallback={null}>
         <Model moves={moves} step={step} transparent={transparent} />
       </Suspense>
-      <Camera angle={angle} />
-      <OrbitControls
-        key={angle}
-        makeDefault
-        enablePan={false}
-        minDistance={5}
-        maxDistance={14}
-      />
+      <CameraControls resetView={resetView} />
     </Canvas>
   );
 }

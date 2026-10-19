@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  Camera,
   Check,
   Eye,
   EyeOff,
@@ -22,7 +23,7 @@ export default function AlgorithmPage({
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
     [transparent, setTransparent] = useState(false),
-    [angle, setAngle] = useState(0),
+    [resetView, setResetView] = useState(0),
     [speed, setSpeed] = useState(1000);
   const algorithm = algorithms.find((a) => a.id === selected),
     moves = useMemo(() => algorithm?.moves.split(" ") || [], [algorithm]);
@@ -74,7 +75,7 @@ export default function AlgorithmPage({
         <div className="cube-stage">
           <div className="cube-label">
             <span className="status-dot" />
-            YELLOW UP · GREEN FRONT
+            YELLOW UP · RED FRONT
           </div>
           {moves.length > 0 && (
             <Suspense
@@ -82,19 +83,24 @@ export default function AlgorithmPage({
                 <div className="empty-state">Loading the 3D viewer…</div>
               }
             >
-              <Cube key={selected} {...{ moves, step, transparent, angle }} />
+              <Cube
+                key={selected}
+                {...{ moves, step, transparent, resetView }}
+              />
             </Suspense>
           )}
           <div className="cube-tools">
             <button
               className="tool-button"
-              onClick={() => setAngle((angle + 1) % 4)}
+              aria-label="Reset view"
+              title="Reset view · Yellow up, red front"
+              onClick={() => setResetView((value) => value + 1)}
             >
-              <RotateCcw size={15} />
-              Angle {angle + 1}
+              <Camera size={17} />
             </button>
             <button
               className={`tool-button ${transparent ? "selected" : ""}`}
+              aria-pressed={transparent}
               onClick={() => setTransparent(!transparent)}
             >
               {transparent ? <EyeOff size={15} /> : <Eye size={15} />}
