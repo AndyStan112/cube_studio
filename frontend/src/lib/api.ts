@@ -1,4 +1,5 @@
-export type User = { id: string; name: string; email: string };
+import { authProvider } from "./auth";
+export type { User } from "./auth";
 export type Solve = {
   id: string;
   scramble: string;
@@ -26,7 +27,7 @@ export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token = localStorage.getItem("cube-token");
+  const token = await authProvider.getAccessToken();
   let response: Response;
   try {
     response = await fetch(`/api${path}`, {

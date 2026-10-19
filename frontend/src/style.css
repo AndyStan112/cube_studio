@@ -725,20 +725,33 @@ select:focus {
   font-size: 23px;
   margin: 18px 0 24px;
 }
-.auth-modal form {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
-.auth-modal label {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+.auth-note {
   font-size: 12px;
-}
-.auth-modal small {
-  font-size: 10px;
   color: var(--muted);
+  margin: -12px 0 20px;
+}
+.demo-users {
+  display: grid;
+  gap: 10px;
+}
+.demo-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface, white);
+  color: inherit;
+  text-align: left;
+}
+.demo-user:hover,
+.demo-user:focus-visible {
+  background: #edf3eb;
+}
+.demo-user > svg {
+  margin-left: auto;
 }
 .form-error {
   font-size: 12px;
@@ -748,10 +761,6 @@ select:focus {
 .full {
   width: 100%;
   margin-top: 4px;
-}
-.auth-switch {
-  display: block;
-  margin: 15px auto 0;
 }
 .pwa-status:empty {
   display: none;

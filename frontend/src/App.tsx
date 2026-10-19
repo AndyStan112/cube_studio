@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowUpRight, Box, Layers3, LogOut, Timer, X } from "lucide-react";
 import {
   api,
-  ApiError,
   type Algorithm,
   type Scramble,
   type Solve,
@@ -11,6 +10,7 @@ import {
 import TimerPage from "./components/TimerPage";
 import AlgorithmPage from "./components/AlgorithmPage";
 import AuthModal from "./components/AuthModal";
+import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
 type Page = "timer" | "algorithms";
 export default function App() {
@@ -40,17 +40,22 @@ export default function App() {
   useEffect(() => {
     void loadScramble();
     api<Algorithm[]>("/algorithms").then(setAlgorithms).catch(notify);
-    if (localStorage.getItem("cube-token"))
-      api<User>("/auth/me")
-        .then(setUser)
-        .catch((error: unknown) => {
-          if (error instanceof ApiError && error.status === 401)
-            localStorage.removeItem("cube-token");
-        });
+    authProvider.getUser().then(setUser).catch(notify);
   }, [loadScramble, notify]);
   useEffect(() => {
-    if (user) api<Solve[]>("/solves").then(setSolves).catch(notify);
-    else setSolves([]);
+    let active = true;
+    setSolves([]);
+    if (user)
+      api<Solve[]>("/solves")
+        .then((items) => {
+          if (active) setSolves(items);
+        })
+        .catch((error) => {
+          if (active) notify(error);
+        });
+    return () => {
+      active = false;
+    };
   }, [user, notify]);
   const signedIn = (u: User) => {
     setUser(u);
@@ -59,8 +64,7 @@ export default function App() {
   };
   const signOut = async () => {
     try {
-      await api("/auth/logout", { method: "POST" });
-      localStorage.removeItem("cube-token");
+      await authProvider.signOut();
       setUser(null);
     } catch (e) {
       notify(e);
@@ -112,7 +116,9 @@ export default function App() {
             </span>
             {user ? (
               <>
-                <span className="avatar">{user.name[0].toUpperCase()}</span>
+                <span className="avatar" title={`${user.name} · Demo user`}>
+                  {user.name[0].toUpperCase()}
+                </span>
                 <span className="user-name">{user.name}</span>
                 <button
                   className="icon-button"

@@ -14,7 +14,7 @@ docker compose up --build -d
 - API docs: http://localhost:8000/docs
 - Health: http://localhost:8000/api/health
 
-Create an account in the app to save solves. The algorithm lab and scramble generation work without an account. MongoDB data persists in the `mongo_data` volume. `docker compose down` stops the stack and retains data.
+Choose a demo user in the sign-in picker to save solves. The algorithm lab and scramble generation work without an account. MongoDB data persists in the `mongo_data` volume. `docker compose down` stops the stack and retains data.
 
 The frontend is built with Vite and served by Nginx in Compose. Nginx forwards `/api` to FastAPI, so mobile clients on the same network can use `http://<your-computer-ip>:5173` without a separate API URL. MongoDB has no host port. The API docs port binds only to localhost.
 
@@ -26,7 +26,7 @@ The service worker caches the app, 3D assets, and public algorithm catalog. Prev
 
 ## Features
 
-- Registration, sign-in, logout, scrypt password hashes, and expiring bearer sessions stored as token hashes.
+- Mock sign-in with three hardcoded, shared demo users (Andy, Alex, Sam). No passwords, registration, or real OAuth. Anyone can select any demo user and access that profile’s solves.
 - Server-generated 25-move 3×3 practice scrambles. These use random moves rather than WCA random-state generation.
 - Tap or Space to start/stop the timer; manual time input accepts `24.53` and `1:02.45`.
 - Explicit save/discard, per-solve +2/DNF penalties, deletion, scramble history, best time, trimmed averages of 5/12, and session mean. Statistics use the most recent 1,000 saved solves across visits. One DNF can be discarded as the worst time in a trimmed average; two produce DNF.
@@ -83,7 +83,9 @@ React was chosen because React Three Fiber integrates Three.js scene objects and
 - `frontend/src/components/Cube.tsx`: 3D rendering and interpolated slice animation; takes a move sequence and a target step.
 - `frontend/src/lib/api.ts`: API boundary, solve types, time parsing, and statistics.
 - `backend/app/domain.py`: scramble generation and initial algorithm catalog, separate from persistence/authentication.
-- `backend/app/main.py`: API, user-scoped solve storage, sessions, and collection indexes.
+- `backend/app/main.py`: API, user-scoped solve storage, and collection indexes.
+- `backend/app/auth.py`: provider-independent identity dependency plus the current mock provider.
+- `frontend/src/lib/auth.ts`: auth adapter; API requests obtain their token here rather than reading storage directly.
 
 Next features should get separate service/router boundaries as they are implemented:
 
@@ -92,4 +94,10 @@ Next features should get separate service/router boundaries as they are implemen
 3. **Algorithm sets**: extend catalog records with method, stage, setup, alternatives, and user practice records. Existing `id`, `set`, and `moves` are the initial contract.
 4. **Roux teaching**: separate curriculum for first block, second block, CMLL, and last six edges, reusing cube visualization and playback for stage-specific drills. Current OLL examples are trainer demonstrations, not a Roux curriculum.
 
-This is a local prototype. Before public hosting add HTTPS, abuse controls and rate limits, account recovery, and production secret/database management. Bearer tokens currently live in browser local storage; use an appropriate hardened session strategy when deploying publicly. The UI uses system fonts.
+## Replacing mock auth with Clerk
+
+The current picker is explicitly a mock: its `mock:demo-*` tokens are public profile selectors, not credentials. Old password login, registration, and session endpoints are removed. Existing database users, sessions, and solves remain untouched, but old accounts are not accessible through the demo picker.
+
+To integrate Clerk, replace the frontend auth adapter with Clerk session APIs (`getToken`, current user, sign-out) and replace the picker with Clerk’s sign-in UI. Keep API token retrieval asynchronous so token refresh works. On the backend, implement `AuthProvider.authenticate` to verify Clerk JWT signatures, issuer, audience, and expiry, then return an `Identity`. Configure `get_auth_provider` to use it and remove the mock-only `/api/auth/users` catalog. Map Clerk subjects to stable application user IDs; solve handlers use only `Identity.id`, so providers stay out of solve logic. Preserve that mapping if migrating demo solves or old ObjectId-owned solves; they are not automatically assigned to external accounts.
+
+The prototype uses system fonts. Real account security and recovery belong to the future provider integration.
