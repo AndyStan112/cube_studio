@@ -23,15 +23,18 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v7
         with:
+          version: "0.10.12"
           python-version: "3.13"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
       - run: npm ci
         working-directory: frontend
       - run: npm test
         working-directory: frontend
-      - run: pip install -r backend/requirements.txt
-      - run: PYTHONPATH=backend pytest backend/tests
+      - run: uv sync --project backend --locked
+      - run: uv run --project backend --locked pytest backend/tests
   build:
     needs: test
     runs-on: ubuntu-24.04
@@ -75,21 +78,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v7
         with:
+          version: "0.10.12"
           python-version: "3.13"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: pip install -r backend/requirements.txt
+      - run: uv sync --project backend --locked
       - run: docker compose -f compose.yaml -f compose.ci.yaml pull
       - run: docker compose -f compose.yaml -f compose.ci.yaml up -d --no-build
       - name: Report container state
         if: failure()
         run: |
-          python - <<'PYTHON'
+          uv run --project backend --locked python - <<'PYTHON'
           import json, subprocess
           ids = subprocess.check_output(['docker', 'compose', '-f', 'compose.yaml', '-f', 'compose.ci.yaml', 'ps', '-aq'], text=True).split()
           for container in ids:
@@ -117,7 +123,7 @@ jobs:
             if curl --fail --silent http://localhost:5173/api/health; then break; fi
             sleep 2
           done
-          CUBE_API_URL=http://localhost:5173/api PYTHONPATH=backend pytest backend/tests
+          CUBE_API_URL=http://localhost:5173/api uv run --project backend --locked pytest backend/tests
       - run: docker compose -f compose.yaml -f compose.ci.yaml logs --tail 100
         if: failure()
       - run: docker compose -f compose.yaml -f compose.ci.yaml down
