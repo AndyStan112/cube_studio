@@ -75,10 +75,21 @@ text=re.sub(r'^(\s*server:)\s*.*$', r'\1 https://172.22.0.1:6443', text, flags=r
 pathlib.Path(sys.argv[1]).write_text(text)
 PYCONFIG
 export KUBECONFIG="$state_dir/kubeconfig"
-k3s kubectl wait --for=condition=Ready nodes --all --timeout=180s
 # Preserve any existing kubectl configuration; give the server owner a separate one.
+# Create it before waiting so registration failures can be diagnosed without sudo.
 install -d -m 0700 -o andy -g andy /home/andy/.kube
 install -m 0600 -o andy -g andy "$state_dir/kubeconfig" /home/andy/.kube/cube-studio.yaml
+# kubectl wait fails immediately if no Node objects have registered yet.
+registered=false
+for attempt in $(seq 1 90); do
+  if [[ -n "$(k3s kubectl get nodes -o name 2>/dev/null || true)" ]]; then
+    registered=true
+    break
+  fi
+  sleep 2
+done
+[[ "$registered" == true ]] || { echo 'No Kubernetes node registered within 180 seconds.' >&2; exit 1; }
+k3s kubectl wait --for=condition=Ready nodes --all --timeout=180s
 
 if [[ ! -x "$state_dir/flux" ]]; then
   work_dir=$(mktemp -d)
