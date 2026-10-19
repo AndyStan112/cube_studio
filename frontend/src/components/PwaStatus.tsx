@@ -16,6 +16,7 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
     void fetch("/api/algorithms").catch(() => {});
   });
   applyUpdate = registerSW({
+    immediate: true,
     onNeedRefresh() {
       updateWaiting = true;
       updateListeners.forEach((listener) => listener());
