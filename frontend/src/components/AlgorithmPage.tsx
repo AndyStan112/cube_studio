@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  Camera,
   Check,
   Eye,
   EyeOff,
@@ -96,15 +95,16 @@ export default function AlgorithmPage({
               title="Reset view · Yellow up, red front"
               onClick={() => setResetView((value) => value + 1)}
             >
-              <Camera size={17} />
+              <RotateCcw size={17} />
             </button>
             <button
               className={`tool-button ${transparent ? "selected" : ""}`}
+              aria-label="See-through"
               aria-pressed={transparent}
+              title={transparent ? "Disable see-through" : "Enable see-through"}
               onClick={() => setTransparent(!transparent)}
             >
               {transparent ? <EyeOff size={15} /> : <Eye size={15} />}
-              See-through {transparent ? "on" : "off"}
             </button>
           </div>
           <span className="drag-hint">Drag to orbit · Pinch to zoom</span>
