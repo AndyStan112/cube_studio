@@ -6,7 +6,6 @@ interface InstallPrompt extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 // Register once per document. Updates are applied only when the user chooses to reload.
-let applyUpdate: ((reload?: boolean) => Promise<void>) | undefined;
 const updateListeners = new Set<() => void>();
 let updateWaiting = false;
 if ("serviceWorker" in navigator && window.isSecureContext) {
@@ -15,7 +14,7 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     void fetch("/api/algorithms").catch(() => {});
   });
-  applyUpdate = registerSW({
+  registerSW({
     immediate: true,
     onNeedRefresh() {
       updateWaiting = true;
@@ -25,6 +24,19 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
       console.warn("Offline support registration failed", error);
     },
   });
+}
+async function reloadForUpdate() {
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration?.waiting) {
+    window.location.reload();
+    return;
+  }
+  navigator.serviceWorker.addEventListener(
+    "controllerchange",
+    () => window.location.reload(),
+    { once: true },
+  );
+  registration.waiting.postMessage({ type: "SKIP_WAITING" });
 }
 export default function PwaStatus() {
   const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
@@ -73,7 +85,7 @@ export default function PwaStatus() {
           <span>Update available.</span>
           <button
             className="text-button"
-            onClick={() => void applyUpdate?.(true)}
+            onClick={() => void reloadForUpdate()}
           >
             Reload
           </button>
