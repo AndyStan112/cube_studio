@@ -37,4 +37,13 @@ def test_accounts_and_solve_ownership():
         assert client.delete(f"/solves/{solve['id']}", headers=headers).status_code == 204
         assert all(item['id'] != solve['id'] for item in client.get('/solves', headers=headers).json())
         assert client.get('/auth/me').status_code == 401
-        assert len(client.get('/algorithms').json()) == 2
+        catalog = client.get('/algorithm-catalog').json()
+        assert len(catalog['sets']) == 3
+        assert len(catalog['algorithms']) == 4
+        sune = next(item for item in catalog['algorithms'] if item['id'] == 'sune')
+        assert '2-look-cmll' in sune['set_ids']
+        j_perm = next(item for item in catalog['algorithms'] if item['id'] == 'j-perm')
+        assert {item['id'] for item in j_perm['variations']} == {'normal', 'lefty', 'righty'}
+        legacy = client.get('/algorithms').json()
+        assert len(legacy) == 4
+        assert all(item['set'] and item['moves'] for item in legacy)

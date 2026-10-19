@@ -7,12 +7,27 @@ export type Solve = {
   penalty: "none" | "+2" | "DNF";
   created_at: string;
 };
+export type AlgorithmSet = {
+  id: string;
+  name: string;
+  description: string;
+};
+export type AlgorithmVariation = {
+  id: string;
+  name: string;
+  moves: string;
+  case?: string;
+};
 export type Algorithm = {
   id: string;
   name: string;
-  set: string;
-  moves: string;
+  set_ids: string[];
+  variations: AlgorithmVariation[];
   description: string;
+};
+export type AlgorithmCatalog = {
+  sets: AlgorithmSet[];
+  algorithms: Algorithm[];
 };
 export type Scramble = { id: string; moves: string; event: string };
 export class ApiError extends Error {

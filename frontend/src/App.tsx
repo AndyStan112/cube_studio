@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowUpRight, Box, Layers3, LogOut, Timer, X } from "lucide-react";
 import {
   api,
-  type Algorithm,
+  type AlgorithmCatalog,
   type Scramble,
   type Solve,
   type User,
@@ -20,7 +20,10 @@ export default function App() {
     [error, setError] = useState("");
   const [solves, setSolves] = useState<Solve[]>([]),
     [scramble, setScramble] = useState<Scramble | null>(null),
-    [algorithms, setAlgorithms] = useState<Algorithm[]>([]),
+    [catalog, setCatalog] = useState<AlgorithmCatalog>({
+      sets: [],
+      algorithms: [],
+    }),
     [loading, setLoading] = useState(false);
   const notify = useCallback(
     (e: unknown) =>
@@ -39,7 +42,7 @@ export default function App() {
   }, [notify]);
   useEffect(() => {
     void loadScramble();
-    api<Algorithm[]>("/algorithms").then(setAlgorithms).catch(notify);
+    api<AlgorithmCatalog>("/algorithm-catalog").then(setCatalog).catch(notify);
     authProvider.getUser().then(setUser).catch(notify);
   }, [loadScramble, notify]);
   useEffect(() => {
@@ -166,7 +169,7 @@ export default function App() {
               onSignIn={() => setAuthOpen(true)}
             />
           ) : (
-            <AlgorithmPage algorithms={algorithms} />
+            <AlgorithmPage {...catalog} />
           )}
         </main>
       </div>

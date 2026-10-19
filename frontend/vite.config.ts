@@ -45,10 +45,10 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname === "/api/algorithms",
+            urlPattern: ({ url }) => url.pathname === "/api/algorithm-catalog",
             handler: "NetworkFirst",
             options: {
-              cacheName: "cube-algorithms",
+              cacheName: "cube-algorithm-catalog",
               networkTimeoutSeconds: 3,
               expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 30 },
               cacheableResponse: { statuses: [200] },

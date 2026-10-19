@@ -30,7 +30,8 @@ The service worker caches the app, 3D assets, and public algorithm catalog. Prev
 - Server-generated 25-move 3×3 practice scrambles. These use random moves rather than WCA random-state generation.
 - Tap or Space to start/stop the timer; manual time input accepts `24.53` and `1:02.45`.
 - Explicit save/discard, per-solve +2/DNF penalties, deletion, scramble history, best time, trimmed averages of 5/12, and session mean. Statistics use the most recent 1,000 saved solves across visits. One DNF can be discarded as the worst time in a trimmed average; two produce DNF.
-- Hardcoded Sune (`R U R' U R U2 R'`) and reverse Sune (`R U2 R' U' R U' R'`). Each starts at its inverse setup and ends solved.
+- A small catalog of Sune, reverse Sune, J perm, and T perm across 2-look OLL, 2-look CMLL, and PLL. Algorithms can belong to multiple sets without duplication. J perm has normal/righty (Jb) and lefty (mirrored Ja) variations. Each variation starts at its own inverse setup and ends solved. These are example subsets, not complete sets.
+- Set filtering and a variation selector with per-variation notation, animation, and move counts. J/PLL sequences are sourced from [SpeedCubeDB](https://www.speedcubedb.com/a/3x3/PLL/Jb).
 - Real animated layer turns, forward/back steps, move selection, reset, autoplay, playback speed, a camera reset to yellow up / red front, drag/pinch orbit controls, and see-through mode. Standard notation explanations use the perspective of the face being turned.
 - Responsive layouts and mobile bottom navigation.
 
@@ -92,7 +93,7 @@ Next features should get separate service/router boundaries as they are implemen
 
 1. **Recognition**: camera/upload input → validated six-face state with explicit face order and orientation. Validate solvability before asking a solver to proceed.
 2. **Solving**: solver adapter → standard move list plus metadata (method, elapsed time, optimality status). Add a user solver-timeout setting and run CPU work outside the async request loop. Herbert Kociemba's two-phase algorithm is generally a near-optimal solver; do not label its output globally optimal. A strict optimal search and timeout/fallback need separate implementations and result states.
-3. **Algorithm sets**: extend catalog records with method, stage, setup, alternatives, and user practice records. Existing `id`, `set`, and `moves` are the initial contract.
+3. **Algorithm sets**: `GET /api/algorithm-catalog` returns independent `sets` and `algorithms`. Each algorithm has stable `id`, `set_ids`, and `variations`; each variation has stable `id`, `name`, and `moves`, plus an optional case label. Save future practice records against `(algorithm_id, variation_id)` so set membership does not duplicate progress. The current catalog is seeded in `backend/app/algorithm_catalog.json`; a database can preserve these IDs and relationships. `GET /api/algorithms` retains the original default-variation response for older installed clients. The new catalog has a separate offline cache so old cached response shapes are not reused.
 4. **Roux teaching**: separate curriculum for first block, second block, CMLL, and last six edges, reusing cube visualization and playback for stage-specific drills. Current OLL examples are trainer demonstrations, not a Roux curriculum.
 
 ## Replacing mock auth with Clerk

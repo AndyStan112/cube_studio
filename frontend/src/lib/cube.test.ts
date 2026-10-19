@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import type { AlgorithmCatalog } from "./api";
 import { Vector3 } from "three";
 import { applyMove, solved, inverse, algorithmStates } from "./cube";
 import { averageOf, parseTime, type Solve } from "./api";
@@ -27,11 +29,25 @@ describe("cube permutations", () => {
         ).toEqual(signature(solved()));
       }
   });
-  it("Sune and reverse Sune solve their corresponding starting cases", () => {
-    for (const sequence of ["R U R' U R U2 R'", "R U2 R' U' R U' R'"]) {
-      const states = algorithmStates(sequence.split(" "));
-      expect(signature(states[0])).not.toEqual(signature(solved()));
-      expect(signature(states.at(-1)!)).toEqual(signature(solved()));
+  it("every catalog variation starts unsolved and animates to the solved state", () => {
+    const catalog = JSON.parse(
+      readFileSync(
+        new URL("../../../backend/app/algorithm_catalog.json", import.meta.url),
+        "utf8",
+      ),
+    ) as AlgorithmCatalog;
+    for (const algorithm of catalog.algorithms) {
+      for (const variation of algorithm.variations) {
+        const states = algorithmStates(variation.moves.split(" "));
+        expect(
+          signature(states[0]),
+          `${algorithm.id}/${variation.id}`,
+        ).not.toEqual(signature(solved()));
+        expect(
+          signature(states.at(-1)!),
+          `${algorithm.id}/${variation.id}`,
+        ).toEqual(signature(solved()));
+      }
     }
   });
   it("R is clockwise looking at the right face", () => {

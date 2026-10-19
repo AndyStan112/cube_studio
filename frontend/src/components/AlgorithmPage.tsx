@@ -10,22 +10,37 @@ import {
   Play,
   RotateCcw,
 } from "lucide-react";
-import { type Algorithm } from "../lib/api";
+import { type Algorithm, type AlgorithmCatalog } from "../lib/api";
 import { describeMove } from "../lib/notation";
 const Cube = lazy(() => import("./Cube"));
-export default function AlgorithmPage({
-  algorithms,
-}: {
-  algorithms: Algorithm[];
-}) {
-  const [selected, setSelected] = useState("sune"),
+export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
+  const [selectedSet, setSelectedSet] = useState("all"),
+    [selected, setSelected] = useState("sune"),
+    [selectedVariation, setSelectedVariation] = useState("normal"),
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
     [transparent, setTransparent] = useState(false),
     [resetView, setResetView] = useState(0),
     [speed, setSpeed] = useState(1000);
-  const algorithm = algorithms.find((a) => a.id === selected),
-    moves = useMemo(() => algorithm?.moves.split(" ") || [], [algorithm]);
+  const visibleAlgorithms = algorithms.filter(
+    (item) => selectedSet === "all" || item.set_ids.includes(selectedSet),
+  );
+  const algorithm =
+    visibleAlgorithms.find((item) => item.id === selected) ??
+    visibleAlgorithms[0];
+  const variation =
+    algorithm?.variations.find((item) => item.id === selectedVariation) ??
+    algorithm?.variations[0];
+  const moves = useMemo(() => variation?.moves.split(" ") || [], [variation]);
+  const memberships = sets.filter((item) =>
+    algorithm?.set_ids.includes(item.id),
+  );
+  const selectAlgorithm = (item: Algorithm) => {
+    setSelected(item.id);
+    setSelectedVariation(item.variations[0].id);
+    setStep(0);
+    setPlaying(false);
+  };
   useEffect(() => {
     if (!playing) return;
     if (step >= moves.length) {
@@ -41,36 +56,93 @@ export default function AlgorithmPage({
   };
   return (
     <div className="algorithm-layout">
-      <aside className="card algorithm-list">
-        {algorithms.map((a, i) => (
-          <button
-            key={a.id}
-            className={`algorithm-option ${a.id === selected ? "selected" : ""}`}
-            onClick={() => {
-              setSelected(a.id);
-              setStep(0);
-              setPlaying(false);
+      <aside className="card algorithm-library">
+        <label className="library-set">
+          <span>Set</span>
+          <select
+            aria-label="Algorithm set"
+            value={selectedSet}
+            onChange={(event) => {
+              const id = event.target.value;
+              setSelectedSet(id);
+              const available = algorithms.filter(
+                (item) => id === "all" || item.set_ids.includes(id),
+              );
+              const next =
+                available.find((item) => item.id === algorithm?.id) ??
+                available[0];
+              if (next && next.id !== algorithm?.id) selectAlgorithm(next);
+              if (!next) {
+                setPlaying(false);
+                setStep(0);
+              }
             }}
           >
-            <span className="alg-number">0{i + 1}</span>
-            <span>
-              <strong>{a.name}</strong>
-              <small>{a.set} · 7 moves</small>
-            </span>
-            <ArrowUpRight size={17} />
-          </button>
-        ))}
+            <option value="all">All sets</option>
+            {sets.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="algorithm-list">
+          {visibleAlgorithms.map((item, index) => (
+            <button
+              key={item.id}
+              className={`algorithm-option ${item.id === algorithm?.id ? "selected" : ""}`}
+              aria-pressed={item.id === algorithm?.id}
+              onClick={() => selectAlgorithm(item)}
+            >
+              <span className="alg-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span>
+                <strong>{item.name}</strong>
+                <small>
+                  {item.variations.length}{" "}
+                  {item.variations.length === 1 ? "variation" : "variations"}
+                </small>
+              </span>
+              <ArrowUpRight size={17} />
+            </button>
+          ))}
+        </div>
+        {sets.length > 0 && !visibleAlgorithms.length && (
+          <p className="empty-state">No algorithms in this set.</p>
+        )}
       </aside>
       <section className="card trainer-card">
         <div className="trainer-heading">
           <div>
             <div className="eyebrow">
-              {algorithm?.set || "ALGORITHM TRAINER"}
+              {memberships.map((item) => item.name).join(" · ") ||
+                "ALGORITHM TRAINER"}
             </div>
             <h2>{algorithm?.name || "Loading algorithms…"}</h2>
           </div>
           <span className="outline-label">{moves.length} moves</span>
         </div>
+        {algorithm && algorithm.variations.length > 1 && (
+          <label className="variation-control">
+            <span>Variation</span>
+            <select
+              aria-label="Algorithm variation"
+              value={variation?.id}
+              onChange={(event) => {
+                setSelectedVariation(event.target.value);
+                jump(0);
+              }}
+            >
+              {algorithm.variations.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                  {item.case ? ` · ${item.case}` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="cube-stage">
           <div className="cube-label">
             <span className="status-dot" />
@@ -83,7 +155,7 @@ export default function AlgorithmPage({
               }
             >
               <Cube
-                key={selected}
+                key={`${algorithm?.id}:${variation?.id}`}
                 {...{ moves, step, transparent, resetView }}
               />
             </Suspense>

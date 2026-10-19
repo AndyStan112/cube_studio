@@ -7,7 +7,7 @@ from bson import ObjectId
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from pymongo import AsyncMongoClient
-from .domain import ALGORITHMS, scramble
+from .domain import ALGORITHM_SETS, ALGORITHMS, scramble
 from .auth import current_user, router as auth_router
 
 @asynccontextmanager
@@ -40,9 +40,19 @@ async def health():
     await app.state.db.command("ping")
     return {"status": "ok"}
 
+@app.get('/api/algorithm-catalog')
+async def algorithm_catalog():
+    return {"sets": ALGORITHM_SETS, "algorithms": ALGORITHMS}
+
 @app.get('/api/algorithms')
 async def algorithms():
-    return ALGORITHMS
+    # Keep installed prototype clients working until they accept the PWA update.
+    set_names = {item["id"]: item["name"] for item in ALGORITHM_SETS}
+    return [
+        {"id": item["id"], "name": item["name"], "description": item["description"],
+         "set": set_names[item["set_ids"][0]], "moves": item["variations"][0]["moves"]}
+        for item in ALGORITHMS
+    ]
 
 @app.post('/api/scrambles', status_code=201)
 async def new_scramble():

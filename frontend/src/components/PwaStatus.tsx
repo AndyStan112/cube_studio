@@ -12,7 +12,7 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
   // The catalog may have loaded before the first worker took control.
   // Warm its public cache when the worker starts controlling this document.
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    void fetch("/api/algorithms").catch(() => {});
+    void fetch("/api/algorithm-catalog").catch(() => {});
   });
   registerSW({
     immediate: true,

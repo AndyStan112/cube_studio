@@ -481,8 +481,39 @@ select:focus {
   grid-template-columns: 1fr;
   gap: 12px;
 }
-.algorithm-list {
+.library-set {
+  display: grid;
+  gap: 6px;
+  padding: 12px 12px 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.library-set select,
+.variation-control select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: white;
+  color: #19352c;
+  font-size: 12px;
+}
+.variation-control {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.variation-control select {
+  max-width: 230px;
+}
+.algorithm-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
   padding: 8px;
 }
