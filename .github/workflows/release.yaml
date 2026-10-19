@@ -97,6 +97,19 @@ jobs:
               state = data['State']
               safe = {'container': data['Name'], 'status': state['Status'], 'exit_code': state['ExitCode'], 'health': state.get('Health', {}).get('Status')}
               print('::error::' + json.dumps(safe))
+              if data.get('Config', {}).get('Labels', {}).get('com.docker.compose.service') == 'mongo':
+                  logs = subprocess.run(['docker', 'logs', container], capture_output=True, text=True)
+                  text = logs.stdout + logs.stderr
+                  error_ids = []
+                  for line in text.splitlines():
+                      try:
+                          record = json.loads(line)
+                      except ValueError:
+                          continue
+                      if record.get('s') in ('E', 'F') and isinstance(record.get('id'), int):
+                          error_ids.append(record['id'])
+                  categories = [value for value in ('Permission denied', 'Operation not permitted', 'No space left on device', 'Invalid argument', 'Read-only file system', 'UnsupportedFormat', 'DBPathInUse') if value in text]
+                  print('::error::' + json.dumps({'mongo_error_ids': error_ids, 'known_error_categories': categories}))
           PYTHON
       - name: Test API with MongoDB
         run: |
