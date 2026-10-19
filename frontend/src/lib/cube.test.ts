@@ -45,7 +45,19 @@ describe("solve timing", () => {
   it("parses seconds and minute notation without accepting invalid input", () => {
     expect(parseTime("24.53")).toBe(24530);
     expect(parseTime("1:02.45")).toBe(62450);
-    for (const bad of ["0", "-5", "1:60", "abc", "1.2.3", ""])
+    expect(parseTime("123.45")).toBe(123450);
+    expect(parseTime("2:03.45")).toBe(123450);
+    expect(parseTime("86400")).toBe(86400000);
+    for (const bad of [
+      "0",
+      "-5",
+      "1:60",
+      "1:123",
+      "86400.001",
+      "abc",
+      "1.2.3",
+      "",
+    ])
       expect(parseTime(bad)).toBeNull();
   });
   const solve = (time_ms: number, penalty: Solve["penalty"] = "none") =>

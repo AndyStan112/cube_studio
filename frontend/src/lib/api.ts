@@ -71,7 +71,7 @@ export function averageOf(solves: Solve[], count: number) {
   return times.reduce((a, b) => a + b, 0) / times.length;
 }
 export function parseTime(value: string): number | null {
-  if (!/^(?:\d{1,3}:)?\d{1,2}(?:\.\d{1,3})?$/.test(value)) return null;
+  if (!/^(?:\d{1,5}|\d{1,4}:\d{1,2})(?:\.\d{1,3})?$/.test(value)) return null;
   const parts = value.split(":").map(Number);
   if (parts.length === 2 && parts[1] >= 60) return null;
   const ms = Math.round(
