@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongo-backup
+spec:
+  schedule: "0 3 * * *"
+  timeZone: Europe/Bucharest
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      template:
+        metadata:
+          labels:
+            app: mongo-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: mongo:8.0
+              command: [sh, -ec]
+              args:
+                - |
+                  umask 077
+                  output="/backups/mongo-$(date -u +%Y%m%dT%H%M%SZ).archive.gz"
+                  mongodump --uri="$MONGO_URL" --archive="$output.tmp" --gzip
+                  mv "$output.tmp" "$output"
+                  find /backups -type f -name 'mongo-*.archive.gz' -mtime +7 -delete
+              env:
+                - name: MONGO_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: mongo-credentials
+                      key: MONGO_URL
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
+          volumes:
+            - name: backups
+              hostPath:
+                path: /var/backups/cube-studio
+                type: Directory

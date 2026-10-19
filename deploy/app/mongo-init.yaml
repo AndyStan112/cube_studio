@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-init
+data:
+  cube-studio.js: |
+    db.getSiblingDB('cube_studio').createUser({
+      user: process.env.MONGO_APP_USER,
+      pwd: process.env.MONGO_APP_PASSWORD,
+      roles: [{ role: 'readWrite', db: 'cube_studio' }],
+    });
