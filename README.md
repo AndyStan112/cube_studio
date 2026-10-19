@@ -34,6 +34,10 @@ The service worker caches the app, 3D assets, and public algorithm catalog. Prev
 - Real animated layer turns, forward/back steps, move selection, reset, autoplay, playback speed, four camera presets, drag/pinch orbit controls, and see-through mode. Standard notation explanations use the perspective of the face being turned.
 - Responsive layouts and mobile bottom navigation.
 
+## Deployment
+
+See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` run tests and publish images; only successful builds update the running app.
+
 ## Local development
 
 Node 22.12+ is recommended. Run MongoDB and FastAPI in Compose with Vite on the host:

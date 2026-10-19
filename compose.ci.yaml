@@ -1,0 +1,6 @@
+# Use the exact images built by this workflow when running integration tests.
+services:
+  frontend:
+    image: ghcr.io/andystan112/cube_studio-frontend:${RELEASE_SHA:?Set RELEASE_SHA}
+  backend:
+    image: ghcr.io/andystan112/cube_studio-backend:${RELEASE_SHA:?Set RELEASE_SHA}

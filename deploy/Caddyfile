@@ -1,0 +1,6 @@
+# Add this block to /home/andy/apps/caddy_proxy/Caddyfile once the app is healthy.
+# Existing domain blocks stay in place.
+cube.windogs.win {
+    encode zstd gzip
+    reverse_proxy 172.22.0.1:30573
+}
