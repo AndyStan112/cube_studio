@@ -6,3 +6,8 @@ services:
     image: ghcr.io/andystan112/cube_studio-backend:${RELEASE_SHA:?Set RELEASE_SHA}
   solver:
     image: ghcr.io/andystan112/cube_studio-solver:${RELEASE_SHA:?Set RELEASE_SHA}
+  mongo:
+    # Let glibc own rseq so TCMalloc uses thread caches on affected CI kernels.
+    # https://github.com/docker-library/mongo/issues/765 (SERVER-121912)
+    environment:
+      GLIBC_TUNABLES: glibc.pthread.rseq=1

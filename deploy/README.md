@@ -25,6 +25,10 @@ Keep working on **`master`** and push normally. Do not merge `deployments` back 
 
 For an existing installation, initialize `deployments` with the currently deployed manifests, then apply `deploy/flux/sync.yaml` using the owner kubeconfig to switch Flux. This migration is one-time; regular releases need no SSH or manual branch maintenance.
 
+## CI database compatibility
+
+The integration override lets glibc own restartable sequences (`GLIBC_TUNABLES=glibc.pthread.rseq=1`), which disables MongoDB's TCMalloc per-CPU caches on the runner. This avoids the known allocator/kernel incompatibility [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912) that produces startup error 12257600 on affected Linux kernels. An isolated check confirmed `serverStatus().tcmalloc.usingPerCPUCaches` is false with this setting. Production MongoDB configuration is unchanged.
+
 ## Route the app
 
 First verify workloads and the private endpoint:
