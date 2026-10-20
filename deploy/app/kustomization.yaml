@@ -9,10 +9,14 @@ resources:
   - network-policy.yaml
   - backend.yaml
   - frontend.yaml
+  - solver.yaml
 images:
   - name: cube-frontend
     newName: ghcr.io/andystan112/cube_studio-frontend
-    newTag: 8f2c818576b19e5f31b70ed77fc675409f10b534
+    newTag: d8caae8d875f22b84ff3ab293835d78cebb1d948
   - name: cube-backend
     newName: ghcr.io/andystan112/cube_studio-backend
-    newTag: 8f2c818576b19e5f31b70ed77fc675409f10b534
+    newTag: d8caae8d875f22b84ff3ab293835d78cebb1d948
+  - name: cube-solver
+    newName: ghcr.io/andystan112/cube_studio-solver
+    newTag: d8caae8d875f22b84ff3ab293835d78cebb1d948

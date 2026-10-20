@@ -62,3 +62,21 @@ spec:
       ports:
         - protocol: TCP
           port: 27017
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: solver-from-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: solver
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 8081
