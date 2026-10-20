@@ -207,3 +207,14 @@
 
 .solver-input > .solver-actions { gap: 8px; }
 .solver-input > .solver-actions .button { padding: 10px 12px; font-size: 12px; }
+
+.representation-toggle {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+}
+.representation-toggle button[aria-pressed="true"] {
+  background: #e7f1de;
+  border-color: #658456;
+  color: #315d2d;
+}

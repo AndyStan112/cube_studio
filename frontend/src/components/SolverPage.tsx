@@ -32,6 +32,7 @@ const faceNames: Record<string, string> = {
   B: "Back · orange",
 };
 export default function SolverPage() {
+  const [representation, setRepresentation] = useState<"2d" | "text">("2d");
   const [value, setValue] = useState(SOLVED_FACELETS),
     [color, setColor] = useState("U"),
     [error, setError] = useState(""),
@@ -251,6 +252,15 @@ export default function SolverPage() {
       <section className="card solver-input">
         <h2>Your cube</h2>
         <p className="solver-hint">Yellow up · Red front</p>
+        <div className="representation-toggle" role="group" aria-label="Cube representation">
+          {(["2d", "text"] as const).map((view) => (
+            <button key={view} className="button" aria-pressed={representation === view}
+              onClick={() => setRepresentation(view)}>
+              {view === "2d" ? "2D" : "Text"}
+            </button>
+          ))}
+        </div>
+        {representation === "2d" && <>
         <div className="solver-palette">
           {[...FACE_ORDER].map((f) => (
             <button
@@ -297,8 +307,8 @@ export default function SolverPage() {
           ))}
         </div>
         <p className="solver-hint">Pick a color, then a sticker.</p>
-        <details className="solver-facelets">
-          <summary>Facelet input</summary>
+        </>}
+        {representation === "text" && <div className="solver-facelets">
           <p id="facelet-format">
             A facelet is one sticker. Enter 54 letters: nine per face, in{" "}
             <strong>U R F D L B</strong> order.
@@ -333,7 +343,7 @@ export default function SolverPage() {
               )
             }
           />
-        </details>
+        </div>}
         <div className="solver-actions">
           <button
             className="button"
