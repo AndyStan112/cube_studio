@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
@@ -267,6 +267,19 @@ export default function SolverPage() {
       }
     } else setStatus("Cancelled");
   }
+  function editValue(next: SetStateAction<string>) {
+    generation.current++;
+    setValue(next);
+    setSelected(null);
+    setJob(null);
+    setStep(0);
+    setPlaying(false);
+    setError("");
+    setStatus("Ready");
+    setMode("");
+    localStorage.removeItem(savedKey);
+    localStorage.removeItem(`${savedKey}:snapshot`);
+  }
   function demo() {
     const sequence = Array.from(
       { length: 25 },
@@ -274,7 +287,7 @@ export default function SolverPage() {
         FACE_ORDER[Math.floor(Math.random() * 6)] +
         ["", "'", "2"][Math.floor(Math.random() * 3)],
     );
-    setValue(
+    editValue(
       cubiesToFacelets(sequence.reduce((s, m) => applyMove(s, m), solved())),
     );
   }
@@ -339,7 +352,7 @@ export default function SolverPage() {
                     aria-label={`${f}${i + 1}: ${value[index]}`}
                     style={{ background: FACE_COLORS[value[index]] ?? "#ccc" }}
                     onClick={() =>
-                      setValue(
+                      editValue(
                         (s) => s.slice(0, index) + color + s.slice(index + 1),
                       )
                     }
@@ -352,7 +365,7 @@ export default function SolverPage() {
           ))}
         </div>
         : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled={locked} onChange={setValue} transparent={transparent}>
+          <FaceletCube value={value} color={color} disabled={locked} onChange={editValue} transparent={transparent}>
             {viewerTools}
           </FaceletCube>
         </Suspense>}
@@ -388,7 +401,7 @@ export default function SolverPage() {
             autoCapitalize="characters"
             disabled={locked}
             onChange={(e) =>
-              setValue(
+              editValue(
                 e.target.value.toUpperCase().replace(/\s/g, "").slice(0, 54),
               )
             }
@@ -408,7 +421,7 @@ export default function SolverPage() {
           <button
             className="button"
             disabled={locked}
-            onClick={() => setValue(SOLVED_FACELETS)}
+            onClick={() => editValue(SOLVED_FACELETS)}
           >
             Reset cube
           </button>
@@ -433,7 +446,7 @@ export default function SolverPage() {
       </section>
       <section className="card trainer-card">
         <div className="trainer-heading">
-          <h2>Solution</h2>
+          <h2>{selected ? "Solution" : "Cube preview"}</h2>
           {mode && <span className="outline-label">{mode}</span>}
         </div>
         {(locked || (!selected && status !== "Ready")) && (
@@ -515,7 +528,7 @@ export default function SolverPage() {
             <span>{selected.move_count} {selected.move_count === 1 ? "move" : "moves"}</span>
           </div>
         )}
-        <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
+        {selected ? <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
           <Suspense fallback={<p>Loading cube…</p>}>
             <Cube
               key={input}
@@ -529,7 +542,11 @@ export default function SolverPage() {
             />
           </Suspense>
           {viewerTools}
-        </div>
+        </div> : <Suspense fallback={<p>Loading cube…</p>}>
+          <FaceletCube value={value} color={color} disabled onChange={editValue} transparent={transparent}>
+            {viewerTools}
+          </FaceletCube>
+        </Suspense>}
         <div className="notation">
           {moves.map((m, i) => (
             <button
