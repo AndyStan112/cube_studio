@@ -196,7 +196,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             </select>
           </label>
         )}
-        <div className="cube-stage">
+        <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
           {moves.length > 0 && (
             <Suspense
               fallback={

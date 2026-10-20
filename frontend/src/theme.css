@@ -293,6 +293,9 @@ input:focus, select:focus {
     var(--bg);
   border-color: var(--border);
 }
+.cube-stage.is-see-through {
+  background: #16181d;
+}
 
 /* Cube net buttons — KEEP ORIGINAL COLORS, only change border */
 .net-face button { border-color: rgba(138,100,220,.25); border-radius: 3px; }
