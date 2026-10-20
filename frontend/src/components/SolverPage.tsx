@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
@@ -47,6 +47,7 @@ export default function SolverPage() {
     [busy, setBusy] = useState(false),
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
+    [transparent, setTransparent] = useState(false),
     [resetView, setResetView] = useState(0);
   const offline = useRef(new OfflineSolver()),
     generation = useRef(0);
@@ -281,6 +282,16 @@ export default function SolverPage() {
     setPlaying(false);
     setStep(Math.max(0, Math.min(moves.length, n)));
   }
+  const viewerTools = (
+    <div className="cube-tools">
+      <button className={`tool-button ${transparent ? "selected" : ""}`}
+        aria-label="See-through" aria-pressed={transparent}
+        title={transparent ? "Disable see-through" : "Enable see-through"}
+        onClick={() => setTransparent((value) => !value)}>
+        {transparent ? <EyeOff size={15} /> : <Eye size={15} />}
+      </button>
+    </div>
+  );
   return (
     <div className="solver-layout">
       <section className="card solver-input">
@@ -341,7 +352,9 @@ export default function SolverPage() {
           ))}
         </div>
         : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled={locked} onChange={setValue} />
+          <FaceletCube value={value} color={color} disabled={locked} onChange={setValue} transparent={transparent}>
+            {viewerTools}
+          </FaceletCube>
         </Suspense>}
         <p className="solver-hint">Pick a color, then a sticker.{representation === "3d" && " Drag to orbit · Pinch to zoom"}</p>
         </>}
@@ -502,19 +515,20 @@ export default function SolverPage() {
             <span>{selected.move_count} {selected.move_count === 1 ? "move" : "moves"}</span>
           </div>
         )}
-        <div className="cube-stage">
+        <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
           <Suspense fallback={<p>Loading cube…</p>}>
             <Cube
               key={input}
               moves={moves}
               initialState={initial}
               step={step}
-              transparent={false}
+              transparent={transparent}
               resetView={resetView}
               maskIrrelevant={false}
               focus="all"
             />
           </Suspense>
+          {viewerTools}
         </div>
         <div className="notation">
           {moves.map((m, i) => (
