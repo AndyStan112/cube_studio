@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
@@ -540,9 +541,11 @@ export default function SolverPage() {
           <button
             className="button"
             disabled={!step}
+            aria-label="Previous move"
+            title="Previous move"
             onClick={() => jump(step - 1)}
           >
-            Back
+            <ArrowLeft size={19} aria-hidden="true" />
           </button>
           <button
             className="button"
@@ -557,9 +560,11 @@ export default function SolverPage() {
           <button
             className="button"
             disabled={step === moves.length}
+            aria-label="Next move"
+            title="Next move"
             onClick={() => jump(step + 1)}
           >
-            Forward
+            <ArrowRight size={19} aria-hidden="true" />
           </button>
           <span>
             {step} / {moves.length}
