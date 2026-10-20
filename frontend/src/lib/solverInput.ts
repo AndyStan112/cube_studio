@@ -1,6 +1,6 @@
 import { useCallback, useReducer, type SetStateAction } from "react";
 import { SOLVED_FACELETS } from "./facelets";
-export type Representation = "2d" | "text";
+export type Representation = "2d" | "text" | "3d";
 export type SolverInput = { value: string; representation: Representation };
 type Action =
   | { type: "value"; value: SetStateAction<string> }

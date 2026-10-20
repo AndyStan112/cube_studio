@@ -22,6 +22,7 @@ import {
   type Solution,
 } from "../lib/solver";
 import "./SolverPage.css";
+const FaceletCube = lazy(() => import("./FaceletCube"));
 const Cube = lazy(() => import("./Cube"));
 const savedKey = "cube-studio-solver-job-v1";
 const faceNames: Record<string, string> = {
@@ -253,14 +254,14 @@ export default function SolverPage() {
         <h2>Your cube</h2>
         <p className="solver-hint">Yellow up · Red front</p>
         <div className="representation-toggle" role="group" aria-label="Cube representation">
-          {(["2d", "text"] as const).map((view) => (
+          {(["2d", "text", "3d"] as const).map((view) => (
             <button key={view} className="button" aria-pressed={representation === view}
               onClick={() => setRepresentation(view)}>
-              {view === "2d" ? "2D" : "Text"}
+              {view === "text" ? "Text" : view.toUpperCase()}
             </button>
           ))}
         </div>
-        {representation === "2d" && <>
+        {representation !== "text" && <>
         <div className="solver-palette">
           {[...FACE_ORDER].map((f) => (
             <button
@@ -278,7 +279,7 @@ export default function SolverPage() {
             </button>
           ))}
         </div>
-        <div className="cube-net">
+        {representation === "2d" ? <div className="cube-net">
           {[..."ULFRBD"].map((f) => (
             <div
               key={f}
@@ -306,7 +307,10 @@ export default function SolverPage() {
             </div>
           ))}
         </div>
-        <p className="solver-hint">Pick a color, then a sticker.</p>
+        : <Suspense fallback={<p>Loading cube…</p>}>
+          <FaceletCube value={value} color={color} disabled={locked} onChange={setValue} />
+        </Suspense>}
+        <p className="solver-hint">Pick a color, then a sticker.{representation === "3d" && " Drag to orbit · Pinch to zoom"}</p>
         </>}
         {representation === "text" && <div className="solver-facelets">
           <p id="facelet-format">

@@ -1,0 +1,38 @@
+import { useMemo } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { Quaternion, Vector3 } from "three";
+import { FACE_COLORS, faceletGeometry } from "../lib/facelets";
+export default function FaceletCube({ value, color, disabled, onChange }: {
+  value: string;
+  color: string;
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  const stickers = useMemo(() => faceletGeometry.map(sticker => ({
+    position: sticker.position.clone().addScaledVector(sticker.normal, 0.51),
+    rotation: new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), sticker.normal),
+  })), []);
+  return (
+    <div className="cube-stage" aria-label="3D cube input: drag to orbit, select a sticker to paint">
+      <Canvas camera={{ position: [5, 4.3, 5], fov: 38 }} dpr={[1, 2]}
+        fallback={<p>3D needs WebGL. Use the 2D or Text view to edit your cube.</p>}>
+        <ambientLight intensity={1.6} />
+        <directionalLight position={[4, 8, 5]} intensity={2.5} />
+        <mesh><boxGeometry args={[2.98, 2.98, 2.98]} /><meshStandardMaterial color="#202c29" /></mesh>
+        {stickers.map((sticker, index) => (
+          <mesh key={index} position={sticker.position} quaternion={sticker.rotation}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!disabled && index % 9 !== 4 && event.delta < 5)
+                onChange(value.padEnd(54, "?").slice(0, index) + color + value.padEnd(54, "?").slice(index + 1));
+            }}>
+            <planeGeometry args={[0.9, 0.9]} />
+            <meshStandardMaterial color={FACE_COLORS[value[index]] ?? "#ccc"} roughness={0.36} />
+          </mesh>
+        ))}
+        <OrbitControls makeDefault enablePan={false} minDistance={5} maxDistance={14} />
+      </Canvas>
+    </div>
+  );
+}

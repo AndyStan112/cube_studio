@@ -8,6 +8,7 @@ describe("shared solver input", () => {
     state = solverInputReducer(state, { type: "representation", representation: "text" });
     expect(state.value).toBe("R" + SOLVED_FACELETS.slice(1));
     state = solverInputReducer(state, { type: "representation", representation: "2d" });
+    state = solverInputReducer(state, { type: "representation", representation: "3d" });
     expect(state.value[0]).toBe("R");
   });
   it("preserves incomplete text while switching views", () => {
