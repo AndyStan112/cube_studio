@@ -42,7 +42,10 @@ async def health():
 
 @app.get('/api/algorithm-catalog')
 async def algorithm_catalog():
-    return {"sets": ALGORITHM_SETS, "algorithms": ALGORITHMS}
+    return {"sets": ALGORITHM_SETS, "algorithms": [
+        {**item, "set_ids": [membership["set_id"] for membership in item["memberships"]]}
+        for item in ALGORITHMS
+    ]}
 
 @app.get('/api/algorithms')
 async def algorithms():
@@ -50,7 +53,7 @@ async def algorithms():
     set_names = {item["id"]: item["name"] for item in ALGORITHM_SETS}
     return [
         {"id": item["id"], "name": item["name"], "description": item["description"],
-         "set": set_names[item["set_ids"][0]], "moves": item["variations"][0]["moves"]}
+         "set": set_names[item["memberships"][0]["set_id"]], "moves": item["variations"][0]["moves"]}
         for item in ALGORITHMS
     ]
 

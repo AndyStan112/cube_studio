@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
+  Contrast,
   Eye,
   EyeOff,
   Pause,
@@ -12,18 +13,21 @@ import {
 } from "lucide-react";
 import { type Algorithm, type AlgorithmCatalog } from "../lib/api";
 import { describeMove } from "../lib/notation";
+import { belongsTo, algorithmFocus } from "../lib/catalog";
 const Cube = lazy(() => import("./Cube"));
 export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
   const [selectedSet, setSelectedSet] = useState("all"),
+    [selectedSection, setSelectedSection] = useState("all"),
     [selected, setSelected] = useState("sune"),
     [selectedVariation, setSelectedVariation] = useState("normal"),
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
     [transparent, setTransparent] = useState(false),
+    [maskIrrelevant, setMaskIrrelevant] = useState(false),
     [resetView, setResetView] = useState(0),
     [speed, setSpeed] = useState(1000);
-  const visibleAlgorithms = algorithms.filter(
-    (item) => selectedSet === "all" || item.set_ids.includes(selectedSet),
+  const visibleAlgorithms = algorithms.filter((item) =>
+    belongsTo(item, selectedSet, selectedSection),
   );
   const algorithm =
     visibleAlgorithms.find((item) => item.id === selected) ??
@@ -33,13 +37,29 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
     algorithm?.variations[0];
   const moves = useMemo(() => variation?.moves.split(" ") || [], [variation]);
   const memberships = sets.filter((item) =>
-    algorithm?.set_ids.includes(item.id),
+    algorithm?.memberships.some((membership) => membership.set_id === item.id),
   );
+  const activeSet = sets.find((item) => item.id === selectedSet);
+  const focus = algorithmFocus(algorithm, sets, selectedSet, selectedSection);
   const selectAlgorithm = (item: Algorithm) => {
     setSelected(item.id);
     setSelectedVariation(item.variations[0].id);
     setStep(0);
     setPlaying(false);
+  };
+  const changeFilter = (setId: string, sectionId = "all") => {
+    setSelectedSet(setId);
+    setSelectedSection(sectionId);
+    const available = algorithms.filter((item) =>
+      belongsTo(item, setId, sectionId),
+    );
+    const next =
+      available.find((item) => item.id === algorithm?.id) ?? available[0];
+    if (next && next.id !== algorithm?.id) selectAlgorithm(next);
+    if (!next) {
+      setPlaying(false);
+      setStep(0);
+    }
   };
   useEffect(() => {
     if (!playing) return;
@@ -62,21 +82,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           <select
             aria-label="Algorithm set"
             value={selectedSet}
-            onChange={(event) => {
-              const id = event.target.value;
-              setSelectedSet(id);
-              const available = algorithms.filter(
-                (item) => id === "all" || item.set_ids.includes(id),
-              );
-              const next =
-                available.find((item) => item.id === algorithm?.id) ??
-                available[0];
-              if (next && next.id !== algorithm?.id) selectAlgorithm(next);
-              if (!next) {
-                setPlaying(false);
-                setStep(0);
-              }
-            }}
+            onChange={(event) => changeFilter(event.target.value)}
           >
             <option value="all">All sets</option>
             {sets.map((item) => (
@@ -86,6 +92,25 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             ))}
           </select>
         </label>
+        {!!activeSet?.sections.length && (
+          <label className="library-set">
+            <span>Section</span>
+            <select
+              aria-label="Algorithm section"
+              value={selectedSection}
+              onChange={(event) =>
+                changeFilter(selectedSet, event.target.value)
+              }
+            >
+              <option value="all">All sections</option>
+              {activeSet.sections.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {section.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="algorithm-list">
           {visibleAlgorithms.map((item, index) => (
             <button
@@ -109,7 +134,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           ))}
         </div>
         {sets.length > 0 && !visibleAlgorithms.length && (
-          <p className="empty-state">No algorithms in this set.</p>
+          <p className="empty-state">No algorithms in this section.</p>
         )}
       </aside>
       <section className="card trainer-card">
@@ -119,7 +144,10 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
               {memberships.map((item) => item.name).join(" · ") ||
                 "ALGORITHM TRAINER"}
             </div>
-            <h2>{algorithm?.name || "Loading algorithms…"}</h2>
+            <h2>
+              {algorithm?.name ||
+                (sets.length ? "No algorithm selected" : "Loading algorithms…")}
+            </h2>
           </div>
           <span className="outline-label">{moves.length} moves</span>
         </div>
@@ -156,7 +184,14 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             >
               <Cube
                 key={`${algorithm?.id}:${variation?.id}`}
-                {...{ moves, step, transparent, resetView }}
+                {...{
+                  moves,
+                  step,
+                  transparent,
+                  resetView,
+                  maskIrrelevant,
+                  focus,
+                }}
               />
             </Suspense>
           )}
@@ -177,6 +212,19 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
               onClick={() => setTransparent(!transparent)}
             >
               {transparent ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+            <button
+              className={`tool-button ${maskIrrelevant ? "selected" : ""}`}
+              aria-label="Black out irrelevant stickers"
+              aria-pressed={maskIrrelevant}
+              title={
+                maskIrrelevant
+                  ? "Show all sticker colors"
+                  : "Black out irrelevant stickers"
+              }
+              onClick={() => setMaskIrrelevant(!maskIrrelevant)}
+            >
+              <Contrast size={16} />
             </button>
           </div>
           <span className="drag-hint">Drag to orbit · Pinch to zoom</span>
@@ -204,7 +252,9 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           </span>
           <p>
             {!moves.length
-              ? "Connect to the API to load the trainer."
+              ? sets.length
+                ? "Choose an algorithm to practise."
+                : "Connect to the API to load the trainer."
               : step === moves.length
                 ? "Solved"
                 : `Next: ${moves[step]} — ${describeMove(moves[step])}`}

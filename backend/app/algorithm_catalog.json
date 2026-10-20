@@ -3,24 +3,49 @@
     {
       "id": "2-look-oll",
       "name": "2-look OLL",
-      "description": "Last-layer orientation."
+      "description": "Last-layer orientation.",
+      "focus": "last-layer",
+      "sections": [
+        {
+          "id": "corner-orientation",
+          "name": "Corner orientation",
+          "description": "Orient the last-layer corners.",
+          "focus": "corner-orientation"
+        }
+      ]
     },
     {
       "id": "2-look-cmll",
       "name": "2-look CMLL",
-      "description": "Roux corner orientation and permutation."
+      "description": "Roux corner orientation and permutation.",
+      "focus": "last-layer-corners",
+      "sections": [
+        {
+          "id": "corner-permutation",
+          "name": "Corner permutation",
+          "description": "Match the side colors of the last-layer corners.",
+          "focus": "corner-permutation"
+        },
+        {
+          "id": "corner-orientation",
+          "name": "Corner orientation",
+          "description": "Put the yellow corner stickers on top.",
+          "focus": "corner-orientation"
+        }
+      ]
     },
     {
       "id": "pll",
       "name": "PLL",
-      "description": "Last-layer permutation."
+      "description": "Last-layer permutation.",
+      "focus": "last-layer",
+      "sections": []
     }
   ],
   "algorithms": [
     {
       "id": "sune",
       "name": "Sune",
-      "set_ids": ["2-look-oll", "2-look-cmll"],
       "description": "Orient the last-layer corners.",
       "variations": [
         {
@@ -28,12 +53,21 @@
           "name": "Normal",
           "moves": "R U R' U R U2 R'"
         }
+      ],
+      "memberships": [
+        {
+          "set_id": "2-look-oll",
+          "section_ids": ["corner-orientation"]
+        },
+        {
+          "set_id": "2-look-cmll",
+          "section_ids": ["corner-orientation"]
+        }
       ]
     },
     {
       "id": "reverse-sune",
       "name": "Reverse Sune",
-      "set_ids": ["2-look-oll", "2-look-cmll"],
       "description": "The inverse corner-orientation case of Sune.",
       "variations": [
         {
@@ -41,12 +75,21 @@
           "name": "Normal",
           "moves": "R U2 R' U' R U' R'"
         }
+      ],
+      "memberships": [
+        {
+          "set_id": "2-look-oll",
+          "section_ids": ["corner-orientation"]
+        },
+        {
+          "set_id": "2-look-cmll",
+          "section_ids": ["corner-orientation"]
+        }
       ]
     },
     {
       "id": "j-perm",
       "name": "J perm",
-      "set_ids": ["pll"],
       "description": "Adjacent corner and edge swaps; Ja and Jb are mirrored cases.",
       "variations": [
         {
@@ -67,18 +110,37 @@
           "case": "Ja",
           "moves": "L' U' L F L' U' L U L F' L2 U L"
         }
+      ],
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": []
+        },
+        {
+          "set_id": "2-look-cmll",
+          "section_ids": ["corner-permutation"]
+        }
       ]
     },
     {
       "id": "t-perm",
       "name": "T perm",
-      "set_ids": ["pll", "2-look-cmll"],
       "description": "Swap a pair of corners and a pair of edges.",
       "variations": [
         {
           "id": "normal",
           "name": "Normal",
           "moves": "R U R' U' R' F R2 U' R' U' R U R' F'"
+        }
+      ],
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": []
+        },
+        {
+          "set_id": "2-look-cmll",
+          "section_ids": ["corner-permutation"]
         }
       ]
     }

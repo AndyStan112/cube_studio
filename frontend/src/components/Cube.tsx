@@ -9,6 +9,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { DoubleSide, Group, Quaternion } from "three";
 import { algorithmStates, moveInfo } from "../lib/cube";
+import { isRelevantSticker, type StickerFocus } from "../lib/stickerFocus";
 const colors = [
   "#6297ed",
   "#65b99a",
@@ -33,10 +34,14 @@ function Model({
   moves,
   step,
   transparent,
+  maskIrrelevant,
+  focus,
 }: {
   moves: string[];
   step: number;
   transparent: boolean;
+  maskIrrelevant: boolean;
+  focus: StickerFocus;
 }) {
   const states = useMemo(() => algorithmStates(moves), [moves]);
   const refs = useRef<(Group | null)[]>([]),
@@ -99,7 +104,11 @@ function Model({
               >
                 <planeGeometry args={[0.9, 0.9]} />
                 <meshStandardMaterial
-                  color={color}
+                  color={
+                    maskIrrelevant && !isRelevantSticker(c.home, face, focus)
+                      ? "#000000"
+                      : color
+                  }
                   roughness={0.36}
                   metalness={0.05}
                   side={DoubleSide}
@@ -143,11 +152,15 @@ export default function Cube({
   step,
   transparent,
   resetView,
+  maskIrrelevant,
+  focus,
 }: {
   moves: string[];
   step: number;
   transparent: boolean;
   resetView: number;
+  maskIrrelevant: boolean;
+  focus: StickerFocus;
 }) {
   return (
     <Canvas
@@ -158,7 +171,7 @@ export default function Cube({
       <ambientLight intensity={1.6} />
       <directionalLight position={[4, 8, 5]} intensity={2.5} />
       <Suspense fallback={null}>
-        <Model moves={moves} step={step} transparent={transparent} />
+        <Model {...{ moves, step, transparent, maskIrrelevant, focus }} />
       </Suspense>
       <CameraControls resetView={resetView} />
     </Canvas>

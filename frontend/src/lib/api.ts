@@ -1,3 +1,4 @@
+import type { StickerFocus } from "./stickerFocus";
 import { authProvider } from "./auth";
 export type { User } from "./auth";
 export type Solve = {
@@ -7,10 +8,18 @@ export type Solve = {
   penalty: "none" | "+2" | "DNF";
   created_at: string;
 };
+export type AlgorithmSection = {
+  id: string;
+  name: string;
+  description: string;
+  focus: StickerFocus;
+};
 export type AlgorithmSet = {
   id: string;
   name: string;
   description: string;
+  focus: StickerFocus;
+  sections: AlgorithmSection[];
 };
 export type AlgorithmVariation = {
   id: string;
@@ -21,7 +30,7 @@ export type AlgorithmVariation = {
 export type Algorithm = {
   id: string;
   name: string;
-  set_ids: string[];
+  memberships: { set_id: string; section_ids: string[] }[];
   variations: AlgorithmVariation[];
   description: string;
 };

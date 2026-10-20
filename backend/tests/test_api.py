@@ -41,8 +41,12 @@ def test_accounts_and_solve_ownership():
         assert len(catalog['sets']) == 3
         assert len(catalog['algorithms']) == 4
         sune = next(item for item in catalog['algorithms'] if item['id'] == 'sune')
-        assert '2-look-cmll' in sune['set_ids']
+        assert '2-look-cmll' in sune['set_ids']  # Earlier installed clients.
+        cmll = next(item for item in catalog['sets'] if item['id'] == '2-look-cmll')
+        assert {section['id'] for section in cmll['sections']} == {'corner-permutation', 'corner-orientation'}
+        assert {'set_id': '2-look-cmll', 'section_ids': ['corner-orientation']} in sune['memberships']
         j_perm = next(item for item in catalog['algorithms'] if item['id'] == 'j-perm')
+        assert {'set_id': '2-look-cmll', 'section_ids': ['corner-permutation']} in j_perm['memberships']
         assert {item['id'] for item in j_perm['variations']} == {'normal', 'lefty', 'righty'}
         legacy = client.get('/algorithms').json()
         assert len(legacy) == 4

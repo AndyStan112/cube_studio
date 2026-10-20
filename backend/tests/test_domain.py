@@ -15,12 +15,23 @@ def test_practice_scramble_valid_and_avoids_repeated_axes():
 
 def test_algorithm_catalog_memberships_and_variations():
     set_ids = {item["id"] for item in ALGORITHM_SETS}
+    sections = {item["id"]: {section["id"] for section in item["sections"]} for item in ALGORITHM_SETS}
+    focuses = {"all", "last-layer", "last-layer-corners", "corner-orientation", "corner-permutation"}
+    for item in ALGORITHM_SETS:
+        assert item["focus"] in focuses
+        assert len(sections[item["id"]]) == len(item["sections"])
+        assert all(section["focus"] in focuses for section in item["sections"])
     assert len(set_ids) == len(ALGORITHM_SETS)
     assert {item["id"] for item in ALGORITHMS} == {"sune", "reverse-sune", "j-perm", "t-perm"}
     for algorithm in ALGORITHMS:
-        assert algorithm["set_ids"]
-        assert len(algorithm["set_ids"]) == len(set(algorithm["set_ids"]))
-        assert set(algorithm["set_ids"]) <= set_ids
+        memberships = algorithm["memberships"]
+        assert memberships
+        ids = [membership["set_id"] for membership in memberships]
+        assert len(ids) == len(set(ids))
+        assert set(ids) <= set_ids
+        for membership in memberships:
+            assert len(membership["section_ids"]) == len(set(membership["section_ids"]))
+            assert set(membership["section_ids"]) <= sections[membership["set_id"]]
         variants = algorithm["variations"]
         assert variants and variants[0]["id"] == "normal"
         assert len({item["id"] for item in variants}) == len(variants)
@@ -29,9 +40,15 @@ def test_algorithm_catalog_memberships_and_variations():
             assert variant["moves"].split()
             assert all(re.fullmatch(r"[RLUDFB](?:2|')?", move) for move in variant["moves"].split())
     sune = next(item for item in ALGORITHMS if item["id"] == "sune")
-    assert set(sune["set_ids"]) == {"2-look-oll", "2-look-cmll"}
+    assert {item["set_id"] for item in sune["memberships"]} == {"2-look-oll", "2-look-cmll"}
     assert sum(item["id"] == "sune" for item in ALGORITHMS) == 1
-    assert "2-look-cmll" in next(item for item in ALGORITHMS if item["id"] == "t-perm")["set_ids"]
+    cmll_sections = {"corner-permutation": set(), "corner-orientation": set()}
+    for algorithm in ALGORITHMS:
+        for membership in algorithm["memberships"]:
+            if membership["set_id"] == "2-look-cmll":
+                for section in membership["section_ids"]:
+                    cmll_sections[section].add(algorithm["id"])
+    assert cmll_sections == {"corner-permutation": {"j-perm", "t-perm"}, "corner-orientation": {"sune", "reverse-sune"}}
 
 
 def test_lefty_j_perm_is_a_mirrored_case_with_its_own_notation():
