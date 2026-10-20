@@ -1,0 +1,518 @@
+/* ═══════════════════════════════════════════════
+   CUBE STUDIO — DEMICUAN THEME
+   Drop-in override · violet-pink-coral accent
+   Fundalul: deep indigo-purple (#130E2A)
+═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+  --bg:          #130E2A;
+  --bg-mid:      #18122E;
+  --surface:     #1E1633;
+  --card-bg:     #221A3A;
+  --card-alt:    #271E42;
+  --border:      rgba(138,100,220,.18);
+  --border-bright: rgba(180,130,255,.28);
+
+  --acc-grad:    linear-gradient(135deg, #7C3AED 0%, #C026D3 45%, #F43F5E 100%);
+  --acc-grad-h:  linear-gradient(135deg, #8B5CF6 0%, #D946EF 45%, #FB7185 100%);
+  --acc-purple:  #A855F7;
+  --acc-violet:  #7C3AED;
+  --acc-pink:    #EC4899;
+
+  --text:        #E8E0F8;
+  --text-dim:    #9D8FBF;
+  --text-muted:  #5D5080;
+
+  /* Keep original green var mapped to accent for compatibility */
+  --green:       var(--acc-purple);
+  --muted:       var(--text-muted);
+  --border-orig: var(--border);
+
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ambient corner glows */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 35% at 15% 5%,  rgba(124,58,237,.12) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 30% at 90% 95%, rgba(236,72,153,.09) 0%, transparent 100%),
+    radial-gradient(ellipse 30% 25% at 80% 10%, rgba(168,85,247,.07) 0%, transparent 100%);
+}
+#root { position: relative; z-index: 1; }
+
+/* ── SIDEBAR ──────────────────────────────────── */
+.sidebar {
+  background: var(--bg-mid);
+  border-right: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--text);
+  font-size: 18px; font-weight: 700; letter-spacing: -.4px;
+}
+.brand-light { font-weight: 400; color: var(--text-dim); }
+.brand-dot { display: none; }
+
+.brand-icon {
+  background: var(--acc-grad);
+  border-radius: 8px;
+  box-shadow: 0 0 14px rgba(168,85,247,.35);
+  color: #fff;
+}
+
+.nav-link {
+  color: var(--text-muted);
+  font-size: 13px; font-weight: 500;
+  border-radius: 8px;
+  transition: color .15s, background .15s;
+  position: relative;
+}
+.nav-link:hover {
+  color: var(--text-dim);
+  background: rgba(138,100,220,.1);
+}
+.nav-link.active {
+  color: var(--text);
+  background: rgba(168,85,247,.14);
+  font-weight: 600;
+}
+.nav-link.active::before {
+  content: '';
+  position: absolute; left: 0; top: 20%; bottom: 20%;
+  width: 2px; border-radius: 2px;
+  background: var(--acc-grad);
+}
+
+/* ── TOPBAR ───────────────────────────────────── */
+.topbar {
+  background: var(--bg-mid);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.screen-title { color: var(--text); font-weight: 600; font-size: 16px; }
+
+.event-badge {
+  font-size: 12px; color: var(--text-dim);
+  background: rgba(138,100,220,.1);
+  border: 1px solid var(--border-bright);
+  border-radius: 20px; padding: 4px 12px;
+}
+
+.avatar {
+  background: var(--acc-grad);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(168,85,247,.4);
+}
+
+.icon-button {
+  color: var(--text-muted);
+  border-radius: 8px;
+  transition: background .15s, color .15s;
+}
+.icon-button:hover {
+  background: rgba(138,100,220,.12);
+  color: var(--text);
+}
+
+/* ── CARDS ────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 24px rgba(0,0,0,.3);
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border-bright); }
+
+.card-top { border-bottom: 1px solid var(--border); }
+
+.section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .08em; color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.status-dot {
+  background: var(--acc-grad);
+  box-shadow: 0 0 6px rgba(168,85,247,.7);
+}
+
+/* ── SCRAMBLE ─────────────────────────────────── */
+.scramble {
+  color: var(--text);
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+}
+.scramble-note { color: var(--text-muted); letter-spacing: .06em; font-size: 10px; }
+
+/* ── TIMER ────────────────────────────────────── */
+.timer-zone {
+  background: radial-gradient(ellipse 70% 60% at 50% 50%,
+    rgba(124,58,237,.07) 0%, transparent 70%);
+  border-color: var(--border);
+}
+.timer-status {
+  color: var(--text-muted); font-size: 8px;
+  font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+}
+.time-display { color: var(--text); letter-spacing: -.04em; font-weight: 300; }
+.time-display > span { color: var(--text-muted); }
+.timer-hint { color: var(--text-muted); font-size: 11px; }
+.timer-hint kbd {
+  border: 1px solid var(--border-bright); border-radius: 4px;
+  padding: 2px 6px; background: rgba(138,100,220,.08);
+  color: var(--text-dim); font-family: inherit;
+}
+
+.is-running .time-display {
+  background: var(--acc-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.is-running .timer-zone {
+  background: radial-gradient(ellipse 70% 60% at 50% 50%,
+    rgba(168,85,247,.1) 0%, transparent 70%);
+}
+
+/* ── TIMER ENTRY ──────────────────────────────── */
+.timer-entry { border-top: 1px solid var(--border); }
+.entry-switch button { color: var(--text-muted); border-radius: 8px; font-size: 11px; }
+.entry-switch .selected {
+  color: var(--text);
+  background: rgba(168,85,247,.12);
+  border: 1px solid rgba(168,85,247,.25) !important;
+}
+
+/* ── SESSION STATS ────────────────────────────── */
+.session-stats span { color: var(--text-muted); font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.session-stats strong { color: var(--text); }
+.green-text {
+  background: var(--acc-grad) !important;
+  -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* ── HISTORY ──────────────────────────────────── */
+.history-header { border-bottom: 1px solid var(--border); }
+.history-header h2 { color: var(--text); }
+.history-header h2 span { color: var(--text-muted); }
+
+.solve-list > li { border-bottom: 1px solid rgba(138,100,220,.08); }
+.solve-list > li:hover { background: rgba(138,100,220,.05); }
+.solve-number { color: var(--text-muted); }
+.solve-time { color: var(--text); }
+.solve-time small { color: var(--text-muted); }
+.solve-details { color: var(--text-muted); }
+.delete:hover { color: #FB7185; background: rgba(244,63,94,.12); }
+
+/* ── PRIMARY BUTTON ───────────────────────────── */
+.button {
+  background: var(--acc-grad);
+  color: #fff; font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(168,85,247,.3);
+  transition: box-shadow .15s, transform .1s;
+}
+.button:hover {
+  background: var(--acc-grad-h);
+  box-shadow: 0 4px 20px rgba(168,85,247,.5);
+  transform: translateY(-1px);
+}
+
+.text-button { color: var(--acc-purple); }
+.text-button:hover { color: #C084FC; }
+
+/* Ghost-style secondary buttons */
+.solver-input > .solver-actions .button:not(:first-child) {
+  background: rgba(138,100,220,.1);
+  color: var(--text-dim);
+  border: 1px solid var(--border) !important;
+}
+.solver-input > .solver-actions .button:not(:first-child):hover:not(:disabled) {
+  background: rgba(138,100,220,.18);
+  color: var(--text);
+  border-color: var(--border-bright) !important;
+}
+
+/* ── MOBILE NAV ───────────────────────────────── */
+.mobile-nav {
+  background: rgba(24,18,46,.96);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.mobile-nav button { color: var(--text-muted); font-size: 10px; }
+.mobile-nav .active { color: var(--acc-purple); }
+.mobile-nav .active svg { filter: drop-shadow(0 0 4px rgba(168,85,247,.6)); }
+
+/* ── INPUTS ───────────────────────────────────── */
+input, select {
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+}
+input:focus, select:focus {
+  outline: 2px solid rgba(168,85,247,.4);
+  border-color: rgba(168,85,247,.5);
+}
+
+/* ── CUBE STAGE ───────────────────────────────── */
+.cube-stage {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(124,58,237,.08), transparent 70%),
+    var(--bg);
+  border-color: var(--border);
+}
+
+/* Cube net buttons — KEEP ORIGINAL COLORS, only change border */
+.net-face button { border-color: rgba(138,100,220,.25); border-radius: 3px; }
+
+/* ── ALGORITHM TRAINER ────────────────────────── */
+.library-set { color: var(--text-muted); }
+.library-set select, .variation-control select {
+  background: var(--card-alt); border-color: var(--border); color: var(--text);
+}
+.algorithm-option { border-radius: 8px; transition: background .12s; }
+.algorithm-option:hover { background: rgba(138,100,220,.07); }
+.algorithm-option.selected {
+  background: rgba(168,85,247,.1);
+  border: 1px solid rgba(168,85,247,.22);
+}
+.algorithm-option strong { color: var(--text); }
+.algorithm-option small { color: var(--text-muted); font-family: ui-monospace, monospace; }
+.algorithm-option svg { color: var(--acc-purple); }
+.alg-number { color: var(--text-muted); }
+
+/* Trainer heading */
+.trainer-heading h2 { color: var(--text); font-size: 17px; }
+.eyebrow { color: var(--text-muted); font-size: 8px; letter-spacing: .15em; }
+.outline-label { border-color: var(--border); color: var(--text-muted); border-radius: 6px; }
+
+/* ── NOTATION ─────────────────────────────────── */
+.notation button {
+  border: 1px solid var(--border);
+  background: var(--card-alt);
+  color: var(--text-muted);
+  border-radius: 8px;
+  transition: all .12s;
+}
+.notation button:hover { border-color: var(--border-bright); color: var(--text); background: rgba(138,100,220,.1); }
+.notation button.completed {
+  background: rgba(168,85,247,.1);
+  border-color: rgba(168,85,247,.22);
+  color: #A78BFA;
+}
+.notation button.next {
+  background: rgba(124,58,237,.15);
+  border-color: rgba(168,85,247,.5);
+  color: #C4B5FD;
+  box-shadow: 0 0 10px rgba(168,85,247,.2);
+}
+
+/* ── MOVE INSTRUCTION ─────────────────────────── */
+.move-instruction { color: var(--text-muted); border-top: 1px solid var(--border); }
+.move-instruction p { font-size: 12px; line-height: 1.6; }
+
+/* ── PLAYBACK ─────────────────────────────────── */
+.playback { border-top: 1px solid var(--border); }
+.playback-buttons .icon-button { color: var(--text-muted); }
+.play-button {
+  background: var(--acc-grad);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(168,85,247,.35);
+  transition: box-shadow .15s, transform .1s;
+}
+.play-button:hover { box-shadow: 0 0 24px rgba(168,85,247,.55); transform: scale(1.04); }
+.step-count { color: var(--text-dim); }
+.step-count span { color: var(--text-muted); }
+.playback select { background: var(--card-alt); border-color: var(--border); color: var(--text); }
+
+/* ── NOTATION HELP / INFO ─────────────────────── */
+.notation-help { border-top: 1px solid var(--border); color: var(--text-muted); }
+.info-circle summary:hover, .info-circle[open] summary {
+  background: rgba(168,85,247,.1); color: var(--acc-purple);
+}
+.info-popover {
+  background: var(--card-alt); border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,.6); color: var(--text);
+}
+
+/* ── TOOL BUTTONS ─────────────────────────────── */
+.tool-button {
+  background: rgba(24,18,46,.92); border: 1px solid var(--border);
+  color: var(--text-muted); border-radius: 6px; font-size: 10px;
+  transition: all .12s;
+}
+.tool-button:hover { background: rgba(138,100,220,.1); color: var(--text); border-color: var(--border-bright); }
+.tool-button.selected { background: rgba(168,85,247,.12); color: var(--acc-purple); border-color: rgba(168,85,247,.3); }
+
+/* ── SOLVER ───────────────────────────────────── */
+.solver-input h2 { color: var(--text); }
+.solver-hint { color: var(--text-muted); }
+.solver-status { color: var(--text-muted); }
+.solver-result strong {
+  background: rgba(168,85,247,.12);
+  color: #C084FC;
+  border: 1px solid rgba(168,85,247,.22);
+}
+.solver-result span { color: var(--text-muted); }
+.solver-facelets { border-color: var(--border); }
+.facelet-label { color: var(--text); }
+.solver-palette button { border-color: var(--border); border-radius: 4px; }
+.net-face button { border-color: var(--border); }
+.solver-input textarea {
+  background: var(--card-alt); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+}
+.solver-input textarea:focus { outline: 2px solid rgba(168,85,247,.35); }
+.representation-toggle button[aria-pressed=true] {
+  background: rgba(168,85,247,.12); border-color: rgba(168,85,247,.3); color: #C084FC;
+}
+
+/* ── MODALS ───────────────────────────────────── */
+.modal-backdrop {
+  background: rgba(10,6,22,.8);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.auth-modal {
+  background: var(--card-bg); border: 1px solid var(--border);
+  box-shadow: 0 24px 64px rgba(0,0,0,.8), 0 0 0 1px rgba(168,85,247,.08);
+}
+.auth-modal h2 { color: var(--text); }
+.auth-note { color: var(--text-muted); }
+.demo-user {
+  background: var(--card-alt); border: 1px solid var(--border); color: var(--text);
+  transition: background .15s, border-color .15s;
+}
+.demo-user:hover {
+  background: rgba(168,85,247,.07); border-color: rgba(168,85,247,.25);
+}
+.demo-user > svg { color: var(--acc-purple); }
+
+/* ── ERRORS / BANNERS ─────────────────────────── */
+.error-banner {
+  background: rgba(244,63,94,.12); border: 1px solid rgba(244,63,94,.3); color: #FB7185;
+}
+.pwa-banner {
+  background: rgba(168,85,247,.08); border: 1px solid rgba(168,85,247,.2); color: var(--acc-purple);
+}
+.form-error { color: #FB7185; }
+
+/* ── SCROLLBAR ────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(138,100,220,.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,.5); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ═══════════════════════════════════════════════
+   COLORED BUTTONS UPDATE — face palette + notation
+═══════════════════════════════════════════════ */
+
+/* ── SOLVER PALETTE — fully colored face buttons ─ */
+.solver-palette button {
+  width: 42px; height: 42px; border-radius: 8px; border: none !important;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: transform .1s, box-shadow .12s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  color: #fff;
+}
+.solver-palette button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.45);
+}
+/* Selected face — fuchsia ring */
+.solver-palette button[aria-pressed="true"],
+.solver-palette button.selected {
+  outline: 3px solid #D946EF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(217,70,239,.25), 0 2px 8px rgba(0,0,0,.35);
+}
+
+/* Representation toggle (2D/Text/3D) */
+.representation-toggle button {
+  min-height: 34px; padding: 6px 14px; border-radius: 8px;
+  border: 1px solid rgba(192,38,211,.2) !important;
+  background: rgba(192,38,211,.08) !important;
+  color: #C084FC !important;
+  font-size: 12px; font-weight: 600;
+  transition: all .15s;
+}
+.representation-toggle button:hover {
+  background: rgba(192,38,211,.16) !important;
+  border-color: rgba(217,70,239,.4) !important;
+  color: #E879F9 !important;
+}
+.representation-toggle button[aria-pressed=true] {
+  background: linear-gradient(135deg, #7C3AED, #C026D3) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(168,85,247,.35);
+}
+
+/* ── NOTATION MOVE BUTTONS — fully colored ──────── */
+.notation button {
+  border: none !important;
+  background: #312558;
+  color: #C4B5FD;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.notation button:hover {
+  background: #3D2D6E !important;
+  color: #E9D5FF !important;
+  box-shadow: 0 3px 10px rgba(124,58,237,.35);
+  transform: translateY(-1px);
+}
+.notation button.completed {
+  background: linear-gradient(135deg, #6D28D9, #A21CAF) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(162,28,175,.4);
+}
+.notation button.completed:hover {
+  background: linear-gradient(135deg, #7C3AED, #C026D3) !important;
+  box-shadow: 0 4px 14px rgba(192,38,211,.5);
+  transform: translateY(-1px);
+}
+.notation button.next {
+  background: linear-gradient(135deg, #BE185D, #EC4899) !important;
+  color: #fff !important;
+  box-shadow: 0 0 14px rgba(236,72,153,.45);
+  transform: scale(1.06);
+  border: none !important;
+}
+.notation button.next:hover {
+  background: linear-gradient(135deg, #DB2777, #F472B6) !important;
+  box-shadow: 0 0 22px rgba(244,114,182,.55);
+}
+
+/* ── ACTION BUTTONS (Solve, Scramble, Reset, Offline) ─ */
+/* Secondary variant — fuchsia ghost */
+.solver-actions .button:not(:first-child),
+.solver-actions button:not(.button) {
+  background: rgba(192,38,211,.1) !important;
+  color: #C084FC !important;
+  border: 1px solid rgba(192,38,211,.25) !important;
+}
+.solver-actions .button:not(:first-child):hover,
+.solver-actions button:not(.button):hover {
+  background: rgba(192,38,211,.18) !important;
+  border-color: rgba(217,70,239,.45) !important;
+  color: #E879F9 !important;
+}
