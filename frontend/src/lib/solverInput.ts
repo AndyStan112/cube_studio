@@ -16,7 +16,7 @@ export function solverInputReducer(state: SolverInput, action: Action): SolverIn
 export function useSolverInput() {
   const [state, dispatch] = useReducer(solverInputReducer, {
     value: SOLVED_FACELETS,
-    representation: "2d",
+    representation: "3d",
   });
   const setValue = useCallback((value: SetStateAction<string>) => dispatch({ type: "value", value }), []);
   const setRepresentation = useCallback((representation: Representation) => dispatch({ type: "representation", representation }), []);
