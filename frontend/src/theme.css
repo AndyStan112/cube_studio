@@ -156,7 +156,7 @@ body::before {
   color: var(--text);
   font-family: ui-monospace, 'SF Mono', Consolas, monospace;
 }
-.scramble-note { color: var(--text-muted); letter-spacing: .06em; font-size: 10px; }
+.scramble-note { color: var(--text-dim); letter-spacing: .06em; font-size: 10px; }
 
 /* ── TIMER ────────────────────────────────────── */
 .timer-zone {
@@ -165,12 +165,12 @@ body::before {
   border-color: var(--border);
 }
 .timer-status {
-  color: var(--text-muted); font-size: 8px;
+  color: var(--text-dim); font-size: 8px;
   font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
 }
 .time-display { color: var(--text); letter-spacing: -.04em; font-weight: 300; }
-.time-display > span { color: var(--text-muted); }
-.timer-hint { color: var(--text-muted); font-size: 11px; }
+.time-display > span { color: var(--text-dim); }
+.timer-hint { color: var(--text-dim); font-size: 11px; }
 .timer-hint kbd {
   border: 1px solid var(--border-bright); border-radius: 4px;
   padding: 2px 6px; background: rgba(138,100,220,.08);
@@ -178,26 +178,42 @@ body::before {
 }
 
 .is-running .time-display {
+  color: var(--acc-purple);
   background: var(--acc-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.is-running .timer-zone {
+.timer-zone.is-running {
   background: radial-gradient(ellipse 70% 60% at 50% 50%,
     rgba(168,85,247,.1) 0%, transparent 70%);
 }
 
 /* ── TIMER ENTRY ──────────────────────────────── */
 .timer-entry { border-top: 1px solid var(--border); }
-.entry-switch button { color: var(--text-muted); border-radius: 8px; font-size: 11px; }
+.entry-switch button { color: var(--text-dim); border-radius: 8px; font-size: 11px; }
 .entry-switch .selected {
   color: var(--text);
   background: rgba(168,85,247,.12);
   border: 1px solid rgba(168,85,247,.25) !important;
 }
+.timer-card .section-label,
+.history-card .small-muted,
+.history-card .solve-number,
+.history-card .solve-time small,
+.history-card .solve-details,
+.history-header h2 span { color: var(--text-dim); }
+.timer-card .manual-input { color: var(--text-dim); }
+.timer-card input,
+.timer-card select,
+.history-card select {
+  background: var(--card-alt);
+  border-color: var(--border-bright);
+  color: var(--text);
+}
+.timer-card input::placeholder { color: var(--text-dim); }
 
 /* ── SESSION STATS ────────────────────────────── */
-.session-stats span { color: var(--text-muted); font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.session-stats span { color: var(--text-dim); font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .session-stats strong { color: var(--text); }
 .green-text {
   background: var(--acc-grad) !important;
