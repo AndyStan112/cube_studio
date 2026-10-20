@@ -585,19 +585,6 @@ select:focus {
 .cube-stage canvas {
   touch-action: none;
 }
-.cube-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  position: absolute;
-  left: 13px;
-  top: 12px;
-  z-index: 1;
-  font-size: 7px;
-  letter-spacing: 0.7px;
-  color: #8a9c7e;
-  pointer-events: none;
-}
 .cube-tools {
   position: absolute;
   bottom: 10px;
@@ -620,8 +607,10 @@ select:focus {
 .tool-button.selected {
   background: #e3efd9;
 }
-.drag-hint {
-  display: none;
+.viewer-help {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 .notation {
   display: flex;
@@ -706,19 +695,66 @@ select:focus {
   max-width: 83px;
 }
 .notation-help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   border-top: 1px solid #edf1e7;
-  padding: 0 15px;
+  padding: 8px 15px;
   color: var(--muted);
   font-size: 10px;
-  line-height: 1.7;
 }
-.notation-help summary {
+.info-circle {
+  position: relative;
+  flex-shrink: 0;
+}
+.info-circle summary {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #658456;
   cursor: pointer;
-  padding: 13px 0;
+  list-style: none;
 }
-.notation-help span {
-  display: block;
-  margin-bottom: 10px;
+.info-circle summary::-webkit-details-marker {
+  display: none;
+}
+.info-circle summary:hover,
+.info-circle[open] summary {
+  background: #e7f1de;
+}
+.info-circle summary:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+.info-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  width: min(260px, 65vw);
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 6px 24px #16352b20;
+  color: #526747;
+  text-align: left;
+}
+.info-popover p,
+.move-instruction .info-popover p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.info-popover p + p {
+  margin-top: 8px;
+}
+.viewer-help .info-popover,
+.move-instruction .info-popover {
+  left: auto;
+  right: 0;
 }
 .modal-backdrop {
   position: fixed;
@@ -918,14 +954,6 @@ select:focus {
   .play-button {
     width: 44px;
     height: 44px;
-  }
-  .drag-hint {
-    display: block;
-    position: absolute;
-    bottom: 20px;
-    right: 18px;
-    font-size: 10px;
-    color: #8c9c80;
   }
   .trainer-heading {
     padding: 20px 24px;

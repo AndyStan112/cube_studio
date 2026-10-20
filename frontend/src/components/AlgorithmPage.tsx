@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -7,6 +7,7 @@ import {
   Contrast,
   Eye,
   EyeOff,
+  Info,
   Pause,
   Play,
   RotateCcw,
@@ -15,6 +16,30 @@ import { type Algorithm, type AlgorithmCatalog } from "../lib/api";
 import { describeMove } from "../lib/notation";
 import { belongsTo, algorithmFocus } from "../lib/catalog";
 const Cube = lazy(() => import("./Cube"));
+function InfoCircle({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <details
+      className="info-circle"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          event.currentTarget.open = false;
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.currentTarget.open = false;
+          event.currentTarget.querySelector("summary")?.focus();
+        }
+      }}
+    >
+      <summary aria-label={label} title={label}>
+        <Info size={16} aria-hidden="true" />
+      </summary>
+      <div className="info-popover">{children}</div>
+    </details>
+  );
+}
+
 export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
   const [selectedSet, setSelectedSet] = useState("all"),
     [selectedSection, setSelectedSection] = useState("all"),
@@ -172,10 +197,6 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           </label>
         )}
         <div className="cube-stage">
-          <div className="cube-label">
-            <span className="status-dot" />
-            YELLOW UP · RED FRONT
-          </div>
           {moves.length > 0 && (
             <Suspense
               fallback={
@@ -227,7 +248,13 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
               <Contrast size={16} />
             </button>
           </div>
-          <span className="drag-hint">Drag to orbit · Pinch to zoom</span>
+          <div className="viewer-help">
+            <InfoCircle label="Cube viewer help">
+              <p>Yellow up · Red front</p>
+              <p>Drag to orbit · Pinch to zoom</p>
+              <p>Use the viewer buttons to reset the view, see through the cube, or black out irrelevant stickers.</p>
+            </InfoCircle>
+          </div>
         </div>
         <div className="notation" aria-label="Algorithm moves">
           {moves.map((m, i) => (
@@ -257,8 +284,13 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
                 : "Connect to the API to load the trainer."
               : step === moves.length
                 ? "Solved"
-                : `Next: ${moves[step]} — ${describeMove(moves[step])}`}
+                : `Next: ${moves[step]}`}
           </p>
+          {!!moves.length && step < moves.length && (
+            <InfoCircle key={`${algorithm?.id}:${variation?.id}:${step}`} label={`Explain move ${moves[step]}`}>
+              <p>{describeMove(moves[step])}</p>
+            </InfoCircle>
+          )}
         </div>
         <div className="playback">
           <div className="playback-buttons">
@@ -310,16 +342,13 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             <option value={500}>Fast</option>
           </select>
         </div>
-        <details className="notation-help">
-          <summary>Notation</summary>
-          <span>
-            R = right face · U = upper face · ′ = counterclockwise · 2 = half
-            turn
-          </span>
-          <span>
-            Clockwise is always viewed directly at the face being turned.
-          </span>
-        </details>
+        <div className="notation-help">
+          <span>Notation</span>
+          <InfoCircle label="Notation help">
+            <p>R = right face · U = upper face · ′ = counterclockwise · 2 = half turn</p>
+            <p>Clockwise is always viewed directly at the face being turned.</p>
+          </InfoCircle>
+        </div>
       </section>
     </div>
   );
