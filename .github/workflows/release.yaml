@@ -28,6 +28,14 @@ jobs:
           python-version: "3.13"
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.1
+          components: rustfmt, clippy
+      - run: cargo fmt --manifest-path solver/Cargo.toml --check
+      - run: cargo clippy --manifest-path solver/Cargo.toml --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --manifest-path solver/Cargo.toml --workspace --locked
+      - run: cargo build --manifest-path solver/Cargo.toml --release --locked
       - run: npm ci
         working-directory: frontend
       - run: node --test .github/scripts/*.test.cjs
@@ -43,7 +51,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        service: [frontend, backend]
+        service: [frontend, backend, solver]
     steps:
       - uses: actions/checkout@v4
         with:

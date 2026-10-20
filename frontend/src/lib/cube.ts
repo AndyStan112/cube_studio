@@ -69,9 +69,10 @@ export function inverse(moves: string[]) {
     .reverse()
     .map((m) => (m.endsWith("2") ? m : m.endsWith("'") ? m[0] : m + "'"));
 }
-export function algorithmStates(moves: string[]) {
-  let initial = solved();
-  for (const m of inverse(moves)) initial = applyMove(initial, m);
+export function algorithmStates(moves: string[], initialState?: Cubie[]) {
+  let initial = initialState ?? solved();
+  if (!initialState)
+    for (const m of inverse(moves)) initial = applyMove(initial, m);
   const states = [initial];
   for (const m of moves) states.push(applyMove(states.at(-1)!, m));
   return states;

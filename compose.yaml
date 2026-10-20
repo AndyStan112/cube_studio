@@ -8,12 +8,16 @@ services:
         condition: service_healthy
   backend:
     build: ./backend
+    networks: [default, solver_private]
     environment:
       MONGO_URL: mongodb://mongo:27017
+      SOLVER_WORKER_URL: http://solver:8081
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
       mongo:
+        condition: service_healthy
+      solver:
         condition: service_healthy
     healthcheck:
       test:
@@ -26,6 +30,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+  solver:
+    build: ./solver
+    networks: [solver_private]
+    init: true
+    cpus: 2
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "solver-worker", "--healthcheck"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 20
+    pids_limit: 64
+    stop_grace_period: 10s
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
   mongo:
     image: mongo:8.0
     volumes:
@@ -46,3 +68,7 @@ services:
       retries: 20
 volumes:
   mongo_data:
+
+networks:
+  solver_private:
+    internal: true

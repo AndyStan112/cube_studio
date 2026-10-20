@@ -9,10 +9,11 @@ import {
 } from "./lib/api";
 import TimerPage from "./components/TimerPage";
 import AlgorithmPage from "./components/AlgorithmPage";
+import SolverPage from "./components/SolverPage";
 import AuthModal from "./components/AuthModal";
 import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
-type Page = "timer" | "algorithms";
+type Page = "timer" | "algorithms" | "solver";
 export default function App() {
   const [page, setPage] = useState<Page>("timer"),
     [user, setUser] = useState<User | null>(null),
@@ -98,6 +99,13 @@ export default function App() {
             <Layers3 size={20} />
             Algorithms
           </button>
+          <button
+            className={page === "solver" ? "nav-link active" : "nav-link"}
+            onClick={() => setPage("solver")}
+          >
+            <Box size={20} />
+            Solver
+          </button>
         </nav>
       </aside>
       <div className="main-shell">
@@ -111,7 +119,11 @@ export default function App() {
             Cube Studio
           </a>
           <h1 className="screen-title">
-            {page === "timer" ? "Timer" : "Algorithms"}
+            {page === "timer"
+              ? "Timer"
+              : page === "solver"
+                ? "Solver"
+                : "Algorithms"}
           </h1>
           <div className="topbar-right">
             <span className="event-badge">
@@ -168,6 +180,8 @@ export default function App() {
               }}
               onSignIn={() => setAuthOpen(true)}
             />
+          ) : page === "solver" ? (
+            <SolverPage />
           ) : (
             <AlgorithmPage {...catalog} />
           )}
@@ -187,6 +201,13 @@ export default function App() {
         >
           <Layers3 size={19} />
           Algorithms
+        </button>
+        <button
+          className={page === "solver" ? "active" : ""}
+          onClick={() => setPage("solver")}
+        >
+          <Box size={19} />
+          Solver
         </button>
       </nav>
       {authOpen && (

@@ -4,3 +4,5 @@ services:
     image: ghcr.io/andystan112/cube_studio-frontend:${RELEASE_SHA:?Set RELEASE_SHA}
   backend:
     image: ghcr.io/andystan112/cube_studio-backend:${RELEASE_SHA:?Set RELEASE_SHA}
+  solver:
+    image: ghcr.io/andystan112/cube_studio-solver:${RELEASE_SHA:?Set RELEASE_SHA}

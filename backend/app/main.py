@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from pymongo import AsyncMongoClient
 from .domain import ALGORITHM_SETS, ALGORITHMS, scramble
 from .auth import current_user, router as auth_router
+from .solver.router import router as solver_router, manager as solver_manager
 
 @asynccontextmanager
 async def lifespan(app):
@@ -17,10 +18,12 @@ async def lifespan(app):
     await app.state.db.solves.create_index([("user_id", 1), ("created_at", -1)])
     await app.state.db.scrambles.create_index("expires_at", expireAfterSeconds=0)
     yield
+    await solver_manager.close()
     await app.state.client.close()
 
 app = FastAPI(title="Cube Studio API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(solver_router)
 
 class SolveInput(BaseModel):
     scramble_id: str

@@ -6,7 +6,7 @@ function fixture({
   exists = true,
   same = false,
   truncated = false,
-  manifest = "    newTag: old\n    newTag: old\n",
+  manifest = "    newTag: old\n    newTag: old\n    newTag: old\n",
 } = {}) {
   const writes = [];
   const context = {
@@ -84,7 +84,7 @@ test("publishes the tested manifest snapshot only to deployments", async () => {
   assert.equal(tree.tree[0].sha, undefined);
   assert.equal(
     tree.tree[0].content,
-    `    newTag: ${sourceSha}\n    newTag: ${sourceSha}\n`,
+    `    newTag: ${sourceSha}\n    newTag: ${sourceSha}\n    newTag: ${sourceSha}\n`,
   );
   assert.equal(tree.tree[1].sha, "source-blob");
   const commit = f.writes.find(([type]) => type === "commit")[1];

@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["icons/*.png", "icons/cube.svg"],
+      includeAssets: ["icons/*.png", "icons/cube.svg", "solver-licenses.txt"],
       manifest: {
         id: "/",
         name: "Cube Studio",
@@ -41,6 +41,8 @@ export default defineConfig({
       },
       workbox: {
         clientsClaim: true,
+        // Includes the bundled offline solver worker; tables are built locally.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [

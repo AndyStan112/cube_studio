@@ -8,7 +8,7 @@ import {
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { DoubleSide, Group, Quaternion } from "three";
-import { algorithmStates, moveInfo } from "../lib/cube";
+import { algorithmStates, moveInfo, type Cubie } from "../lib/cube";
 import { isRelevantSticker, type StickerFocus } from "../lib/stickerFocus";
 const colors = [
   "#6297ed",
@@ -36,16 +36,24 @@ function Model({
   transparent,
   maskIrrelevant,
   focus,
+  initialState,
 }: {
   moves: string[];
   step: number;
   transparent: boolean;
   maskIrrelevant: boolean;
   focus: StickerFocus;
+  initialState?: Cubie[];
 }) {
-  const states = useMemo(() => algorithmStates(moves), [moves]);
+  const states = useMemo(
+    () => algorithmStates(moves, initialState),
+    [moves, initialState],
+  );
   const refs = useRef<(Group | null)[]>([]),
     progress = useRef(0);
+  useLayoutEffect(() => {
+    progress.current = 0;
+  }, [states]);
   useFrame((_, dt) => {
     const delta = step - progress.current;
     progress.current =
@@ -154,6 +162,7 @@ export default function Cube({
   resetView,
   maskIrrelevant,
   focus,
+  initialState,
 }: {
   moves: string[];
   step: number;
@@ -161,6 +170,7 @@ export default function Cube({
   resetView: number;
   maskIrrelevant: boolean;
   focus: StickerFocus;
+  initialState?: Cubie[];
 }) {
   return (
     <Canvas
@@ -171,7 +181,9 @@ export default function Cube({
       <ambientLight intensity={1.6} />
       <directionalLight position={[4, 8, 5]} intensity={2.5} />
       <Suspense fallback={null}>
-        <Model {...{ moves, step, transparent, maskIrrelevant, focus }} />
+        <Model
+          {...{ moves, step, transparent, maskIrrelevant, focus, initialState }}
+        />
       </Suspense>
       <CameraControls resetView={resetView} />
     </Canvas>

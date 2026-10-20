@@ -30,6 +30,8 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            - name: SOLVER_WORKER_URL
+              value: http://solver:8081
             - name: MONGO_URL
               valueFrom:
                 secretKeyRef:

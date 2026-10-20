@@ -29,8 +29,8 @@ module.exports = async function publishDeployment({ github, context, core }) {
   });
   const previous = Buffer.from(manifest.content, "base64").toString("utf8");
   const tags = /^[ \t]*newTag: [^\r\n]+/gm;
-  if ((previous.match(tags) || []).length !== 2) {
-    throw new Error("Expected two image references");
+  if ((previous.match(tags) || []).length !== 3) {
+    throw new Error("Expected three image references");
   }
   const content = previous.replace(
     /^([ \t]*newTag: )[^\r\n]+/gm,
