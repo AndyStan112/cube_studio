@@ -1,14 +1,15 @@
 import { useMemo, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import CameraControls from "./CameraControls";
 import { DoubleSide, Quaternion, Vector3 } from "three";
 import { FACE_COLORS, faceletGeometry } from "../lib/facelets";
-export default function FaceletCube({ value, color, disabled, onChange, transparent = false, children }: {
+export default function FaceletCube({ value, color, disabled, onChange, transparent = false, resetView = 0, children }: {
   value: string;
   color: string;
   disabled: boolean;
   onChange: (value: string) => void;
   transparent?: boolean;
+  resetView?: number;
   children?: ReactNode;
 }) {
   const stickers = useMemo(() => faceletGeometry.map(sticker => ({
@@ -34,7 +35,7 @@ export default function FaceletCube({ value, color, disabled, onChange, transpar
               side={DoubleSide} transparent={transparent} opacity={transparent ? 0.35 : 1} depthWrite={!transparent} />
           </mesh>
         ))}
-        <OrbitControls makeDefault enablePan={false} minDistance={5} maxDistance={14} />
+        <CameraControls resetView={resetView} />
       </Canvas>
       {children}
     </div>

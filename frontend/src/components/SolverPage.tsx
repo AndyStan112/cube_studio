@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
-import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
@@ -297,6 +297,11 @@ export default function SolverPage() {
   }
   const viewerTools = (
     <div className="cube-tools">
+      <button className="tool-button" aria-label="Reset view"
+        title="Reset view · Yellow up, red front"
+        onClick={() => setResetView((value) => value + 1)}>
+        <RotateCcw size={17} />
+      </button>
       <button className={`tool-button ${transparent ? "selected" : ""}`}
         aria-label="See-through" aria-pressed={transparent}
         title={transparent ? "Disable see-through" : "Enable see-through"}
@@ -365,7 +370,7 @@ export default function SolverPage() {
           ))}
         </div>
         : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled={locked} onChange={editValue} transparent={transparent}>
+          <FaceletCube value={value} color={color} disabled={locked} onChange={editValue} transparent={transparent} resetView={resetView}>
             {viewerTools}
           </FaceletCube>
         </Suspense>}
@@ -543,7 +548,7 @@ export default function SolverPage() {
           </Suspense>
           {viewerTools}
         </div> : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled onChange={editValue} transparent={transparent}>
+          <FaceletCube value={value} color={color} disabled onChange={editValue} transparent={transparent} resetView={resetView}>
             {viewerTools}
           </FaceletCube>
         </Suspense>}
