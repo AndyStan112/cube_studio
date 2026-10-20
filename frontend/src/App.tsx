@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowUpRight, Box, Layers3, LogOut, Timer, X } from "lucide-react";
 import {
   api,
+  ApiError,
   type AlgorithmCatalog,
   type Scramble,
   type Solve,
   type User,
 } from "./lib/api";
+import { cachedCatalog, refreshCatalog, flushSolveEdits, localScramble, readStored, writeStored, solvesKey } from "./lib/offline";
 import TimerPage from "./components/TimerPage";
 import AlgorithmPage from "./components/AlgorithmPage";
 import SolverPage from "./components/SolverPage";
@@ -21,10 +23,10 @@ export default function App() {
     [error, setError] = useState("");
   const [solves, setSolves] = useState<Solve[]>([]),
     [scramble, setScramble] = useState<Scramble | null>(null),
-    [catalog, setCatalog] = useState<AlgorithmCatalog>({
+    [catalog, setCatalog] = useState<AlgorithmCatalog>(() => cachedCatalog() ?? ({
       sets: [],
       algorithms: [],
-    }),
+    })),
     [loading, setLoading] = useState(false);
   const notify = useCallback(
     (e: unknown) =>
@@ -34,31 +36,45 @@ export default function App() {
   const loadScramble = useCallback(async () => {
     setLoading(true);
     try {
-      setScramble(await api<Scramble>("/scrambles", { method: "POST" }));
-    } catch (e) {
-      notify(e);
+      if (!navigator.onLine) { setScramble(localScramble()); return; }
+      setScramble(await api<Scramble>("/scrambles", { method: "POST", signal: AbortSignal.timeout(6000) }));
+    } catch {
+      setScramble(localScramble());
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, []);
   useEffect(() => {
     void loadScramble();
-    api<AlgorithmCatalog>("/algorithm-catalog").then(setCatalog).catch(notify);
-    authProvider.getUser().then(setUser).catch(notify);
+    const refresh = () => void refreshCatalog().then(setCatalog).catch(notify);
+    refresh();
+    window.addEventListener("online", refresh);
+    authProvider.getUser().then(setUser).catch(() => {});
+    return () => window.removeEventListener("online", refresh);
   }, [loadScramble, notify]);
   useEffect(() => {
     let active = true;
-    setSolves([]);
-    if (user)
-      api<Solve[]>("/solves")
-        .then((items) => {
-          if (active) setSolves(items);
-        })
-        .catch((error) => {
-          if (active) notify(error);
-        });
+    setSolves(readStored<Solve[]>(solvesKey(user?.id), []));
+    const refresh = () => {
+      if (user)
+        flushSolveEdits(user.id).then(() => api<Solve[]>("/solves", { signal: AbortSignal.timeout(6000) }))
+          .then((items) => {
+            if (active) {
+              const local = readStored<Solve[]>(solvesKey(user?.id), []).filter(s => s.id.startsWith("local:"));
+              const merged = [...local, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at));
+              writeStored(solvesKey(user?.id), merged);
+              setSolves(merged);
+            }
+          })
+          .catch((error) => {
+            if (active && error instanceof ApiError && error.status < 500) notify(error);
+          });
+    };
+    refresh();
+    window.addEventListener("online", refresh);
     return () => {
       active = false;
+      window.removeEventListener("online", refresh);
     };
   }, [user, notify]);
   const signedIn = (u: User) => {

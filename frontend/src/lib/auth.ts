@@ -16,6 +16,10 @@ interface MockAuthProvider extends AuthProvider {
 }
 
 const storageKey = "cube-mock-token";
+const userKey = "cube-mock-user";
+function cachedUser(): User | null {
+  try { return JSON.parse(localStorage.getItem(userKey) ?? "null"); } catch { return null; }
+}
 
 async function request<T>(path: string, token?: string | null): Promise<T> {
   const response = await fetch(`/api/auth${path}`, {
@@ -32,25 +36,36 @@ export const authProvider: MockAuthProvider = {
   async getUser() {
     const token = await this.getAccessToken();
     if (!token) return null;
-    const response = await fetch("/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (response.status === 401) {
-      await this.signOut();
-      return null;
+    try {
+      const response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(6000),
+      });
+      if (response.status === 401) {
+        await this.signOut();
+        return null;
+      }
+      if (!response.ok) throw new Error("Could not load demo user. Try again.");
+      const user = await response.json() as User;
+      localStorage.setItem(userKey, JSON.stringify(user));
+      return user;
+    } catch (error) {
+      const previous = cachedUser();
+      if (previous) return previous;
+      throw error;
     }
-    if (!response.ok) throw new Error("Could not load demo user. Try again.");
-    return response.json();
   },
   listUsers: () => request<User[]>("/users"),
   async signIn(userId) {
     const token = `mock:${userId}`;
     const user = await request<User>("/me", token);
     localStorage.setItem(storageKey, token);
+    localStorage.setItem(userKey, JSON.stringify(user));
     return user;
   },
   async signOut() {
     localStorage.removeItem(storageKey);
+    localStorage.removeItem(userKey);
     localStorage.removeItem("cube-token");
   },
 };

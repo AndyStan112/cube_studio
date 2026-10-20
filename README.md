@@ -22,7 +22,9 @@ The frontend is built with Vite and served by Nginx in Compose. Nginx forwards `
 
 Serve the app through a trusted HTTPS domain to install it. On iPhone use Safari → Share → Add to Home Screen; on Android use the browser's Install app menu. Local development works on `http://localhost:5173`.
 
-The service worker caches the app, 3D assets, and public algorithm catalog. Previously loaded algorithms work offline. Accounts, scrambles, and solve storage require the API. Private API responses are not cached. Updates wait for the user to reload.
+The service worker caches the app, 3D assets, and offline solver worker after the first online visit. The last successful algorithm catalog is also stored locally without an expiry: startup and reconnection refresh it, while failed requests (including HTTP 500 responses) keep the previous catalog usable.
+
+Scrambles fall back to local practice random moves when the API is unavailable. Timer solves can be saved without signing in; new offline solves stay on this device and are labeled accordingly. Previously loaded account history and the current demo user are stored locally. Offline penalty edits and deletions of online solves are queued and retried on reconnection or the next visit. Initial sign-in still requires the API. Solution playback and solving use the bundled offline solver when the backend is unavailable. Clear browser site data to remove locally stored history and catalogs. App updates wait for the user to reload.
 
 ## Features
 

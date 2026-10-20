@@ -52,7 +52,7 @@ export default defineConfig({
             options: {
               cacheName: "cube-algorithm-catalog-v2",
               networkTimeoutSeconds: 3,
-              expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              expiration: { maxEntries: 1 },
               cacheableResponse: { statuses: [200] },
             },
           },

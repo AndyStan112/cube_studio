@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
 import { applyMove, solved } from "../lib/cube";
@@ -73,8 +74,26 @@ export default function SolverPage() {
         })
         .catch((e) => {
           if (generation.current !== ticket) return;
-          if (e instanceof ApiError && e.status === 404)
+          if (e instanceof ApiError && e.status === 404) {
             localStorage.removeItem(savedKey);
+            return;
+          }
+          if (canUseOffline(e)) {
+            const saved = readStored<Job | null>(`${savedKey}:snapshot`, null);
+            if (saved?.id === id) {
+              setMode("Offline");
+              setInput(saved.input);
+              setValue(saved.input);
+              if (terminal(saved)) setJob(saved);
+              else {
+                localStorage.removeItem(savedKey);
+                void runOffline(saved.input, ticket);
+              }
+              return;
+            }
+            setStatus("Ready");
+            return;
+          }
           setError(e.message);
         });
     return () => {
@@ -84,6 +103,7 @@ export default function SolverPage() {
   }, []);
   useEffect(() => {
     if (!job) return;
+    writeStored(`${savedKey}:snapshot`, job);
     if (job.solution) {
       try {
         choose(job.solution, job.input);
@@ -133,7 +153,15 @@ export default function SolverPage() {
       getJob(job.id)
         .then(update)
         .catch((e) => {
-          if (active) setStatus(`Reconnecting: ${e.message}`);
+          if (!active) return;
+          if (canUseOffline(e)) {
+            active = false;
+            source.close();
+            clearInterval(poll);
+            localStorage.removeItem(savedKey);
+            setJob(null);
+            void runOffline(job.input, ++generation.current);
+          } else setStatus(`Reconnecting: ${e.message}`);
         })
         .finally(() => {
           inflight = false;
@@ -229,7 +257,11 @@ export default function SolverPage() {
         setJob(await cancelJob(job.id));
         setStatus("Cancelling…");
       } catch (e) {
-        setError((e as Error).message);
+        if (canUseOffline(e)) {
+          setJob(null);
+          localStorage.removeItem(savedKey);
+          setStatus("Cancelled");
+        } else setError((e as Error).message);
       }
     } else setStatus("Cancelled");
   }

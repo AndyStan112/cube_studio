@@ -9,8 +9,10 @@ import {
   Timer,
   Trash2,
 } from "lucide-react";
+import { localSolve, queueSolveEdit, clearSolveEdit, writeStored, solvesKey } from "../lib/offline";
 import {
   api,
+  ApiError,
   averageOf,
   effective,
   formatTime,
@@ -92,21 +94,22 @@ export default function TimerPage({
       notify(new Error("Enter a time such as 24.53 or 1:02.45."));
       return;
     }
-    if (!user) {
-      onSignIn();
-      return;
-    }
     if (!scramble) return;
     setBusy(true);
     try {
-      const s = await api<Solve>("/solves", {
-        method: "POST",
-        body: JSON.stringify({
-          scramble_id: scramble.id,
-          time_ms: ms,
-          penalty,
-        }),
-      });
+      let s: Solve;
+      try {
+        if (!user || !navigator.onLine || scramble.id.startsWith("local:")) throw Error("Local solve");
+        s = await api<Solve>("/solves", {
+          method: "POST",
+          body: JSON.stringify({ scramble_id: scramble.id, time_ms: ms, penalty }),
+          signal: AbortSignal.timeout(6000),
+        });
+      } catch (error) {
+        if (error instanceof ApiError && error.status < 500) throw error;
+        s = localSolve(scramble, ms, penalty);
+      }
+      writeStored(solvesKey(user?.id), [s, ...solves]);
       setSolves((prev) => [s, ...prev]);
       setPending(null);
       setManual("");
@@ -126,10 +129,19 @@ export default function TimerPage({
   };
   const changePenalty = async (s: Solve, p: Solve["penalty"]) => {
     try {
-      await api(`/solves/${s.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ penalty: p }),
-      });
+      if (!s.id.startsWith("local:")) {
+        try {
+          if (!navigator.onLine) throw Error("Offline");
+          await api(`/solves/${s.id}`, {
+            method: "PATCH", body: JSON.stringify({ penalty: p }), signal: AbortSignal.timeout(6000),
+          });
+          if (user) clearSolveEdit(user.id, s.id);
+        } catch (error) {
+          if (!user || (error instanceof ApiError && error.status < 500)) throw error;
+          queueSolveEdit(user.id, { id: s.id, penalty: p });
+        }
+      }
+      writeStored(solvesKey(user?.id), solves.map(x => x.id === s.id ? { ...x, penalty: p } : x));
       setSolves((prev) =>
         prev.map((x) => (x.id === s.id ? { ...x, penalty: p } : x)),
       );
@@ -139,7 +151,17 @@ export default function TimerPage({
   };
   const remove = async (s: Solve) => {
     try {
-      await api(`/solves/${s.id}`, { method: "DELETE" });
+      if (!s.id.startsWith("local:")) {
+        try {
+          if (!navigator.onLine) throw Error("Offline");
+          await api(`/solves/${s.id}`, { method: "DELETE", signal: AbortSignal.timeout(6000) });
+          if (user) clearSolveEdit(user.id, s.id);
+        } catch (error) {
+          if (!user || (error instanceof ApiError && error.status < 500)) throw error;
+          queueSolveEdit(user.id, { id: s.id, remove: true });
+        }
+      }
+      writeStored(solvesKey(user?.id), solves.filter(x => x.id !== s.id));
       setSolves((prev) => prev.filter((x) => x.id !== s.id));
     } catch (e) {
       notify(e);
@@ -313,9 +335,9 @@ export default function TimerPage({
             Newest first <ArrowDown size={13} />
           </span>
         </div>
-        {!user ? (
+        {!user && !solves.length ? (
           <div className="empty-state">
-            <p>Sign in to save solves.</p>
+            <p>Solves are saved on this device. Sign in for online history.</p>
             <button className="button" onClick={onSignIn}>
               Sign in <ArrowRight size={16} />
             </button>
@@ -333,6 +355,7 @@ export default function TimerPage({
                   <strong className="solve-time">
                     {s.penalty === "DNF" ? "DNF" : formatTime(effective(s))}
                     {s.penalty === "+2" && <small> +2</small>}
+                    {s.id.startsWith("local:") && <small> · On this device</small>}
                   </strong>
                   <select
                     aria-label={`Penalty for solve ${solves.length - i}`}
