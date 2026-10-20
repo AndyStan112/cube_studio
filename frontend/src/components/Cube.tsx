@@ -11,8 +11,8 @@ import { DoubleSide, Group, Quaternion } from "three";
 import { algorithmStates, moveInfo, type Cubie } from "../lib/cube";
 import { isRelevantSticker, type StickerFocus } from "../lib/stickerFocus";
 const colors = [
-  "#6297ed",
   "#65b99a",
+  "#6297ed",
   "#f5d54f",
   "#f5f5eb",
   "#e9574e",

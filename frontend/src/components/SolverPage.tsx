@@ -29,10 +29,10 @@ const Cube = lazy(() => import("./Cube"));
 const savedKey = "cube-studio-solver-job-v1";
 const faceNames: Record<string, string> = {
   U: "Up · yellow",
-  R: "Right · blue",
+  R: "Right · green",
   F: "Front · red",
   D: "Down · white",
-  L: "Left · green",
+  L: "Left · blue",
   B: "Back · orange",
 };
 export default function SolverPage() {

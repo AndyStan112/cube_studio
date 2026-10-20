@@ -4,10 +4,10 @@ export const FACE_ORDER = "URFDLB";
 export const SOLVED_FACELETS = [...FACE_ORDER].map((f) => f.repeat(9)).join("");
 export const FACE_COLORS: Record<string, string> = {
   U: "#f5d54f",
-  R: "#6297ed",
+  R: "#65b99a",
   F: "#e9574e",
   D: "#f5f5eb",
-  L: "#65b99a",
+  L: "#6297ed",
   B: "#ff9c39",
 };
 const corners = [
