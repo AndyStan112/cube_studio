@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
 import { applyMove, solved } from "../lib/cube";
 import {
@@ -32,9 +33,8 @@ const faceNames: Record<string, string> = {
   B: "Back · orange",
 };
 export default function SolverPage() {
-  const [representation, setRepresentation] = useState<"2d" | "text">("2d");
-  const [value, setValue] = useState(SOLVED_FACELETS),
-    [color, setColor] = useState("U"),
+  const { value, setValue, representation, setRepresentation } = useSolverInput();
+  const [color, setColor] = useState("U"),
     [error, setError] = useState(""),
     [status, setStatus] = useState("Ready"),
     [mode, setMode] = useState("");
