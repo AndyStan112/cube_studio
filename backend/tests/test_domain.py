@@ -36,12 +36,14 @@ def test_algorithm_catalog_memberships_and_variations():
             assert len(membership["section_ids"]) == len(set(membership["section_ids"]))
             assert set(membership["section_ids"]) <= sections[membership["set_id"]]
         variants = algorithm["variations"]
-        assert variants and variants[0]["id"] == "normal"
+        assert variants
+        if algorithm["puzzle_size"] == 3:
+            assert variants[0]["id"] == "normal"
         assert len({item["id"] for item in variants}) == len(variants)
         for variant in variants:
             assert variant["name"]
             assert variant["moves"].split()
-            assert all(re.fullmatch(r"(?:[2-5])?[RLUDFB]w?(?:2|')?", move) for move in variant["moves"].split())
+            assert all(re.fullmatch(r"(?:(?:[2-5])?[RLUDFB]w?|[xyz])(?:2|')?", move) for move in variant["moves"].split())
     sune = next(item for item in ALGORITHMS if item["id"] == "sune")
     assert {item["set_id"] for item in sune["memberships"]} == {"2-look-oll", "2-look-cmll"}
     assert sum(item["id"] == "sune" for item in ALGORITHMS) == 1

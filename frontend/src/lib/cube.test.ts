@@ -153,7 +153,7 @@ describe("big cube parity", () => {
   for (const size of [4, 5] as const) {
     it(`${size}×${size} edge parity changes only the two top-front wings`, () => {
       const algorithm = catalog.algorithms.find(a => a.id === (size === 4 ? "4x4-oll-parity" : "5x5-edge-parity"))!;
-      const setup = algorithmStates(algorithm.variations[0].moves.split(" "), undefined, size)[0];
+      const setup = algorithmStates(algorithm.variations.find(v => v.id === "normal")!.moves.split(" "), undefined, size)[0];
       const expected = stickers(solved(size), size);
       const actual = stickers(setup, size);
       const changed = [...actual.keys()].filter(key => actual.get(key) !== expected.get(key)).sort();
@@ -173,4 +173,42 @@ describe("big cube parity", () => {
       `${x},1.5,1.5:0,0,1`, `${x},1.5,-1.5:0,0,-1`,
     ]).sort());
   });
+});
+
+it("wide-turn parity keeps centers solved and starts with exactly one unpaired edge", () => {
+  const catalog = JSON.parse(readFileSync(new URL("../../../backend/app/algorithm_catalog.json", import.meta.url), "utf8")) as AlgorithmCatalog;
+  const algorithm = catalog.algorithms.find(a => a.id === "5x5-edge-parity")!;
+  expect(algorithm.variations[0].moves).toMatch(/^Rw U2 x /);
+  const setup = algorithmStates(algorithm.variations[0].moves.split(" "), undefined, 5)[0];
+  const actual = stickers(setup, 5), expected = stickers(solved(5), 5);
+  const edges = new Map<string, number[]>();
+  for (const [key, color] of actual) {
+    const [position, normal] = key.split(":");
+    const coords = position.split(",").map(Number);
+    const boundaries = coords.filter(n => Math.abs(n) === 2).length;
+    if (boundaries === 1) expect(color, `center ${key}`).toBe(expected.get(key));
+    if (boundaries === 2) {
+      const edge = coords.map(n => Math.abs(n) === 2 ? n : "*").join() + ":" + normal;
+      edges.set(edge, [...(edges.get(edge) ?? []), color]);
+    }
+  }
+  expect([...edges].filter(([, colors]) => new Set(colors).size > 1).map(([key]) => key).sort()).toEqual([
+    "*,2,2:0,0,1", "*,2,2:0,1,0",
+  ]);
+});
+
+it("whole-cube rotations turn every layer, invert, and use the face-turn direction", () => {
+  for (const size of [3, 4, 5] as const) {
+    for (const axis of ["x", "y", "z"]) {
+      for (const suffix of ["", "'", "2"]) {
+        const move = axis + suffix;
+        const start = solved(size);
+        const turned = applyMove(start, move);
+        expect(moveInfo(move, size).layers).toHaveLength(size);
+        expect(turned.every(c => Math.abs(c.rotation.w) < 0.999)).toBe(true);
+        expect(signature(applyMove(turned, inverse([move])[0]))).toEqual(signature(start));
+      }
+    }
+  }
+  expect(applyMove(solved(), "x").find(c => c.home.join() === "1,1,1")!.position.toArray()).toEqual([1, 1, -1]);
 });

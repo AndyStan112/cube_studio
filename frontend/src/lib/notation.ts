@@ -1,4 +1,10 @@
 export function describeMove(move: string) {
+  const rotation = /^([xyz])(2|')?$/.exec(move);
+  if (rotation) {
+    const face = { x: "right", y: "upper", z: "front" }[rotation[1] as "x" | "y" | "z"];
+    const turn = rotation[2] === "2" ? "180°" : rotation[2] === "'" ? "90° counterclockwise" : "90° clockwise";
+    return `Rotate the whole cube ${turn}, looking directly at the ${face} face (the same direction as a ${face} face turn).`;
+  }
   const match = /^(\d+)?([RLUDFB])(w)?(2|')?$/.exec(move);
   if (!match) return `Unknown move: ${move}`;
   const [, prefix, face, wide, suffix] = match;

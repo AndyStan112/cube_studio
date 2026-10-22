@@ -224,8 +224,13 @@
       "puzzle_size": 5,
       "variations": [
         {
+          "id": "wide-turns",
+          "name": "Wide turns",
+          "moves": "Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 3Rw' U2 Rw U2 Rw' U2 Rw'"
+        },
+        {
           "id": "normal",
-          "name": "Normal",
+          "name": "Inner slices",
           "moves": "2R2 B2 U2 2L U2 2R' U2 2R U2 F2 2R F2 2L' B2 2R2"
         }
       ],

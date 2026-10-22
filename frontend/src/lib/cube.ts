@@ -34,10 +34,14 @@ export function solved(size: CubeSize = 3): Cubie[] {
 }
 export function moveInfo(move: string, size: CubeSize = 3) {
   // A prefix alone selects one slice (2R); w selects a block (Rw, 3Rw).
-  const match = /^(\d+)?([RLUDFB])(w)?(2|')?$/.exec(move);
+  const rotation = /^([xyz])(2|')?$/.exec(move);
+  const rotationFaces: Record<string, string> = { x: "R", y: "U", z: "F" };
+  const match = rotation
+    ? [move, "", rotationFaces[rotation[1]], "w", rotation[2]]
+    : /^(\d+)?([RLUDFB])(w)?(2|')?$/.exec(move);
   if (!match) throw new Error(`Invalid move: ${move}`);
   const [, prefix, name, wide, suffix] = match;
-  const depth = prefix ? Number(prefix) : wide ? 2 : 1;
+  const depth = rotation ? size : prefix ? Number(prefix) : wide ? 2 : 1;
   if (depth < 1 || depth > size || (prefix && !wide && depth === 1))
     throw new Error(`Invalid move for ${size}×${size}: ${move}`);
   const face = axes[name];

@@ -368,6 +368,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           <InfoCircle label="Notation help">
             <p>R = right face · U = upper face · ′ = counterclockwise · 2 = half turn</p>
             <p>Rw / Uw = outer two layers together · 2R / 2L = second layer only from that face.</p>
+            <p>x = rotate the whole cube in the same direction as R.</p>
             <p>Clockwise is always viewed directly at the face being turned.</p>
           </InfoCircle>
         </div>
