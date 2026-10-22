@@ -22,8 +22,11 @@ def test_algorithm_catalog_memberships_and_variations():
         assert len(sections[item["id"]]) == len(item["sections"])
         assert all(section["focus"] in focuses for section in item["sections"])
     assert len(set_ids) == len(ALGORITHM_SETS)
-    assert {item["id"] for item in ALGORITHMS} == {"sune", "reverse-sune", "j-perm", "t-perm"}
+    assert {item["id"] for item in ALGORITHMS} == {"sune", "reverse-sune", "j-perm", "t-perm", "4x4-oll-parity", "4x4-pll-parity", "5x5-edge-parity"}
+    set_sizes = {item["id"]: item["puzzle_size"] for item in ALGORITHM_SETS}
     for algorithm in ALGORITHMS:
+        assert algorithm["puzzle_size"] in {3, 4, 5}
+        assert all(set_sizes[m["set_id"]] == algorithm["puzzle_size"] for m in algorithm["memberships"])
         memberships = algorithm["memberships"]
         assert memberships
         ids = [membership["set_id"] for membership in memberships]
@@ -38,7 +41,7 @@ def test_algorithm_catalog_memberships_and_variations():
         for variant in variants:
             assert variant["name"]
             assert variant["moves"].split()
-            assert all(re.fullmatch(r"[RLUDFB](?:2|')?", move) for move in variant["moves"].split())
+            assert all(re.fullmatch(r"(?:[2-5])?[RLUDFB]w?(?:2|')?", move) for move in variant["moves"].split())
     sune = next(item for item in ALGORITHMS if item["id"] == "sune")
     assert {item["set_id"] for item in sune["memberships"]} == {"2-look-oll", "2-look-cmll"}
     assert sum(item["id"] == "sune" for item in ALGORITHMS) == 1

@@ -13,6 +13,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { type Algorithm, type AlgorithmCatalog } from "../lib/api";
+import type { CubeSize } from "../lib/cube";
 import { describeMove } from "../lib/notation";
 import { belongsTo, algorithmFocus } from "../lib/catalog";
 const Cube = lazy(() => import("./Cube"));
@@ -41,6 +42,8 @@ function InfoCircle({ label, children }: { label: string; children: ReactNode })
 }
 
 export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
+  const [selectedPuzzle, setSelectedPuzzle] = useState<CubeSize>(3);
+  const puzzleSets = sets.filter((item) => (item.puzzle_size ?? 3) === selectedPuzzle);
   const [selectedSet, setSelectedSet] = useState("all"),
     [selectedSection, setSelectedSection] = useState("all"),
     [selected, setSelected] = useState("sune"),
@@ -52,7 +55,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
     [resetView, setResetView] = useState(0),
     [speed, setSpeed] = useState(1000);
   const visibleAlgorithms = algorithms.filter((item) =>
-    belongsTo(item, selectedSet, selectedSection),
+    (item.puzzle_size ?? 3) === selectedPuzzle && belongsTo(item, selectedSet, selectedSection),
   );
   const algorithm =
     visibleAlgorithms.find((item) => item.id === selected) ??
@@ -72,11 +75,11 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
     setStep(0);
     setPlaying(false);
   };
-  const changeFilter = (setId: string, sectionId = "all") => {
+  const changeFilter = (setId: string, sectionId = "all", size = selectedPuzzle) => {
     setSelectedSet(setId);
     setSelectedSection(sectionId);
     const available = algorithms.filter((item) =>
-      belongsTo(item, setId, sectionId),
+      (item.puzzle_size ?? 3) === size && belongsTo(item, setId, sectionId),
     );
     const next =
       available.find((item) => item.id === algorithm?.id) ?? available[0];
@@ -103,6 +106,22 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
     <div className="algorithm-layout">
       <aside className="card algorithm-library">
         <label className="library-set">
+          <span>Puzzle</span>
+          <select
+            aria-label="Puzzle"
+            value={selectedPuzzle}
+            onChange={(event) => {
+              const size = Number(event.target.value) as CubeSize;
+              setSelectedPuzzle(size);
+              changeFilter("all", "all", size);
+            }}
+          >
+            {[3, 4, 5].map((size) => (
+              <option key={size} value={size}>{size}×{size}</option>
+            ))}
+          </select>
+        </label>
+        <label className="library-set">
           <span>Set</span>
           <select
             aria-label="Algorithm set"
@@ -110,7 +129,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             onChange={(event) => changeFilter(event.target.value)}
           >
             <option value="all">All sets</option>
-            {sets.map((item) => (
+            {puzzleSets.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
               </option>
@@ -176,6 +195,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           </div>
           <span className="outline-label">{moves.length} moves</span>
         </div>
+        {algorithm && <p className="algorithm-description">{algorithm.description}</p>}
         {algorithm && algorithm.variations.length > 1 && (
           <label className="variation-control">
             <span>Variation</span>
@@ -205,6 +225,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
             >
               <Cube
                 key={`${algorithm?.id}:${variation?.id}`}
+                size={selectedPuzzle}
                 {...{
                   moves,
                   step,
@@ -346,6 +367,7 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
           <span>Notation</span>
           <InfoCircle label="Notation help">
             <p>R = right face · U = upper face · ′ = counterclockwise · 2 = half turn</p>
+            <p>Rw / Uw = outer two layers together · 2R / 2L = second layer only from that face.</p>
             <p>Clockwise is always viewed directly at the face being turned.</p>
           </InfoCircle>
         </div>

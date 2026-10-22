@@ -1077,3 +1077,15 @@ select:focus {
     transition: none !important;
   }
 }
+
+.algorithm-description {
+  margin: 0 16px 16px;
+  color: var(--text-dim, var(--muted));
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+@media (min-width: 768px) {
+  .algorithm-description {
+    margin-inline: 24px;
+  }
+}

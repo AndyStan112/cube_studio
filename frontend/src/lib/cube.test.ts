@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import type { AlgorithmCatalog } from "./api";
 import { Vector3 } from "three";
-import { applyMove, solved, inverse, algorithmStates } from "./cube";
+import { applyMove, solved, inverse, algorithmStates, moveInfo, type CubeSize } from "./cube";
 import { averageOf, parseTime, type Solve } from "./api";
 function signature(state: ReturnType<typeof solved>) {
   return state.map((c) => [
-    c.position.toArray().map((n) => Math.round(n) || 0),
+    c.position.toArray().map((n) => Math.round(n * 2) / 2 || 0),
     ...[
       [1, 0, 0],
       [0, 1, 0],
@@ -15,7 +15,7 @@ function signature(state: ReturnType<typeof solved>) {
       new Vector3(...n)
         .applyQuaternion(c.rotation)
         .toArray()
-        .map((n) => Math.round(n) || 0),
+        .map((n) => Math.round(n * 2) / 2 || 0),
     ),
   ]);
 }
@@ -38,15 +38,16 @@ describe("cube permutations", () => {
     ) as AlgorithmCatalog;
     for (const algorithm of catalog.algorithms) {
       for (const variation of algorithm.variations) {
-        const states = algorithmStates(variation.moves.split(" "));
+        const size = algorithm.puzzle_size ?? 3;
+        const states = algorithmStates(variation.moves.split(" "), undefined, size);
         expect(
           signature(states[0]),
           `${algorithm.id}/${variation.id}`,
-        ).not.toEqual(signature(solved()));
+        ).not.toEqual(signature(solved(size)));
         expect(
           signature(states.at(-1)!),
           `${algorithm.id}/${variation.id}`,
-        ).toEqual(signature(solved()));
+        ).toEqual(signature(solved(size)));
       }
     }
   });
@@ -104,5 +105,72 @@ describe("solve timing", () => {
       ),
     ).toBe(Infinity);
     expect(averageOf([], 5)).toBeNull();
+  });
+});
+
+function stickers(state: ReturnType<typeof solved>, size: CubeSize) {
+  const result = new Map<string, number>();
+  const edge = (size - 1) / 2;
+  const normals = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  for (const c of state) {
+    normals.forEach((normal, face) => {
+      if (!normal.some((n, axis) => n !== 0 && c.home[axis] === n * edge)) return;
+      const direction = new Vector3(...normal).applyQuaternion(c.rotation).toArray().map(Math.round);
+      result.set(`${c.position.toArray().join()}:${direction.join()}`, face);
+    });
+  }
+  return result;
+}
+
+describe("big cube parity", () => {
+  const catalog = JSON.parse(readFileSync(new URL("../../../backend/app/algorithm_catalog.json", import.meta.url), "utf8")) as AlgorithmCatalog;
+  for (const size of [3, 4, 5] as const) {
+    it(`${size}×${size} turns preserve the lattice and invert correctly`, () => {
+      for (const face of ["R", "L", "U", "D", "F", "B"]) {
+        for (const base of [face, `${face}w`, `2${face}`, `3${face}w`]) {
+          for (const suffix of ["", "'", "2"]) {
+            const move = base + suffix;
+            const start = solved(size);
+            const turned = applyMove(start, move);
+            const edge = (size - 1) / 2;
+            expect(new Set(turned.map(c => c.position.toArray().join())).size).toBe(size ** 3);
+            expect(turned.every(c => c.position.toArray().every(n => Math.abs(n) <= edge && Number.isInteger(n + edge)))).toBe(true);
+            expect(signature(applyMove(turned, inverse([move])[0]))).toEqual(signature(start));
+          }
+        }
+      }
+    });
+  }
+  it("selects wide blocks and individual inner slices", () => {
+    expect(moveInfo("R", 4).layers).toEqual([1.5]);
+    expect(moveInfo("Rw", 4).layers).toEqual([1.5, 0.5]);
+    expect(moveInfo("2R", 4).layers).toEqual([0.5]);
+    expect(moveInfo("2L", 5).layers).toEqual([-1]);
+    expect(moveInfo("3Rw", 5).layers).toEqual([2, 1, 0]);
+    for (const move of ["4Rw", "0R", "R3", "Rww", "2Q"]) expect(() => moveInfo(move)).toThrow();
+    expect(inverse(["Rw'", "2R'", "3Rw'"])).toEqual(["3Rw", "2R", "Rw"]);
+  });
+  for (const size of [4, 5] as const) {
+    it(`${size}×${size} edge parity changes only the two top-front wings`, () => {
+      const algorithm = catalog.algorithms.find(a => a.id === (size === 4 ? "4x4-oll-parity" : "5x5-edge-parity"))!;
+      const setup = algorithmStates(algorithm.variations[0].moves.split(" "), undefined, size)[0];
+      const expected = stickers(solved(size), size);
+      const actual = stickers(setup, size);
+      const changed = [...actual.keys()].filter(key => actual.get(key) !== expected.get(key)).sort();
+      const edge = (size - 1) / 2;
+      expect(changed).toEqual([-(edge - 1), edge - 1].flatMap(x => [
+        `${x},${edge},${edge}:0,1,0`, `${x},${edge},${edge}:0,0,1`,
+      ]).sort());
+    });
+  }
+  it("4×4 PLL parity swaps the top-front and top-back edge pairs, preserving all other colors", () => {
+    const algorithm = catalog.algorithms.find(a => a.id === "4x4-pll-parity")!;
+    const setup = algorithmStates(algorithm.variations[0].moves.split(" "), undefined, 4)[0];
+    const expected = stickers(solved(4), 4);
+    const actual = stickers(setup, 4);
+    const changed = [...actual.keys()].filter(key => actual.get(key) !== expected.get(key)).sort();
+    expect(changed).toEqual([-0.5, 0.5].flatMap(x => [
+      `${x},1.5,1.5:0,0,1`, `${x},1.5,-1.5:0,0,-1`,
+    ]).sort());
   });
 });

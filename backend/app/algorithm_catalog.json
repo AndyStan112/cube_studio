@@ -12,7 +12,8 @@
           "description": "Orient the last-layer corners.",
           "focus": "corner-orientation"
         }
-      ]
+      ],
+      "puzzle_size": 3
     },
     {
       "id": "2-look-cmll",
@@ -32,14 +33,32 @@
           "description": "Put the yellow corner stickers on top.",
           "focus": "corner-orientation"
         }
-      ]
+      ],
+      "puzzle_size": 3
     },
     {
       "id": "pll",
       "name": "PLL",
       "description": "Last-layer permutation.",
       "focus": "last-layer",
-      "sections": []
+      "sections": [],
+      "puzzle_size": 3
+    },
+    {
+      "id": "4x4-parity",
+      "name": "4×4 Parity",
+      "description": "Parity cases after reducing the 4×4 to a 3×3.",
+      "focus": "all",
+      "sections": [],
+      "puzzle_size": 4
+    },
+    {
+      "id": "5x5-parity",
+      "name": "5×5 Parity",
+      "description": "Edge parity during 5×5 edge pairing. There is no PLL parity on a reduced 5×5.",
+      "focus": "all",
+      "sections": [],
+      "puzzle_size": 5
     }
   ],
   "algorithms": [
@@ -57,13 +76,18 @@
       "memberships": [
         {
           "set_id": "2-look-oll",
-          "section_ids": ["corner-orientation"]
+          "section_ids": [
+            "corner-orientation"
+          ]
         },
         {
           "set_id": "2-look-cmll",
-          "section_ids": ["corner-orientation"]
+          "section_ids": [
+            "corner-orientation"
+          ]
         }
-      ]
+      ],
+      "puzzle_size": 3
     },
     {
       "id": "reverse-sune",
@@ -79,13 +103,18 @@
       "memberships": [
         {
           "set_id": "2-look-oll",
-          "section_ids": ["corner-orientation"]
+          "section_ids": [
+            "corner-orientation"
+          ]
         },
         {
           "set_id": "2-look-cmll",
-          "section_ids": ["corner-orientation"]
+          "section_ids": [
+            "corner-orientation"
+          ]
         }
-      ]
+      ],
+      "puzzle_size": 3
     },
     {
       "id": "j-perm",
@@ -118,9 +147,12 @@
         },
         {
           "set_id": "2-look-cmll",
-          "section_ids": ["corner-permutation"]
+          "section_ids": [
+            "corner-permutation"
+          ]
         }
-      ]
+      ],
+      "puzzle_size": 3
     },
     {
       "id": "t-perm",
@@ -140,7 +172,67 @@
         },
         {
           "set_id": "2-look-cmll",
-          "section_ids": ["corner-permutation"]
+          "section_ids": [
+            "corner-permutation"
+          ]
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "4x4-oll-parity",
+      "name": "OLL parity",
+      "description": "Hold the flipped edge pair at the top-front. Swap its two wings to orient the edge pair.",
+      "puzzle_size": 4,
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Normal",
+          "moves": "2R2 B2 U2 2L U2 2R' U2 2R U2 F2 2R F2 2L' B2 2R2"
+        }
+      ],
+      "memberships": [
+        {
+          "set_id": "4x4-parity",
+          "section_ids": []
+        }
+      ]
+    },
+    {
+      "id": "4x4-pll-parity",
+      "name": "PLL parity",
+      "description": "Hold the two swapped edge pairs at the top-front and top-back.",
+      "puzzle_size": 4,
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Normal",
+          "moves": "U2 2R2 U2 2R2 Uw2 2R2 Uw2"
+        }
+      ],
+      "memberships": [
+        {
+          "set_id": "4x4-parity",
+          "section_ids": []
+        }
+      ]
+    },
+    {
+      "id": "5x5-edge-parity",
+      "name": "Edge parity",
+      "description": "Hold the last unpaired edge at the top-front, with its two wings flipped relative to the middle edge. Swap the wings to finish pairing.",
+      "puzzle_size": 5,
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Normal",
+          "moves": "2R2 B2 U2 2L U2 2R' U2 2R U2 F2 2R F2 2L' B2 2R2"
+        }
+      ],
+      "memberships": [
+        {
+          "set_id": "5x5-parity",
+          "section_ids": []
         }
       ]
     }

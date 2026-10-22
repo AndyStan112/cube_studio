@@ -9,3 +9,6 @@ __pycache__/
 .local/
 
 /solver/target/
+
+# Local source register for the final project bibliography.
+/docs/BIBLIOGRAPHY.local.md

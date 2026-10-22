@@ -11,11 +11,13 @@ export function isRelevantSticker(
   home: readonly [number, number, number],
   face: number,
   focus: StickerFocus,
+  size = 3,
 ) {
   if (focus === "all") return true;
-  if (home[1] !== 1) return false;
+  const edge = (size - 1) / 2;
+  if (home[1] !== edge) return false;
   if (focus === "last-layer") return true;
-  const corner = Math.abs(home[0]) === 1 && Math.abs(home[2]) === 1;
+  const corner = Math.abs(home[0]) === edge && Math.abs(home[2]) === edge;
   if (!corner) return false;
   if (focus === "corner-orientation") return face === 2;
   if (focus === "corner-permutation") return face !== 2 && face !== 3;

@@ -57,7 +57,7 @@ async def algorithms():
     return [
         {"id": item["id"], "name": item["name"], "description": item["description"],
          "set": set_names[item["memberships"][0]["set_id"]], "moves": item["variations"][0]["moves"]}
-        for item in ALGORITHMS
+        for item in ALGORITHMS if item.get("puzzle_size", 3) == 3
     ]
 
 @app.post('/api/scrambles', status_code=201)

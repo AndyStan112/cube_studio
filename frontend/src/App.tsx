@@ -142,9 +142,9 @@ export default function App() {
                 : "Algorithms"}
           </h1>
           <div className="topbar-right">
-            <span className="event-badge">
+            {page !== "algorithms" && <span className="event-badge">
               <Box size={14} />3 × 3 × 3
-            </span>
+            </span>}
             {user ? (
               <>
                 <span className="avatar" title={`${user.name} · Demo user`}>

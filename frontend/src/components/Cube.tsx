@@ -7,7 +7,7 @@ import {
 import { Canvas, useFrame } from "@react-three/fiber";
 import CameraControls from "./CameraControls";
 import { DoubleSide, Group, Quaternion } from "three";
-import { algorithmStates, moveInfo, type Cubie } from "../lib/cube";
+import { algorithmStates, moveInfo, isInMove, type Cubie, type CubeSize } from "../lib/cube";
 import { isRelevantSticker, type StickerFocus } from "../lib/stickerFocus";
 const colors = [
   "#65b99a",
@@ -36,6 +36,7 @@ function Model({
   maskIrrelevant,
   focus,
   initialState,
+  size = 3,
 }: {
   moves: string[];
   step: number;
@@ -43,10 +44,11 @@ function Model({
   maskIrrelevant: boolean;
   focus: StickerFocus;
   initialState?: Cubie[];
+  size?: CubeSize;
 }) {
   const states = useMemo(
-    () => algorithmStates(moves, initialState),
-    [moves, initialState],
+    () => algorithmStates(moves, initialState, size),
+    [moves, initialState, size],
   );
   const refs = useRef<(Group | null)[]>([]),
     progress = useRef(0);
@@ -62,7 +64,7 @@ function Model({
           Math.sign(delta) * Math.min(Math.abs(delta), dt * 2.8);
     const base = Math.min(Math.floor(progress.current), moves.length),
       fraction = progress.current - base;
-    const info = base < moves.length ? moveInfo(moves[base]) : null;
+    const info = base < moves.length ? moveInfo(moves[base], size) : null;
     const q = info
       ? new Quaternion().setFromAxisAngle(info.vector, info.angle * fraction)
       : new Quaternion();
@@ -71,14 +73,14 @@ function Model({
       if (!mesh) return;
       mesh.position.copy(c.position);
       mesh.quaternion.copy(c.rotation);
-      if (info && Math.round(c.position[info.axis]) === info.layer) {
+      if (info && isInMove(c, info)) {
         mesh.position.applyQuaternion(q);
         mesh.quaternion.premultiply(q);
       }
     });
   });
   return (
-    <group>
+    <group scale={3 / size}>
       {states[0].map((c, i) => (
         <group
           key={c.id}
@@ -95,12 +97,12 @@ function Model({
           )}
           {colors.map((color, face) => {
             const exterior = [
-              c.home[0] === 1,
-              c.home[0] === -1,
-              c.home[1] === 1,
-              c.home[1] === -1,
-              c.home[2] === 1,
-              c.home[2] === -1,
+              c.home[0] === (size - 1) / 2,
+              c.home[0] === -(size - 1) / 2,
+              c.home[1] === (size - 1) / 2,
+              c.home[1] === -(size - 1) / 2,
+              c.home[2] === (size - 1) / 2,
+              c.home[2] === -(size - 1) / 2,
             ][face];
             if (!exterior) return null;
             return (
@@ -112,7 +114,7 @@ function Model({
                 <planeGeometry args={[0.9, 0.9]} />
                 <meshStandardMaterial
                   color={
-                    maskIrrelevant && !isRelevantSticker(c.home, face, focus)
+                    maskIrrelevant && !isRelevantSticker(c.home, face, focus, size)
                       ? "#000000"
                       : color
                   }
@@ -140,6 +142,7 @@ export default function Cube({
   maskIrrelevant,
   focus,
   initialState,
+  size = 3,
 }: {
   moves: string[];
   step: number;
@@ -148,6 +151,7 @@ export default function Cube({
   maskIrrelevant: boolean;
   focus: StickerFocus;
   initialState?: Cubie[];
+  size?: CubeSize;
 }) {
   return (
     <Canvas
@@ -159,7 +163,7 @@ export default function Cube({
       <directionalLight position={[4, 8, 5]} intensity={2.5} />
       <Suspense fallback={null}>
         <Model
-          {...{ moves, step, transparent, maskIrrelevant, focus, initialState }}
+          {...{ moves, step, transparent, maskIrrelevant, focus, initialState, size }}
         />
       </Suspense>
       <CameraControls resetView={resetView} />

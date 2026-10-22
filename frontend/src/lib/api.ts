@@ -1,3 +1,4 @@
+import type { CubeSize } from "./cube";
 import type { StickerFocus } from "./stickerFocus";
 import { authProvider } from "./auth";
 export type { User } from "./auth";
@@ -15,6 +16,7 @@ export type AlgorithmSection = {
   focus: StickerFocus;
 };
 export type AlgorithmSet = {
+  puzzle_size?: CubeSize;
   id: string;
   name: string;
   description: string;
@@ -28,6 +30,7 @@ export type AlgorithmVariation = {
   case?: string;
 };
 export type Algorithm = {
+  puzzle_size?: CubeSize;
   id: string;
   name: string;
   memberships: { set_id: string; section_ids: string[] }[];
