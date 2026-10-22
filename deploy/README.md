@@ -54,3 +54,7 @@ KUBECONFIG=$HOME/.kube/cube-studio.yaml kubectl -n cube-studio logs job/mongo-ba
 Roll back an app release by restoring the desired manifest snapshot on `deployments` and committing with a message such as `revert(deploy): restore previous release`. That branch does not launch builds; Flux applies it directly. The next successful release from `master` replaces the rollback with its tested snapshot. Database migrations need a separate rollback plan. Deleting Flux's app Kustomization or GitRepository does not automatically delete its workloads. Do not delete the namespace or PVCs as part of application rollback.
 
 A single node restarts failed pods, but does not provide host-level high availability. K3s also changes host networking rules, so check existing Docker apps and VPN access after installation.
+
+### Larger-cube solving
+
+The solver image now bundles the pinned NxN engine and predownloaded 4×4/5×5 lookup tables. Its build downloads about 1.9 GiB compressed, so allow extra build time and image storage. Solver pods keep the existing private service on port 8081, use a 4 GiB memory limit, and mount a 512 MiB temporary volume for isolated reduction jobs. No lookup tables are downloaded from the running pod; readiness requires all bundled tables and the native 3×3 engine.

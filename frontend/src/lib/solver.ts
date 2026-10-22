@@ -2,23 +2,24 @@ import { api, ApiError } from "./api";
 import {
   FACE_ORDER,
   SOLVED_FACELETS,
+  solvedFacelets,
   cubiesToFacelets,
   faceletsToCubies,
   validateFacelets,
 } from "./facelets";
-import { applyMove } from "./cube";
+import { applyMove, type CubeSize } from "./cube";
 export type CubeTurn = {
   kind: "cube_layer_turn";
   face: "U" | "R" | "F" | "D" | "L" | "B";
-  layer_start: 0;
-  layer_count: 1;
+  layer_start: number;
+  layer_count: number;
   amount: 1 | 2 | -1;
 };
 export type Solution = {
   notation: string[];
-  moves: CubeTurn[];
+  moves: (CubeTurn | { kind: "cube_rotation"; axis: "x" | "y" | "z"; amount: 1 | 2 | -1 })[];
   move_count: number;
-  metric: "HTM";
+  metric: "HTM" | "OBTM";
   verified: boolean;
   optimality: "global_proved" | "unproved";
 };
@@ -35,39 +36,39 @@ export type Job = {
   error: string | null;
 };
 export const terminal = (job: Job) =>
-  ["optimal_proved", "timed_out", "cancelled", "failed"].includes(job.status);
-export const solverRequest = (value: string) => ({
+  ["complete", "optimal_proved", "timed_out", "cancelled", "failed"].includes(job.status);
+export const solverRequest = (value: string, size: CubeSize = 3) => ({
   schema_version: 1,
-  puzzle: { type: "cube", size: 3 },
+  puzzle: { type: "cube", size },
   state: { encoding: "cube_facelets_v1", face_order: [...FACE_ORDER], value },
   solver: {
-    metric: "HTM",
-    objective: "optimal",
-    method: "unrestricted",
+    metric: size === 3 ? "HTM" : "OBTM",
+    objective: size === 3 ? "optimal" : "solution",
+    method: size === 3 ? "unrestricted" : "reduction",
     constraints: [],
   },
   execution: { fallback_after_ms: 5000, continue_search: true },
 });
-export function verifySolution(value: string, solution: Solution) {
-  validateFacelets(value);
+export function verifySolution(value: string, solution: Solution, size: CubeSize = 3) {
+  validateFacelets(value, size);
   if (
-    solution.metric !== "HTM" ||
-    solution.move_count !== solution.notation.length ||
-    solution.notation.some((m) => !/^[URFDLB](2|')?$/.test(m))
+    solution.metric !== (size === 3 ? "HTM" : "OBTM") ||
+    solution.move_count !== solution.notation.filter(m => size === 3 || !/^[xyz]/.test(m)).length ||
+    solution.notation.some((m) => !(size === 3 ? /^[URFDLB](2|')?$/.test(m) : /^(?:(?:[2-5])?[URFDLB]w?|[xyz])(2|')?$/.test(m)))
   )
     throw Error("Invalid solution response");
   const end = solution.notation.reduce(
     (state, m) => applyMove(state, m),
-    faceletsToCubies(value),
+    faceletsToCubies(value, size),
   );
-  if (cubiesToFacelets(end) !== SOLVED_FACELETS)
+  if (cubiesToFacelets(end) !== solvedFacelets(size))
     throw Error("Solution does not solve the entered cube");
 }
-export async function createJob(value: string) {
-  validateFacelets(value);
+export async function createJob(value: string, size: CubeSize = 3) {
+  validateFacelets(value, size);
   return api<Job>("/solver/jobs", {
     method: "POST",
-    body: JSON.stringify(solverRequest(value)),
+    body: JSON.stringify(solverRequest(value, size)),
     signal: AbortSignal.timeout(10000),
   });
 }

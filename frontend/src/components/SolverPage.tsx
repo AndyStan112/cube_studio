@@ -3,11 +3,11 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
-import { applyMove, solved } from "../lib/cube";
+import { applyMove, solved, type CubeSize } from "../lib/cube";
 import {
   FACE_COLORS,
   FACE_ORDER,
-  SOLVED_FACELETS,
+  solvedFacelets,
   cubiesToFacelets,
   faceletsToCubies,
   validateFacelets,
@@ -23,10 +23,11 @@ import {
   type Job,
   type Solution,
 } from "../lib/solver";
+import { practiceMoves, type CubeEvent } from "../lib/puzzles";
 import "./SolverPage.css";
 const FaceletCube = lazy(() => import("./FaceletCube"));
 const Cube = lazy(() => import("./Cube"));
-const savedKey = "cube-studio-solver-job-v1";
+
 const faceNames: Record<string, string> = {
   U: "Up · yellow",
   R: "Right · green",
@@ -35,15 +36,19 @@ const faceNames: Record<string, string> = {
   L: "Left · blue",
   B: "Back · orange",
 };
-export default function SolverPage() {
-  const { value, setValue, representation, setRepresentation } = useSolverInput();
+export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
+  const area = size * size;
+  const stickerCount = area * 6;
+  const solvedValue = solvedFacelets(size);
+  const savedKey = size === 3 ? "cube-studio-solver-job-v1" : `cube-studio-solver-job-v1:${size}`;
+  const { value, setValue, representation, setRepresentation } = useSolverInput(size);
   const [color, setColor] = useState("U"),
     [error, setError] = useState(""),
     [status, setStatus] = useState("Ready"),
     [mode, setMode] = useState("");
   const [job, setJob] = useState<Job | null>(null),
     [selected, setSelected] = useState<Solution | null>(null),
-    [input, setInput] = useState(SOLVED_FACELETS),
+    [input, setInput] = useState(solvedValue),
     [busy, setBusy] = useState(false),
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
@@ -51,12 +56,12 @@ export default function SolverPage() {
     [resetView, setResetView] = useState(0);
   const offline = useRef(new OfflineSolver()),
     generation = useRef(0);
-  const initial = useMemo(() => faceletsToCubies(input), [input]);
+  const initial = useMemo(() => faceletsToCubies(input, size), [input, size]);
   const moves = useMemo(() => selected?.notation ?? [], [selected]);
   const running = !!job && !terminal(job),
     locked = busy || running;
   function choose(solution: Solution, state = input) {
-    verifySolution(state, solution);
+    verifySolution(state, solution, size);
     setSelected(solution);
     setInput(state);
     setStep(0);
@@ -80,7 +85,7 @@ export default function SolverPage() {
             localStorage.removeItem(savedKey);
             return;
           }
-          if (canUseOffline(e)) {
+          if (size === 3 && canUseOffline(e)) {
             const saved = readStored<Job | null>(`${savedKey}:snapshot`, null);
             if (saved?.id === id) {
               setMode("Offline");
@@ -144,6 +149,7 @@ export default function SolverPage() {
       "candidate_found",
       "fallback_available",
       "optimal_proved",
+      "complete",
       "timed_out",
       "cancelled",
       "failed",
@@ -156,7 +162,7 @@ export default function SolverPage() {
         .then(update)
         .catch((e) => {
           if (!active) return;
-          if (canUseOffline(e)) {
+          if (size === 3 && canUseOffline(e)) {
             active = false;
             source.close();
             clearInterval(poll);
@@ -179,6 +185,7 @@ export default function SolverPage() {
   }, [
     job?.id,
     job?.status === "optimal_proved",
+    job?.status === "complete",
     job?.status === "timed_out",
     job?.status === "cancelled",
     job?.status === "failed",
@@ -213,7 +220,8 @@ export default function SolverPage() {
   async function start(forceOffline = false) {
     setError("");
     try {
-      validateFacelets(value);
+      validateFacelets(value, size);
+      faceletsToCubies(value, size);
     } catch (e) {
       setError((e as Error).message);
       return;
@@ -227,12 +235,18 @@ export default function SolverPage() {
     setJob(null);
     setInput(value);
     setStatus("Connecting…");
+    if (size !== 3 && !navigator.onLine) {
+      setBusy(false);
+      setError("Connect to the internet to solve a 4×4 or 5×5 cube.");
+      setStatus("Ready");
+      return;
+    }
     if (forceOffline || !navigator.onLine) {
       await runOffline(value, ticket);
       return;
     }
     try {
-      const next = await createJob(value);
+      const next = await createJob(value, size);
       if (generation.current !== ticket) {
         void cancelJob(next.id).catch(() => {});
         return;
@@ -242,7 +256,7 @@ export default function SolverPage() {
       setMode("Online");
     } catch (e) {
       if (generation.current === ticket) {
-        if (canUseOffline(e)) await runOffline(value, ticket);
+        if (size === 3 && canUseOffline(e)) await runOffline(value, ticket);
         else setError((e as Error).message);
       }
     } finally {
@@ -259,7 +273,7 @@ export default function SolverPage() {
         setJob(await cancelJob(job.id));
         setStatus("Cancelling…");
       } catch (e) {
-        if (canUseOffline(e)) {
+        if (size === 3 && canUseOffline(e)) {
           setJob(null);
           localStorage.removeItem(savedKey);
           setStatus("Cancelled");
@@ -281,15 +295,8 @@ export default function SolverPage() {
     localStorage.removeItem(`${savedKey}:snapshot`);
   }
   function demo() {
-    const sequence = Array.from(
-      { length: 25 },
-      () =>
-        FACE_ORDER[Math.floor(Math.random() * 6)] +
-        ["", "'", "2"][Math.floor(Math.random() * 3)],
-    );
-    editValue(
-      cubiesToFacelets(sequence.reduce((s, m) => applyMove(s, m), solved())),
-    );
+    const sequence = practiceMoves(`${size}${size}${size}` as CubeEvent);
+    editValue(cubiesToFacelets(sequence.reduce((s, m) => applyMove(s, m), solved(size))));
   }
   function jump(n: number) {
     setPlaying(false);
@@ -313,8 +320,8 @@ export default function SolverPage() {
   return (
     <div className="solver-layout">
       <section className="card solver-input">
-        <h2>Your cube</h2>
-        <p className="solver-hint">Yellow up · Red front</p>
+        <h2>Your {size}×{size} cube</h2>
+        <p className="solver-hint">Yellow up · Red front{size !== 3 && " · Online reduction solver"}</p>
         <div className="representation-toggle" role="group" aria-label="Cube representation">
           {(["2d", "text", "3d"] as const).map((view) => (
             <button key={view} className="button" aria-pressed={representation === view}
@@ -346,14 +353,15 @@ export default function SolverPage() {
             <div
               key={f}
               className={`net-face net-${f}`}
+              style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
               aria-label={`${f} face`}
             >
-              {Array.from({ length: 9 }, (_, i) => {
-                const index = FACE_ORDER.indexOf(f) * 9 + i;
+              {Array.from({ length: area }, (_, i) => {
+                const index = FACE_ORDER.indexOf(f) * area + i;
                 return (
                   <button
                     key={i}
-                    disabled={locked || i === 4}
+                    disabled={locked || (size % 2 === 1 && i === Math.floor(area / 2))}
                     aria-label={`${f}${i + 1}: ${value[index]}`}
                     style={{ background: FACE_COLORS[value[index]] ?? "#ccc" }}
                     onClick={() =>
@@ -362,7 +370,7 @@ export default function SolverPage() {
                       )
                     }
                   >
-                    {i === 4 ? f : ""}
+                    {size % 2 === 1 && i === Math.floor(area / 2) ? f : ""}
                   </button>
                 );
               })}
@@ -370,7 +378,7 @@ export default function SolverPage() {
           ))}
         </div>
         : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled={locked} onChange={editValue} transparent={transparent} resetView={resetView}>
+          <FaceletCube size={size} value={value} color={color} disabled={locked} onChange={editValue} transparent={transparent} resetView={resetView}>
             {viewerTools}
           </FaceletCube>
         </Suspense>}
@@ -378,7 +386,7 @@ export default function SolverPage() {
         </>}
         {representation === "text" && <div className="solver-facelets">
           <p id="facelet-format">
-            A facelet is one sticker. Enter 54 letters: nine per face, in{" "}
+            A facelet is one sticker. Enter {stickerCount} letters: {area} per face, in{" "}
             <strong>U R F D L B</strong> order.
           </p>
           <div className="facelet-legend">
@@ -391,8 +399,7 @@ export default function SolverPage() {
           </div>
           <p id="facelet-traversal">
             Read each face left to right, top to bottom, looking directly at it.
-            Keep U above the side faces, B above U, and F above D. The fifth
-            letter is the center.
+            Keep U above the side faces, B above U, and F above D. {size % 2 === 1 ? `Letter ${Math.floor(area / 2) + 1} is the fixed center.` : "The 4×4 has no fixed centers; use the displayed color reference."}
           </p>
           <label className="facelet-label" htmlFor="solver-facelets">
             Cube facelets
@@ -407,7 +414,7 @@ export default function SolverPage() {
             disabled={locked}
             onChange={(e) =>
               editValue(
-                e.target.value.toUpperCase().replace(/\s/g, "").slice(0, 54),
+                e.target.value.toUpperCase().replace(/\s/g, "").slice(0, stickerCount),
               )
             }
           />
@@ -426,17 +433,17 @@ export default function SolverPage() {
           <button
             className="button"
             disabled={locked}
-            onClick={() => editValue(SOLVED_FACELETS)}
+            onClick={() => editValue(solvedValue)}
           >
             Reset cube
           </button>
-          <button
+          {size === 3 && <button
             className="button"
             disabled={locked}
             onClick={() => void start(true)}
           >
             Offline
-          </button>
+          </button>}
           {locked && (
             <button className="button" onClick={() => void cancel()}>
               Cancel
@@ -456,7 +463,7 @@ export default function SolverPage() {
         </div>
         {(locked || (!selected && status !== "Ready")) && (
           <p className="solver-status" role="status" aria-live="polite">
-            {status === "searching" ? "Finding the shortest solution…" : status}
+            {status === "searching" ? size === 3 ? "Finding the shortest solution…" : "Solving centers and edges…" : status}
           </p>
         )}
         {job && (!selected || running) && (
@@ -507,7 +514,7 @@ export default function SolverPage() {
               )}
             </div>
           )}
-        {job?.status === "failed" && (
+        {size === 3 && job?.status === "failed" && (
           <button
             className="button"
             disabled={busy}
@@ -522,13 +529,13 @@ export default function SolverPage() {
             title={
               selected.optimality === "global_proved"
                 ? "Proved globally optimal in HTM (a half turn counts as one move)."
-                : "Verified solution; optimality has not been proved. A half turn counts as one move."
+                : size === 3 ? "Verified solution; optimality has not been proved. A half turn counts as one move." : "Verified reduction solution. Optimality has not been proved. Outer block turns count as one move."
             }
           >
             <strong>
               {selected.optimality === "global_proved"
                 ? "Optimal"
-                : "Near-optimal"}
+                : size === 3 ? "Near-optimal" : "Verified solution"}
             </strong>
             <span>{selected.move_count} {selected.move_count === 1 ? "move" : "moves"}</span>
           </div>
@@ -537,6 +544,7 @@ export default function SolverPage() {
           <Suspense fallback={<p>Loading cube…</p>}>
             <Cube
               key={input}
+              size={size}
               moves={moves}
               initialState={initial}
               step={step}
@@ -548,7 +556,7 @@ export default function SolverPage() {
           </Suspense>
           {viewerTools}
         </div> : <Suspense fallback={<p>Loading cube…</p>}>
-          <FaceletCube value={value} color={color} disabled onChange={editValue} transparent={transparent} resetView={resetView}>
+          <FaceletCube size={size} value={value} color={color} disabled onChange={editValue} transparent={transparent} resetView={resetView}>
             {viewerTools}
           </FaceletCube>
         </Suspense>}

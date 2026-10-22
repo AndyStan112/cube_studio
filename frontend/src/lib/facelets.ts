@@ -1,7 +1,8 @@
 import { Matrix4, Quaternion, Vector3 } from "three";
-import { solved, type Cubie } from "./cube";
+import { solved, cubeSize, type CubeSize, type Cubie } from "./cube";
 export const FACE_ORDER = "URFDLB";
-export const SOLVED_FACELETS = [...FACE_ORDER].map((f) => f.repeat(9)).join("");
+export const solvedFacelets = (size: CubeSize = 3) => [...FACE_ORDER].map(f => f.repeat(size * size)).join("");
+export const SOLVED_FACELETS = solvedFacelets();
 export const FACE_COLORS: Record<string, string> = {
   U: "#f5d54f",
   R: "#65b99a",
@@ -36,7 +37,31 @@ const edges = [
 ];
 const parity = (p: number[]) =>
   p.reduce((s, a, i) => s + p.slice(i + 1).filter((b) => a > b).length, 0) % 2;
-export function validateFacelets(value: string) {
+export function validateFacelets(value: string, size: CubeSize = 3) {
+  if (size !== 3) {
+    const area = size * size;
+    if (value.length !== 6 * area || [...FACE_ORDER].some(f => [...value].filter(c => c === f).length !== area))
+      throw Error(`Use exactly ${area} of each symbol U R F D L B (${6 * area} stickers).`);
+    if (size === 5) {
+      // Corners, midges and fixed centers form the ordinary 3×3 skeleton.
+      const indices = [0, 2, 4];
+      const skeleton = [...FACE_ORDER].flatMap((_, f) => indices.flatMap(r => indices.map(c => value[f * area + r * size + c]))).join("");
+      validateFacelets(skeleton);
+    } else {
+      let twists = 0;
+      const used = new Set<number>();
+      const convert = (i: number) => Math.floor(i / 9) * area + Math.floor((i % 9) / 3) / 2 * (size - 1) * size + (i % 3) / 2 * (size - 1);
+      for (const slot of corners) {
+        const colors = slot.map(i => value[convert(i)]);
+        const matches = corners.flatMap((home, piece) => [0, 1, 2].filter(o => home.every((i, n) => colors[(n + o) % 3] === SOLVED_FACELETS[i])).map(o => ({piece, o})));
+        if (matches.length !== 1 || used.has(matches[0].piece)) throw Error("Invalid, mirrored, or duplicate corners.");
+        used.add(matches[0].piece);
+        twists += matches[0].o;
+      }
+      if (twists % 3) throw Error("Impossible corner twist.");
+    }
+    return;
+  }
   if (
     value.length !== 54 ||
     [...FACE_ORDER].some((f) => [...value].filter((c) => c === f).length !== 9)
@@ -73,17 +98,19 @@ export function validateFacelets(value: string) {
     throw Error("Corner and edge permutation parity differs.");
 }
 // Row-major views from outside each face. U's top is B; D's top is F.
-export const faceletGeometry = [...FACE_ORDER].flatMap((face) =>
-  Array.from({ length: 9 }, (_, i) => {
-    const r = Math.floor(i / 3),
-      c = i % 3;
+export function geometryFor(size: CubeSize = 3) {
+  const edge = (size - 1) / 2;
+  return [...FACE_ORDER].flatMap((face) =>
+  Array.from({ length: size * size }, (_, i) => {
+    const r = Math.floor(i / size),
+      c = i % size;
     const coordinates: Record<string, number[]> = {
-      U: [c - 1, 1, r - 1],
-      R: [1, 1 - r, 1 - c],
-      F: [c - 1, 1 - r, 1],
-      D: [c - 1, -1, 1 - r],
-      L: [-1, 1 - r, c - 1],
-      B: [1 - c, 1 - r, -1],
+      U: [c - edge, edge, r - edge],
+      R: [edge, edge - r, edge - c],
+      F: [c - edge, edge - r, edge],
+      D: [c - edge, -edge, edge - r],
+      L: [-edge, edge - r, c - edge],
+      B: [edge - c, edge - r, -edge],
     };
     const normals: Record<string, number[]> = {
       U: [0, 1, 0],
@@ -100,6 +127,8 @@ export const faceletGeometry = [...FACE_ORDER].flatMap((face) =>
     };
   }),
 );
+}
+export const faceletGeometry = geometryFor();
 const near = (a: Vector3, b: Vector3) => a.distanceToSquared(b) < 0.001;
 const directions = [
   new Vector3(1, 0, 0),
@@ -119,7 +148,9 @@ const rotations = directions.flatMap((x) =>
     ),
 );
 export function cubiesToFacelets(state: Cubie[]) {
-  const result = Array<string>(54);
+  const size = cubeSize(state);
+  const faceletGeometry = geometryFor(size);
+  const result = Array<string>(6 * size * size);
   for (const c of state)
     for (const sticker of faceletGeometry.filter((s) =>
       near(s.position, new Vector3(...c.home)),
@@ -133,14 +164,20 @@ export function cubiesToFacelets(state: Cubie[]) {
     }
   return result.join("");
 }
-export function faceletsToCubies(value: string): Cubie[] {
-  validateFacelets(value);
-  return solved().map((c) => {
+export function faceletsToCubies(value: string, size: CubeSize = 3): Cubie[] {
+  validateFacelets(value, size);
+  const faceletGeometry = geometryFor(size);
+  const occupied = new Set<string>();
+  return solved(size).map((c) => {
     const home = new Vector3(...c.home),
       stickers = faceletGeometry.filter((s) => near(s.position, home));
     if (!stickers.length) return c;
     for (const rotation of rotations) {
-      const position = home.clone().applyQuaternion(rotation).round();
+      const position = home.clone().applyQuaternion(rotation);
+      const edge = (size - 1) / 2;
+      position.set(...position.toArray().map(n => Math.round(n + edge) - edge) as [number, number, number]);
+      const key = position.toArray().join();
+      if (occupied.has(key)) continue;
       if (
         stickers.every((sticker) => {
           const normal = sticker.normal.clone().applyQuaternion(rotation);
@@ -150,7 +187,10 @@ export function faceletsToCubies(value: string): Cubie[] {
           return index >= 0 && value[index] === sticker.face;
         })
       )
-        return { ...c, position, rotation: rotation.clone() };
+        {
+          occupied.add(key);
+          return { ...c, position, rotation: rotation.clone() };
+        }
     }
     throw Error("Cannot orient cube piece");
   });

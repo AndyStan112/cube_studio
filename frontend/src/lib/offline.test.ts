@@ -62,3 +62,12 @@ it("keeps failed offline edits queued, then applies them when connectivity retur
   expect(request).toHaveBeenLastCalledWith("/solves/solve", expect.objectContaining({ method: "DELETE" }));
   expect(readStored("cube-studio-pending-edits-v1:user", [])).toEqual([]);
 });
+
+it("retains the cube event on offline scrambles and solves", () => {
+  for (const event of ["444", "555"] as const) {
+    const scramble = localScramble(event);
+    expect(scramble.event).toBe(event);
+    expect(scramble.moves.split(" ")).toHaveLength(event === "444" ? 40 : 60);
+    expect(localSolve(scramble, 65000, "none").event).toBe(event);
+  }
+});

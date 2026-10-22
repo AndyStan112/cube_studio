@@ -1,5 +1,6 @@
 import { useCallback, useReducer, type SetStateAction } from "react";
-import { SOLVED_FACELETS } from "./facelets";
+import type { CubeSize } from "./cube";
+import { solvedFacelets } from "./facelets";
 export type Representation = "2d" | "text" | "3d";
 export type SolverInput = { value: string; representation: Representation };
 type Action =
@@ -13,9 +14,9 @@ export function solverInputReducer(state: SolverInput, action: Action): SolverIn
     value: typeof action.value === "function" ? action.value(state.value) : action.value,
   };
 }
-export function useSolverInput() {
+export function useSolverInput(size: CubeSize = 3) {
   const [state, dispatch] = useReducer(solverInputReducer, {
-    value: SOLVED_FACELETS,
+    value: solvedFacelets(size),
     representation: "3d",
   });
   const setValue = useCallback((value: SetStateAction<string>) => dispatch({ type: "value", value }), []);

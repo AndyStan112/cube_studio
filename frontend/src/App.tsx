@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Box, Layers3, LogOut, Timer, X } from "lucide-react";
 import {
   api,
@@ -9,6 +9,8 @@ import {
   type User,
 } from "./lib/api";
 import { cachedCatalog, refreshCatalog, flushSolveEdits, localScramble, readStored, writeStored, solvesKey } from "./lib/offline";
+import { cubeEvents, puzzles, solveEvent, type CubeEvent } from "./lib/puzzles";
+import BigCubePractice from "./components/BigCubePractice";
 import TimerPage from "./components/TimerPage";
 import AlgorithmPage from "./components/AlgorithmPage";
 import SolverPage from "./components/SolverPage";
@@ -17,6 +19,13 @@ import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
 type Page = "timer" | "algorithms" | "solver";
 export default function App() {
+  const [event, setEvent] = useState<CubeEvent>(() => {
+    const saved = readStored<CubeEvent>("cube-studio-event-v1", "333");
+    return cubeEvents.includes(saved) ? saved : "333";
+  });
+  const [practiceOpen, setPracticeOpen] = useState(false);
+  const [timerLocked, setTimerLocked] = useState(false);
+  const scrambleTicket = useRef(0);
   const [page, setPage] = useState<Page>("timer"),
     [user, setUser] = useState<User | null>(null),
     [authOpen, setAuthOpen] = useState(false),
@@ -34,34 +43,42 @@ export default function App() {
     [],
   );
   const loadScramble = useCallback(async () => {
+    const ticket = ++scrambleTicket.current;
     setLoading(true);
     try {
-      if (!navigator.onLine) { setScramble(localScramble()); return; }
-      setScramble(await api<Scramble>("/scrambles", { method: "POST", signal: AbortSignal.timeout(6000) }));
+      const next = navigator.onLine
+        ? await api<Scramble>("/scrambles", {
+          method: "POST", body: JSON.stringify({ event }), signal: AbortSignal.timeout(6000),
+        })
+        : localScramble(event);
+      if (ticket === scrambleTicket.current) setScramble(next);
     } catch {
-      setScramble(localScramble());
+      if (ticket === scrambleTicket.current) setScramble(localScramble(event));
     } finally {
-      setLoading(false);
+      if (ticket === scrambleTicket.current) setLoading(false);
     }
-  }, []);
+  }, [event]);
   useEffect(() => {
     void loadScramble();
+    return () => { scrambleTicket.current++; };
+  }, [loadScramble]);
+  useEffect(() => {
     const refresh = () => void refreshCatalog().then(setCatalog).catch(notify);
     refresh();
     window.addEventListener("online", refresh);
     authProvider.getUser().then(setUser).catch(() => {});
     return () => window.removeEventListener("online", refresh);
-  }, [loadScramble, notify]);
+  }, [notify]);
   useEffect(() => {
     let active = true;
     setSolves(readStored<Solve[]>(solvesKey(user?.id), []));
     const refresh = () => {
       if (user)
-        flushSolveEdits(user.id).then(() => api<Solve[]>("/solves", { signal: AbortSignal.timeout(6000) }))
+        flushSolveEdits(user.id).then(() => api<Solve[]>(`/solves?event=${event}`, { signal: AbortSignal.timeout(6000) }))
           .then((items) => {
             if (active) {
-              const local = readStored<Solve[]>(solvesKey(user?.id), []).filter(s => s.id.startsWith("local:"));
-              const merged = [...local, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at));
+              const retained = readStored<Solve[]>(solvesKey(user.id), []).filter(s => s.id.startsWith("local:") || solveEvent(s) !== event);
+              const merged = [...retained, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at));
               writeStored(solvesKey(user?.id), merged);
               setSolves(merged);
             }
@@ -76,7 +93,7 @@ export default function App() {
       active = false;
       window.removeEventListener("online", refresh);
     };
-  }, [user, notify]);
+  }, [user, notify, event]);
   const signedIn = (u: User) => {
     setUser(u);
     setAuthOpen(false);
@@ -142,9 +159,18 @@ export default function App() {
                 : "Algorithms"}
           </h1>
           <div className="topbar-right">
-            {page !== "algorithms" && <span className="event-badge">
-              <Box size={14} />3 × 3 × 3
-            </span>}
+            <label className="puzzle-picker">
+              <span>Puzzle</span>
+              <select aria-label="Puzzle" value={event} disabled={page === "timer" && timerLocked}
+                title={page === "timer" && timerLocked ? "Save or discard this time before changing puzzles." : "Choose puzzle"}
+                onChange={(e) => {
+                  const next = e.target.value as CubeEvent;
+                  writeStored("cube-studio-event-v1", next);
+                  setEvent(next);
+                }}>
+                {cubeEvents.map(value => <option key={value} value={value}>{puzzles[value].label}</option>)}
+              </select>
+            </label>
             {user ? (
               <>
                 <span className="avatar" title={`${user.name} · Demo user`}>
@@ -185,8 +211,11 @@ export default function App() {
           )}
           {page === "timer" ? (
             <TimerPage
+              key={event}
+              event={event}
+              onLockChange={setTimerLocked}
+              scramble={scramble?.event === event ? scramble : null}
               {...{
-                scramble,
                 loading,
                 loadScramble,
                 user,
@@ -197,9 +226,15 @@ export default function App() {
               onSignIn={() => setAuthOpen(true)}
             />
           ) : page === "solver" ? (
-            <SolverPage />
+            <>
+              <SolverPage key={event} size={puzzles[event].size} />
+              {event !== "333" && <details className="card practice-panel" onToggle={e => setPracticeOpen(e.currentTarget.open)}>
+                <summary>Scramble playback and return sequence</summary>
+                {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
+              </details>}
+            </>
           ) : (
-            <AlgorithmPage {...catalog} />
+            <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           )}
         </main>
       </div>

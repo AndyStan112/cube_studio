@@ -105,7 +105,7 @@ def test_invalid_and_unsupported(monkeypatch):
         assert c.post("/api/solver/jobs", json=payload("U" * 54)).status_code == 422
         assert c.post("/api/solver/jobs", content=b"x" * 8193).status_code == 413
         assert c.post("/api/solver/jobs", json={}).status_code == 422
-        assert c.get("/api/solver/capabilities").json()["metrics"] == ["HTM"]
+        assert c.get("/api/solver/capabilities").json()["metrics"] == ["HTM", "OBTM"]
 
 
 def test_physical_invariants():

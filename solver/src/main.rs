@@ -110,6 +110,20 @@ fn start_job(id: String, c: Cube, budget: u64, tables: Arc<Tables>) -> Job {
     job
 }
 fn main() {
+    let arguments: Vec<String> = std::env::args().collect();
+    if arguments.get(1).is_some_and(|arg| arg == "--two-phase") {
+        let Some(value) = arguments.get(2).filter(|value| Cube::parse(value).is_ok()) else {
+            eprintln!("Invalid 3x3 facelets");
+            std::process::exit(2);
+        };
+        let result = min2phase::solve(value, 22);
+        if result.starts_with("Error") {
+            eprintln!("{result}");
+            std::process::exit(1);
+        }
+        println!("{result}");
+        return;
+    }
     if std::env::args().any(|a| a == "--healthcheck") {
         let ready = (|| -> std::io::Result<bool> {
             let mut stream = std::net::TcpStream::connect_timeout(
@@ -147,7 +161,8 @@ fn main() {
         benchmark::run(&tables);
         return;
     }
-    let server = Server::http("0.0.0.0:8081").expect("listen");
+    let address = std::env::var("SOLVER_LISTEN_ADDR").unwrap_or_else(|_| "0.0.0.0:8081".into());
+    let server = Server::http(address).expect("listen");
     let mut active: Option<Job> = None;
     while !shutting_down.load(Ordering::Relaxed) {
         let Some(mut request) = server

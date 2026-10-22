@@ -1,0 +1,11 @@
+NxN reduction engine: https://github.com/dwalton76/rubiks-cube-NxNxN-solver
+Pinned revision: 6c9663d95bc81aadfdc069397902e0b9a163c705
+Copyright (c) 2019 Daniel Walton. MIT license.
+The complete pinned source and its LICENSE are included in /opt/nxn-engine.
+Lookup tables are downloaded from the engine author's documented S3 bucket at image build time.
+
+The engine's final 3x3 stage calls our kociemba command adapter, which runs the
+existing MIT-licensed min2phase engine via solver-worker --two-phase.
+No additional Kociemba package is installed.
+
+Existing min2phase engine: see /usr/share/licenses/solver/min2phase-LICENSE.

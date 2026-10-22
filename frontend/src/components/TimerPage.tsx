@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -21,7 +21,13 @@ import {
   type Solve,
   type User,
 } from "../lib/api";
+import { forEvent, puzzles, type CubeEvent } from "../lib/puzzles";
+import { applyMove, solved } from "../lib/cube";
+const Cube = lazy(() => import("./Cube"));
+const noMoves: string[] = [];
 export default function TimerPage({
+  event,
+  onLockChange,
   scramble,
   loading,
   loadScramble,
@@ -31,6 +37,8 @@ export default function TimerPage({
   notify,
   onSignIn,
 }: {
+  event: CubeEvent;
+  onLockChange: (locked: boolean) => void;
   scramble: Scramble | null;
   loading: boolean;
   loadScramble: () => Promise<void>;
@@ -47,6 +55,16 @@ export default function TimerPage({
     [pending, setPending] = useState<number | null>(null),
     [busy, setBusy] = useState(false),
     [penalty, setPenalty] = useState<Solve["penalty"]>("none");
+  const [showPreview, setShowPreview] = useState(false);
+  const puzzle = puzzles[event];
+  const eventSolves = forEvent(solves, event);
+  const preview = useMemo(() => showPreview && scramble
+    ? scramble.moves.split(/\s+/).reduce((state, move) => applyMove(state, move), solved(puzzle.size))
+    : undefined, [showPreview, scramble, puzzle.size]);
+  useEffect(() => {
+    onLockChange(running || pending !== null || busy || (manualMode && manual.trim().length > 0));
+  }, [running, pending, busy, manualMode, manual, onLockChange]);
+  useEffect(() => () => onLockChange(false), [onLockChange]);
   const start = useRef(0);
   const toggle = useCallback(() => {
     if (!scramble || pending !== null || busy || loading) return;
@@ -122,9 +140,9 @@ export default function TimerPage({
       setBusy(false);
     }
   };
-  const best = solves.length ? Math.min(...solves.map(effective)) : null;
+  const best = eventSolves.length ? Math.min(...eventSolves.map(effective)) : null;
   const average = (n: number) => {
-    const v = averageOf(solves, n);
+    const v = averageOf(eventSolves, n);
     return v === null ? "—" : Number.isFinite(v) ? formatTime(v) : "DNF";
   };
   const changePenalty = async (s: Solve, p: Solve["penalty"]) => {
@@ -188,7 +206,16 @@ export default function TimerPage({
           <div className="scramble" aria-label="Current scramble">
             {scramble?.moves || (loading ? "Generating…" : "No scramble")}
           </div>
-          <div className="scramble-note">25 moves · White top, green front</div>
+          <div className="scramble-note">{scramble?.moves.split(/\s+/).length ?? puzzle.scrambleLength} moves · Yellow top, red front · Practice scramble</div>
+          <details className="scramble-preview" onToggle={(e) => setShowPreview(e.currentTarget.open)}>
+            <summary>Preview scramble</summary>
+            {showPreview && preview && <div className="cube-stage">
+              <Suspense fallback={<p>Loading cube…</p>}>
+                <Cube key={scramble?.id} size={puzzle.size} initialState={preview} moves={noMoves} step={0}
+                  transparent={false} resetView={0} maskIrrelevant={false} focus="all" />
+              </Suspense>
+            </div>}
+          </details>
           <div className={`timer-zone ${running ? "is-running" : ""}`}>
             <div className="timer-status">
               {running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
@@ -290,7 +317,7 @@ export default function TimerPage({
       <section className="session-stats" aria-label="Solve statistics">
         <div>
           <span>Solves</span>
-          <strong>{solves.length}</strong>
+          <strong>{eventSolves.length}</strong>
         </div>
         <div>
           <span>Best</span>
@@ -313,12 +340,12 @@ export default function TimerPage({
         <div>
           <span>Mean</span>
           <strong>
-            {solves.length
-              ? solves.some((s) => s.penalty === "DNF")
+            {eventSolves.length
+              ? eventSolves.some((s) => s.penalty === "DNF")
                 ? "DNF"
                 : formatTime(
-                    solves.reduce((a, s) => a + effective(s), 0) /
-                      solves.length,
+                    eventSolves.reduce((a, s) => a + effective(s), 0) /
+                      eventSolves.length,
                   )
               : "—"}
           </strong>
@@ -328,37 +355,37 @@ export default function TimerPage({
         <div className="history-header">
           <div>
             <h2>
-              Solves <span>{solves.length}</span>
+              Solves <span>{eventSolves.length}</span>
             </h2>
           </div>
           <span className="small-muted">
             Newest first <ArrowDown size={13} />
           </span>
         </div>
-        {!user && !solves.length ? (
+        {!user && !eventSolves.length ? (
           <div className="empty-state">
             <p>Solves are saved on this device. Sign in for online history.</p>
             <button className="button" onClick={onSignIn}>
               Sign in <ArrowRight size={16} />
             </button>
           </div>
-        ) : !solves.length ? (
+        ) : !eventSolves.length ? (
           <div className="empty-state">
             <p>No solves yet.</p>
           </div>
         ) : (
           <ol className="solve-list">
-            {solves.map((s, i) => (
+            {eventSolves.map((s, i) => (
               <li key={s.id}>
                 <div className="solve-row">
-                  <span className="solve-number">{solves.length - i}</span>
+                  <span className="solve-number">{eventSolves.length - i}</span>
                   <strong className="solve-time">
                     {s.penalty === "DNF" ? "DNF" : formatTime(effective(s))}
                     {s.penalty === "+2" && <small> +2</small>}
                     {s.id.startsWith("local:") && <small> · On this device</small>}
                   </strong>
                   <select
-                    aria-label={`Penalty for solve ${solves.length - i}`}
+                    aria-label={`Penalty for solve ${eventSolves.length - i}`}
                     value={s.penalty}
                     onChange={(e) =>
                       changePenalty(s, e.target.value as Solve["penalty"])
@@ -370,7 +397,7 @@ export default function TimerPage({
                   </select>
                   <button
                     className="icon-button delete"
-                    aria-label={`Delete solve ${solves.length - i}`}
+                    aria-label={`Delete solve ${eventSolves.length - i}`}
                     onClick={() => remove(s)}
                   >
                     <Trash2 size={16} />

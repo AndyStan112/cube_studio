@@ -1,3 +1,4 @@
+import { practiceMoves, type CubeEvent } from "./puzzles";
 import { api, ApiError, type AlgorithmCatalog, type Scramble, type Solve } from "./api";
 export function readStored<T>(key: string, fallback: T): T {
   try {
@@ -33,17 +34,11 @@ export async function refreshCatalog(): Promise<AlgorithmCatalog> {
     throw error;
   }
 }
-export function localScramble(): Scramble {
-  let previous = "";
-  const moves = Array.from({ length: 25 }, () => {
-    const faces = [..."URFDLB"].filter(face => face !== previous);
-    previous = faces[Math.floor(Math.random() * faces.length)];
-    return previous + ["", "'", "2"][Math.floor(Math.random() * 3)];
-  }).join(" ");
-  return { id: `local:${crypto.randomUUID()}`, moves, event: "333" };
+export function localScramble(event: CubeEvent = "333"): Scramble {
+  return { id: `local:${crypto.randomUUID()}`, moves: practiceMoves(event).join(" "), event };
 }
 export const localSolve = (scramble: Scramble, time_ms: number, penalty: Solve["penalty"]): Solve => ({
-  id: `local:${crypto.randomUUID()}`, scramble: scramble.moves, time_ms, penalty, created_at: new Date().toISOString(),
+  id: `local:${crypto.randomUUID()}`, scramble: scramble.moves, event: scramble.event, time_ms, penalty, created_at: new Date().toISOString(),
 });
 export const solvesKey = (userId?: string) => `cube-studio-solves-v1:${userId ?? "guest"}`;
 type PendingEdit = { id: string; penalty?: Solve["penalty"]; remove?: boolean };

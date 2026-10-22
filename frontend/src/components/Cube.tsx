@@ -55,6 +55,10 @@ function Model({
   useLayoutEffect(() => {
     progress.current = 0;
   }, [states]);
+  useLayoutEffect(() => {
+    // Long reduction solutions must seek directly rather than replay every skipped move.
+    if (Math.abs(step - progress.current) > 2) progress.current = step;
+  }, [step]);
   useFrame((_, dt) => {
     const delta = step - progress.current;
     progress.current =

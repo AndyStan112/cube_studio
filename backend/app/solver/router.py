@@ -35,9 +35,14 @@ manager = Manager()
 async def capabilities():
     return {
         "schema_version": 1,
-        "puzzles": [{"type": "cube", "size": 3}],
-        "metrics": ["HTM"],
-        "methods": ["unrestricted"],
+        "puzzles": [{"type": "cube", "size": size} for size in (3, 4, 5)],
+        "metrics": ["HTM", "OBTM"],
+        "methods": ["unrestricted", "reduction"],
+        "puzzle_capabilities": {
+            "3": {"metric": "HTM", "objective": "optimal", "method": "unrestricted", "offline": True},
+            "4": {"metric": "OBTM", "objective": "solution", "method": "reduction", "offline": False},
+            "5": {"metric": "OBTM", "objective": "solution", "method": "reduction", "offline": False},
+        },
         "constraints": [],
         "optimality_scope": "global",
         "exact_engine": "IDA*; limited heuristic, deep states may time out",

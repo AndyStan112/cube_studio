@@ -9,7 +9,7 @@ from fastapi import HTTPException
 from .worker_client import WorkerClient
 
 log = logging.getLogger(__name__)
-TERMINAL = {"optimal_proved", "timed_out", "cancelled", "failed"}
+TERMINAL = {"complete", "optimal_proved", "timed_out", "cancelled", "failed"}
 
 
 @dataclass
@@ -32,7 +32,8 @@ class Job:
         return {
             "id": self.id,
             "status": self.status,
-            "metric": "HTM",
+            "metric": self.request.solver.metric,
+            "puzzle_size": self.request.puzzle.size,
             "elapsed_ms": int(
                 (self.finished or time.monotonic()) * 1000 - self.created * 1000
             ),
@@ -196,7 +197,8 @@ class Manager:
                 except Exception:
                     pass
                 job.error = (
-                    "Native worker unavailable or failed. Use the offline solver."
+                    "Native worker unavailable or failed. Use the offline solver." if job.request.puzzle.size == 3
+                    else "Bigger-cube solver unavailable or failed. Please retry when the solver is online."
                 )
                 job.finish("failed")
             finally:

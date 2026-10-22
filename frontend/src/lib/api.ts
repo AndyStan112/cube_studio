@@ -1,8 +1,10 @@
+import type { CubeEvent } from "./puzzles";
 import type { CubeSize } from "./cube";
 import type { StickerFocus } from "./stickerFocus";
 import { authProvider } from "./auth";
 export type { User } from "./auth";
 export type Solve = {
+  event?: CubeEvent;
   id: string;
   scramble: string;
   time_ms: number;
@@ -41,7 +43,7 @@ export type AlgorithmCatalog = {
   sets: AlgorithmSet[];
   algorithms: Algorithm[];
 };
-export type Scramble = { id: string; moves: string; event: string };
+export type Scramble = { id: string; moves: string; event: CubeEvent };
 export class ApiError extends Error {
   constructor(
     message: string,

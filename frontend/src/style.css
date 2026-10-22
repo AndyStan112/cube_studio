@@ -1089,3 +1089,39 @@ select:focus {
     margin-inline: 24px;
   }
 }
+
+.puzzle-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.puzzle-picker select {
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--card-bg, white);
+  color: var(--text, #19352c);
+  font: inherit;
+}
+.puzzle-picker select:disabled { opacity: 0.5; }
+.scramble-preview { margin: 0 16px 12px; }
+.scramble-preview summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.scramble-preview .cube-stage { margin-top: 12px; border-radius: 8px; overflow: hidden; }
+.practice-moves {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg, white);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+@media (max-width: 480px) {
+  .puzzle-picker > span { display: none; }
+}
+.practice-panel { margin-top: 20px; padding: 16px; }
+.practice-panel > summary { cursor: pointer; margin-bottom: 12px; }

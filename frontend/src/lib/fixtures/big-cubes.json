@@ -1,0 +1,60 @@
+[
+  {
+    "size": 4,
+    "moves": [
+      "Rw",
+      "U",
+      "Fw2",
+      "L'",
+      "Dw2",
+      "B",
+      "Rw'",
+      "U2",
+      "F",
+      "R2",
+      "Bw",
+      "D'",
+      "Lw",
+      "U'",
+      "Fw",
+      "R",
+      "Uw2",
+      "B2",
+      "L",
+      "D",
+      "Rw2",
+      "F2"
+    ],
+    "facelets": "RFBLRBLLUULLURFRBBBDLBFLDUDDLULDRDDDBFUDRLDBLRFFDBUUFDRBFRRFUDRRUUFFFRFUULUUBLRBFRRBUDBDLBFLFDBL"
+  },
+  {
+    "size": 5,
+    "moves": [
+      "Fw2",
+      "Rw",
+      "U2",
+      "Lw'",
+      "B",
+      "Dw2",
+      "R'",
+      "F",
+      "Uw",
+      "D2",
+      "L",
+      "B2",
+      "Rw'",
+      "U",
+      "F'",
+      "Lw2",
+      "Bw",
+      "U'",
+      "R2",
+      "Dw",
+      "Fw'",
+      "D",
+      "L2",
+      "Uw2"
+    ],
+    "facelets": "FBFDBFDDDUBBURULRFLFURLURDRRRDULRFDBURUUUUFFBLDBFLRFUBFDBBBLDDFLDRRBBFDLRRURUDBBRFDRFRFDRLDLULURUDDDLLUBFUULUBFBLUFFBLFDBRBBBLLRLULDDRBFRBFLDULDLFFLRU"
+  }
+]

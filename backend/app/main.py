@@ -16,6 +16,7 @@ async def lifespan(app):
     app.state.client = AsyncMongoClient(os.getenv("MONGO_URL", "mongodb://localhost:27017"), serverSelectionTimeoutMS=5000, tz_aware=True)
     app.state.db = app.state.client["cube_studio"]
     await app.state.db.solves.create_index([("user_id", 1), ("created_at", -1)])
+    await app.state.db.solves.create_index([("user_id", 1), ("event", 1), ("created_at", -1)])
     await app.state.db.scrambles.create_index("expires_at", expireAfterSeconds=0)
     yield
     await solver_manager.close()
@@ -24,6 +25,11 @@ async def lifespan(app):
 app = FastAPI(title="Cube Studio API", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(solver_router)
+
+CubeEvent = Literal["333", "444", "555"]
+
+class ScrambleInput(BaseModel):
+    event: CubeEvent = "333"
 
 class SolveInput(BaseModel):
     scramble_id: str
@@ -61,25 +67,31 @@ async def algorithms():
     ]
 
 @app.post('/api/scrambles', status_code=201)
-async def new_scramble():
-    doc = {"moves": scramble(), "event": "333", "expires_at": datetime.now(timezone.utc) + timedelta(days=7)}
+async def new_scramble(data: ScrambleInput | None = None):
+    event = data.event if data else "333"
+    doc = {"moves": scramble(event=event), "event": event, "expires_at": datetime.now(timezone.utc) + timedelta(days=7)}
     result = await app.state.db.scrambles.insert_one(doc)
-    return {"id": str(result.inserted_id), "moves": doc["moves"], "event": "333"}
+    return {"id": str(result.inserted_id), "moves": doc["moves"], "event": event}
 
 @app.get('/api/solves')
-async def solves(user=Depends(current_user)):
-    docs = await app.state.db.solves.find({"user_id": user.id}).sort("created_at", -1).limit(1000).to_list(1000)
+async def solves(event: CubeEvent = "333", user=Depends(current_user)):
+    query = {"user_id": user.id}
+    if event == "333":
+        query["$or"] = [{"event": "333"}, {"event": {"$exists": False}}]
+    else:
+        query["event"] = event
+    docs = await app.state.db.solves.find(query).sort("created_at", -1).limit(1000).to_list(1000)
     return [serialize_solve(doc) for doc in docs]
 
 def serialize_solve(doc):
-    return {"id": str(doc["_id"]), "scramble": doc["scramble"], "time_ms": doc["time_ms"], "penalty": doc["penalty"], "created_at": doc["created_at"].isoformat()}
+    return {"id": str(doc["_id"]), "scramble": doc["scramble"], "event": doc.get("event", "333"), "time_ms": doc["time_ms"], "penalty": doc["penalty"], "created_at": doc["created_at"].isoformat()}
 
 @app.post('/api/solves', status_code=201)
 async def save_solve(data: SolveInput, user=Depends(current_user)):
     scramble_doc = await app.state.db.scrambles.find_one({"_id": oid(data.scramble_id), "expires_at": {"$gt": datetime.now(timezone.utc)}})
     if not scramble_doc:
         raise HTTPException(422, "Scramble expired. Generate a new one.")
-    doc = {"user_id": user.id, "scramble": scramble_doc["moves"], "event": "333", "time_ms": data.time_ms, "penalty": data.penalty, "created_at": datetime.now(timezone.utc)}
+    doc = {"user_id": user.id, "scramble": scramble_doc["moves"], "event": scramble_doc.get("event", "333"), "time_ms": data.time_ms, "penalty": data.penalty, "created_at": datetime.now(timezone.utc)}
     doc["_id"] = (await app.state.db.solves.insert_one(doc)).inserted_id
     return serialize_solve(doc)
 

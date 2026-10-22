@@ -41,8 +41,7 @@ function InfoCircle({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
-  const [selectedPuzzle, setSelectedPuzzle] = useState<CubeSize>(3);
+export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPuzzle }: AlgorithmCatalog & { puzzleSize: CubeSize }) {
   const puzzleSets = sets.filter((item) => (item.puzzle_size ?? 3) === selectedPuzzle);
   const [selectedSet, setSelectedSet] = useState("all"),
     [selectedSection, setSelectedSection] = useState("all"),
@@ -90,6 +89,17 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
     }
   };
   useEffect(() => {
+    setSelectedSet("all");
+    setSelectedSection("all");
+    setStep(0);
+    setPlaying(false);
+    const next = algorithms.find(item => (item.puzzle_size ?? 3) === selectedPuzzle);
+    if (next) {
+      setSelected(next.id);
+      setSelectedVariation(next.variations[0].id);
+    }
+  }, [selectedPuzzle]);
+  useEffect(() => {
     if (!playing) return;
     if (step >= moves.length) {
       setPlaying(false);
@@ -105,22 +115,6 @@ export default function AlgorithmPage({ algorithms, sets }: AlgorithmCatalog) {
   return (
     <div className="algorithm-layout">
       <aside className="card algorithm-library">
-        <label className="library-set">
-          <span>Puzzle</span>
-          <select
-            aria-label="Puzzle"
-            value={selectedPuzzle}
-            onChange={(event) => {
-              const size = Number(event.target.value) as CubeSize;
-              setSelectedPuzzle(size);
-              changeFilter("all", "all", size);
-            }}
-          >
-            {[3, 4, 5].map((size) => (
-              <option key={size} value={size}>{size}×{size}</option>
-            ))}
-          </select>
-        </label>
         <label className="library-set">
           <span>Set</span>
           <select
