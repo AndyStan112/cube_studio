@@ -29,18 +29,26 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
+        fsGroup: 10001
+      volumes:
+        - name: solver-tmp
+          emptyDir:
+            sizeLimit: 512Mi
       containers:
         - name: solver
           image: cube-solver
           ports:
             - containerPort: 8081
+          volumeMounts:
+            - name: solver-tmp
+              mountPath: /tmp
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 512Mi
             limits:
               cpu: "2"
-              memory: 1Gi
+              memory: 4Gi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
