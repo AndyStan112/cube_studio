@@ -243,3 +243,90 @@ production-grade arbitrary-state optimal solver.
 Additional browser checks passed: reloading reconnects to the same active job,
 and failed online job creation with navigator.onLine=true automatically runs
 the offline solver. Worker readiness and SIGTERM shutdown are checked in Compose.
+
+## Guided method solver
+
+The current API also supports 4×4 and 5×5 (the original 3×3 milestone above is
+retained as implementation history). The Solver page now defaults to a guided
+method, with the existing unrestricted/automatic solve available separately.
+
+Guided requests use `objective: "solution"`, no custom constraints, and these
+method values:
+
+| Size | Method | Post-reduction method | Metric |
+| --- | --- | --- | --- |
+| 3 | `beginner` | omitted | HTM |
+| 4 | `meyer` (default) or `reduction_beginner` | `beginner` | OBTM |
+| 5 | `reduction_beginner` | `beginner` | OBTM |
+
+`post_reduction_method` is independent of the big-cube selection; only `beginner`
+is currently accepted. Meyer on another size, other post-reduction methods and
+custom constraints are rejected with 422. Capabilities list the supported guided
+methods. Guided results have `method`, `post_reduction_method`, `stages` and
+`chunks` in addition to the existing verified solution fields. Every boundary
+uses zero-based, half-open move offsets (`start`, `end`). Stages carry a goal
+explanation, a physical checkpoint, verification and an explicit skipped flag.
+Named chunks explain the action and any setup/core/undo sequence.
+
+The 3×3 planner is a layer-by-layer implementation:
+
+1. White cross, including matching side colors.
+2. White corners, using top setups and three-move corner insertion triggers.
+3. Middle edges, using left/right beginner insertions.
+4. Yellow cross, using the six-move cross builder.
+5. Yellow edge positions, using the beginner top-edge cycle.
+6. Yellow corner locations, using the beginner three-corner cycle.
+7. Yellow corner twists, using repeated `R' D' R D` triggers and only U turns
+   between working corners. Lower layers temporarily look disturbed in this
+   final step and are restored when it finishes.
+
+Piece-projection searches select beginner actions for the actual input state.
+They do not run a two-phase solver and relabel its output. Each stage checks its
+own goal and the earlier-layer goals. Completed goals may be temporarily
+unmade within a named action; their restoration is checked at the appropriate
+boundary. Solved stages remain visible with zero moves. No full OLL/PLL or F2L
+algorithm sets are used for the 3×3 finish, and no guided result claims optimality.
+
+Meyer builds opposite L/R centers, then the bottom-left 1×3×4 block (two corners
+and the DL/FL/BL dedges), then the remaining centers and wings. This teaching
+variant uses pure three-piece cycles and puts paired edges directly against
+matching centers. The existing block is restored after every complete center or
+wing action; it is checked again at each stage. The 3×3 finish uses the selected
+beginner method rather than Meyer's usual Roux finish. The center-first reduction
+options solve white, opposite yellow, remaining centers, then edge groups. On
+5×5, wings are matched to the actual middle edge pieces; the separate center
+orbits remain respected.
+
+The planner generates pure center and wing commutators, conjugates them into a
+library of target three-cycles, then chooses placements that preserve completed
+pieces and complete additional goals. Actions explain their three target
+locations, setup, core and undo. Dedicated big-cube parity corrections are named
+separately and occur before the beginner handoff. They are not presented as
+ordinary 3×3 algorithms. Fixed reference throughout: yellow up, red front,
+green right, blue left, white down, orange back.
+
+Guided work runs in an isolated Python process in the existing private worker,
+with cancellation and the existing job deadline. It needs neither NxN lookup
+tables nor the native two-phase search. The existing automatic big-cube mode
+still uses the table-backed upstream engine. Guided solving currently requires
+an online worker; completed saved lessons can be replayed offline. Network
+failure never substitutes an unrestricted offline solve for a guided request.
+
+The UI separates stages, names sequences and every move, explains clockwise,
+prime, half, inner-slice and wide-turn notation, and offers previous/restart/next
+stage controls. Playback pauses at stage boundaries. Its checkpoint display
+reflects the virtual cube; users must check their physical cube themselves.
+
+Validation includes seeded scramble solves with every beginner checkpoint,
+Meyer block preservation and 5×5 center preservation at action boundaries,
+explicit solved-stage skips, both parity forms, real subprocess completion,
+cancellation/deadline checks, API method routing, and independent TypeScript
+viewer replay of Python-generated fixtures for all four guided paths. Local
+exploratory samples: 1,000 random-turn beginner scrambles (74–190 turns, mean
+138.7) and 100 random-turn Meyer scrambles (288–421 turns, mean 351.8). These
+are teaching sequences, not speedsolve or shortest-move claims. The three-cycle
+big-cube approach is intentionally conservative and can be long; shorter
+intuitive block building and slice-based pairing are future improvements.
+
+Meyer stage order was checked against the
+[Speedsolving method reference](https://www.speedsolving.com/wiki/index.php/Meyer_method).

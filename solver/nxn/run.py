@@ -8,9 +8,28 @@ import re
 import sys
 
 from model import solution
+from beginner import plan
 
 
-def solve(value, size):
+def solve(value, size, method=None):
+    if method == 'beginner':
+        if size != 3:
+            raise ValueError('Beginner method requires a 3×3 state')
+        return plan(value)
+    if method == 'meyer':
+        if size != 4:
+            raise ValueError('Meyer method requires a 4×4 state')
+        from meyer import plan_meyer
+        return plan_meyer(value)
+    if method == 'reduction_beginner':
+        if size == 5:
+            from reduction import plan_reduction
+            return plan_reduction(value)
+        if size == 4:
+            # The 4×4 UI defaults to Meyer; keep classic reduction available.
+            from reduction4 import plan_reduction4
+            return plan_reduction4(value)
+        raise ValueError('Reduction requires a 4×4 or 5×5 state')
     root = Path(os.environ.get('NXN_ENGINE_ROOT', '/opt/nxn-engine'))
     sys.path.insert(0, str(root))
     module = importlib.import_module(f'rubikscubennnsolver.RubiksCube{size}{size}{size}')
@@ -34,9 +53,9 @@ def solve(value, size):
 if __name__ == '__main__':
     try:
         data = json.load(sys.stdin)
-        if data['size'] not in (4, 5):
+        if data['size'] not in (3, 4, 5):
             raise ValueError('Unsupported cube size')
-        print(json.dumps(solve(data['facelets'], data['size'])), flush=True)
+        print(json.dumps(solve(data['facelets'], data['size'], data.get('method'))), flush=True)
     except Exception as error:
         print(json.dumps({'error': str(error)}), flush=True)
         sys.exit(1)

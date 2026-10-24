@@ -41,7 +41,7 @@ class BigJob:
     def __init__(self, data, size):
         self.id = data['id']
         self.cancel = threading.Event()
-        self.state = {'status': 'searching', 'candidate': None, 'solution': None, 'progress': {'stage': 'reduction'}}
+        self.state = {'status': 'searching', 'candidate': None, 'solution': None, 'progress': {'stage': 'method_planning' if data.get('method') in ('beginner', 'meyer', 'reduction_beginner') else 'reduction'}}
         self.lock = threading.Lock()
         self.thread = threading.Thread(target=self.run, args=(data, size), daemon=True)
         self.thread.start()
@@ -55,12 +55,13 @@ class BigJob:
         try:
             with tempfile.TemporaryDirectory(prefix='cube-nxn-') as directory:
                 work = Path(directory)
-                (work / 'lookup-tables').symlink_to(ROOT / 'lookup-tables', target_is_directory=True)
-                (work / 'ida_search_via_graph').symlink_to(ROOT / 'ida_search_via_graph')
+                if data.get('method', 'reduction') == 'reduction':
+                    (work / 'lookup-tables').symlink_to(ROOT / 'lookup-tables', target_is_directory=True)
+                    (work / 'ida_search_via_graph').symlink_to(ROOT / 'ida_search_via_graph')
                 process = subprocess.Popen([sys.executable, str(Path(__file__).with_name('run.py'))], cwd=work,
                                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                            text=True, start_new_session=True)
-                process.stdin.write(json.dumps({'facelets': data['facelets'], 'size': size}))
+                process.stdin.write(json.dumps({'facelets': data['facelets'], 'size': size, 'method': data.get('method')}))
                 process.stdin.close()
                 process.stdin = None
                 deadline = time.monotonic() + min(300000, max(1, int(data.get('budget_ms', 300000)))) / 1000
@@ -88,7 +89,7 @@ class BigJob:
                         self.state.update(status='complete', solution=result, progress={'stage': 'verified'})
         except Exception:
             with self.lock:
-                self.state.update(status='failed', error='Bigger-cube solver failed. Please retry.')
+                self.state.update(status='failed', error='Method solver failed. Please retry.')
         finally:
             if process and process.poll() is None:
                 try:
@@ -128,12 +129,12 @@ class Handler(BaseHTTPRequestHandler):
                 state = active.view() if isinstance(active, BigJob) else forward('GET', '/jobs/' + active)[1]
                 if state.get('status') not in TERMINAL:
                     return 429, {'error': 'worker_busy'}
-            if size == 3:
+            if size == 3 and data.get('method', 'unrestricted') == 'unrestricted':
                 code, body = forward('POST', path, data)
                 if code == 202:
                     active = data['id']
                 return code, body
-            if not tables_ready():
+            if size != 3 and data.get('method', 'reduction') == 'reduction' and not tables_ready():
                 return 503, {'error': 'NxN lookup tables unavailable; rebuild the solver image.'}
             active = BigJob(data, size)
             return 202, {'id': data['id']}

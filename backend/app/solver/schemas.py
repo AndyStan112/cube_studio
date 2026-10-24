@@ -59,6 +59,7 @@ class Options(Strict):
     objective: str = "optimal"
     method: str = "unrestricted"
     constraints: list[Constraint] = Field(default_factory=list, max_length=16)
+    post_reduction_method: str | None = None
 
 
 class Execution(Strict):
@@ -181,10 +182,14 @@ def validate_request(data: Request):
     big = data.puzzle.size in (4, 5)
     if data.solver.metric != ("OBTM" if big else "HTM"):
         unsupported.append("metric")
-    if data.solver.objective != ("solution" if big else "optimal"):
+    teaching = data.solver.method in ("beginner", "reduction_beginner", "meyer")
+    if data.solver.objective != ("solution" if big or teaching else "optimal"):
         unsupported.append("objective")
-    if data.solver.method != ("reduction" if big else "unrestricted"):
+    methods = {3: ("unrestricted", "beginner"), 4: ("reduction", "reduction_beginner", "meyer"), 5: ("reduction", "reduction_beginner")}
+    if data.solver.method not in methods.get(data.puzzle.size, ()):
         unsupported.append("method")
+    if data.solver.post_reduction_method is not None and (not big or data.solver.method not in ("reduction_beginner", "meyer") or data.solver.post_reduction_method != "beginner"):
+        unsupported.append("post_reduction_method")
     if data.solver.constraints:
         unsupported.append("constraints")
     if unsupported:

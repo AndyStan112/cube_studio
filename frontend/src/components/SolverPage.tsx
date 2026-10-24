@@ -22,9 +22,12 @@ import {
   verifySolution,
   type Job,
   type Solution,
+  type SolverMethod,
 } from "../lib/solver";
 import { practiceMoves, type CubeEvent } from "../lib/puzzles";
 import "./SolverPage.css";
+import SolverLesson from "./SolverLesson";
+import { moveDescription } from "../lib/teaching";
 const FaceletCube = lazy(() => import("./FaceletCube"));
 const Cube = lazy(() => import("./Cube"));
 
@@ -37,6 +40,9 @@ const faceNames: Record<string, string> = {
   B: "Back · orange",
 };
 export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
+  const [method, setMethod] = useState<SolverMethod>(size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner");
+  const [viewedStage, setViewedStage] = useState<number | null>(null);
+  const guided = method === "beginner" || method === "reduction_beginner" || method === "meyer";
   const area = size * size;
   const stickerCount = area * 6;
   const solvedValue = solvedFacelets(size);
@@ -62,6 +68,8 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
     locked = busy || running;
   function choose(solution: Solution, state = input) {
     verifySolution(state, solution, size);
+    if (guided && solution.method !== method) throw Error("The worker returned a different method. Start a new guided solve after updating the solver service.");
+    setViewedStage(null);
     setSelected(solution);
     setInput(state);
     setStep(0);
@@ -74,6 +82,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
       getJob(id)
         .then((j) => {
           if (generation.current !== ticket) return;
+          setMethod(j.method ?? (size === 3 ? "unrestricted" : "reduction"));
           setJob(j);
           setInput(j.input);
           setValue(j.input);
@@ -85,17 +94,24 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
             localStorage.removeItem(savedKey);
             return;
           }
-          if (size === 3 && canUseOffline(e)) {
+          if (canUseOffline(e)) {
             const saved = readStored<Job | null>(`${savedKey}:snapshot`, null);
             if (saved?.id === id) {
+              const savedMethod = saved.method ?? (size === 3 ? "unrestricted" : "reduction");
+              setMethod(savedMethod);
               setMode("Offline");
               setInput(saved.input);
               setValue(saved.input);
-              if (terminal(saved)) setJob(saved);
-              else {
+              if (terminal(saved)) {
+                setJob(saved);
+                return;
+              }
+              if (size === 3 && savedMethod === "unrestricted") {
                 localStorage.removeItem(savedKey);
                 void runOffline(saved.input, ticket);
+                return;
               }
+              setStatus("Connect to resume the guided solve.");
               return;
             }
             setStatus("Ready");
@@ -162,7 +178,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
         .then(update)
         .catch((e) => {
           if (!active) return;
-          if (size === 3 && canUseOffline(e)) {
+          if (size === 3 && !guided && canUseOffline(e)) {
             active = false;
             source.close();
             clearInterval(poll);
@@ -196,9 +212,14 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
       setPlaying(false);
       return;
     }
-    const timer = setTimeout(() => setStep((s) => s + 1), 800);
+    const timer = setTimeout(() => {
+      const next = step + 1;
+      setViewedStage(null);
+      setStep(next);
+      if (selected?.stages?.some(stage => stage.end === next)) setPlaying(false);
+    }, selected?.stages ? 1400 : 800);
     return () => clearTimeout(timer);
-  }, [playing, step, moves.length]);
+  }, [playing, step, moves.length, selected]);
   async function runOffline(state: string, ticket: number) {
     setMode("Offline");
     setBusy(true);
@@ -235,9 +256,9 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
     setJob(null);
     setInput(value);
     setStatus("Connecting…");
-    if (size !== 3 && !navigator.onLine) {
+    if ((size !== 3 || guided) && !navigator.onLine) {
       setBusy(false);
-      setError("Connect to the internet to solve a 4×4 or 5×5 cube.");
+      setError(guided ? "Connect to the internet for the guided method solver. Offline two-phase solving is available in unrestricted 3×3 mode." : "Connect to the internet to solve a 4×4 or 5×5 cube.");
       setStatus("Ready");
       return;
     }
@@ -246,7 +267,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
       return;
     }
     try {
-      const next = await createJob(value, size);
+      const next = await createJob(value, size, method);
       if (generation.current !== ticket) {
         void cancelJob(next.id).catch(() => {});
         return;
@@ -256,7 +277,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
       setMode("Online");
     } catch (e) {
       if (generation.current === ticket) {
-        if (size === 3 && canUseOffline(e)) await runOffline(value, ticket);
+        if (size === 3 && !guided && canUseOffline(e)) await runOffline(value, ticket);
         else setError((e as Error).message);
       }
     } finally {
@@ -273,7 +294,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
         setJob(await cancelJob(job.id));
         setStatus("Cancelling…");
       } catch (e) {
-        if (size === 3 && canUseOffline(e)) {
+        if (size === 3 && !guided && canUseOffline(e)) {
           setJob(null);
           localStorage.removeItem(savedKey);
           setStatus("Cancelled");
@@ -300,6 +321,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   }
   function jump(n: number) {
     setPlaying(false);
+    setViewedStage(null);
     setStep(Math.max(0, Math.min(moves.length, n)));
   }
   const viewerTools = (
@@ -419,6 +441,34 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
             }
           />
         </div>}
+        <div className="solver-methods">
+          <label htmlFor="solver-mode">Solve style</label>
+          <select id="solver-mode" disabled={locked} value={guided ? 'guided' : 'unrestricted'} onChange={e => {
+            setMethod(e.target.value === 'guided' ? size === 3 ? 'beginner' : size === 4 ? 'meyer' : 'reduction_beginner' : size === 3 ? 'unrestricted' : 'reduction');
+            setSelected(null); setJob(null); setPlaying(false); setStep(0); setViewedStage(null);
+            localStorage.removeItem(savedKey); localStorage.removeItem(`${savedKey}:snapshot`);
+          }}>
+            <option value="guided">Guided method · learn step by step</option>
+            <option value="unrestricted">{size === 3 ? 'Unrestricted · shortest-solution search' : 'Automatic reduction · compact solution'}</option>
+          </select>
+          {guided && <>
+            <label htmlFor="solver-method">{size === 3 ? '3×3 method' : 'Big-cube method'}</label>
+            <select id="solver-method" disabled={locked} value={method === 'meyer' ? 'meyer' : size === 3 ? 'beginner' : 'reduction'} onChange={e => {
+              setMethod(e.target.value === 'meyer' ? 'meyer' : size === 3 ? 'beginner' : 'reduction_beginner');
+              setSelected(null); setJob(null); setPlaying(false); setStep(0); setViewedStage(null);
+              localStorage.removeItem(savedKey); localStorage.removeItem(`${savedKey}:snapshot`);
+            }}>
+              {size === 3 ? <option value="beginner">Beginner’s layer-by-layer</option> : <option value="reduction">Reduction</option>}
+              {size === 4 && <option value="meyer">Meyer · preserve the left block</option>}
+            </select>
+            {size !== 3 && <>
+              <label htmlFor="post-reduction-method">After reduction · 3×3 method</label>
+              <select id="post-reduction-method" disabled={locked} defaultValue="beginner"><option value="beginner">Beginner’s layer-by-layer</option></select>
+              <p className="solver-hint">{method === 'meyer' ? 'Opposite centers, left block, remaining centers and wings; then the beginner 3×3 finish.' : 'Centers first, then matching edge groups; then the beginner 3×3 finish.'} Named three-piece cycles show their setup, core and undo. Complete each action before checking preserved pieces.</p>
+            </>}
+            <p className="solver-hint">Seven beginner stages, named actions, and checked goals. No unrestricted 3×3 fallback. Guided solving currently requires a connection.</p>
+          </>}
+        </div>
         <div className="solver-actions">
           <button
             className="button"
@@ -437,7 +487,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
           >
             Reset cube
           </button>
-          {size === 3 && <button
+          {size === 3 && !guided && <button
             className="button"
             disabled={locked}
             onClick={() => void start(true)}
@@ -463,18 +513,18 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
         </div>
         {(locked || (!selected && status !== "Ready")) && (
           <p className="solver-status" role="status" aria-live="polite">
-            {status === "searching" ? size === 3 ? "Finding the shortest solution…" : "Solving centers and edges…" : status}
+            {status === "searching" ? guided ? "Planning and checking the method stages…" : size === 3 ? "Finding the shortest solution…" : "Solving centers and edges…" : status}
           </p>
         )}
         {job && (!selected || running) && (
           <div className="solver-progress">
             <span>
               {job.best_move_count === null
-                ? "Searching"
+                ? guided ? "Planning lesson" : "Searching"
                 : `${job.best_move_count} moves`}{" "}
               · {(job.elapsed_ms / 1000).toFixed(1)} s
             </span>
-            <details className="solver-search-details">
+            {!guided && <details className="solver-search-details">
               <summary>Search details</summary>
               <dl>
                 <div>
@@ -490,7 +540,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
                   <dd>{(job.progress.nodes ?? 0).toLocaleString()}</dd>
                 </div>
               </dl>
-            </details>
+            </details>}
           </div>
         )}
         {job?.candidate &&
@@ -514,7 +564,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
               )}
             </div>
           )}
-        {size === 3 && job?.status === "failed" && (
+        {size === 3 && !guided && job?.status === "failed" && (
           <button
             className="button"
             disabled={busy}
@@ -527,13 +577,13 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
           <div
             className="solver-result"
             title={
-              selected.optimality === "global_proved"
+              selected.stages ? "A verified method-constrained lesson. Stage goals and the final solve are checked; shortest length is not claimed." : selected.optimality === "global_proved"
                 ? "Proved globally optimal in HTM (a half turn counts as one move)."
                 : size === 3 ? "Verified solution; optimality has not been proved. A half turn counts as one move." : "Verified reduction solution. Optimality has not been proved. Outer block turns count as one move."
             }
           >
             <strong>
-              {selected.optimality === "global_proved"
+              {selected.stages ? "Guided solve" : selected.optimality === "global_proved"
                 ? "Optimal"
                 : size === 3 ? "Near-optimal" : "Verified solution"}
             </strong>
@@ -560,18 +610,21 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
             {viewerTools}
           </FaceletCube>
         </Suspense>}
-        <div className="notation">
+        {selected?.stages && <SolverLesson solution={selected} step={step} viewedStage={viewedStage}
+          onJump={jump} onStage={index => { jump(selected.stages![index].start); setViewedStage(index); }} />}
+        {!selected?.stages && <div className="notation">
           {moves.map((m, i) => (
             <button
               key={i}
               className={i < step ? "completed" : i === step ? "next" : ""}
               onClick={() => jump(i + 1)}
-              aria-label={`Go to move ${i + 1}: ${m}`}
+              title={moveDescription(m)}
+              aria-label={`Go to move ${i + 1}: ${moveDescription(m)}`}
             >
               {m}
             </button>
           ))}
-        </div>
+        </div>}
         <div className="solver-actions">
           <button
             className="button"
@@ -595,6 +648,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
             className="button"
             disabled={!moves.length}
             onClick={() => {
+              setViewedStage(null);
               if (step === moves.length) setStep(0);
               setPlaying((p) => !p);
             }}

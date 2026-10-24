@@ -218,3 +218,22 @@
   border-color: #658456;
   color: #315d2d;
 }
+
+.solver-methods { display: grid; gap: .55rem; margin: 1rem 0; }
+.solver-methods label { font-weight: 600; }
+.solver-methods select { width: 100%; min-width: 0; padding: .65rem; border: 1px solid var(--border, #d5ded7); border-radius: .5rem; background: var(--surface, #fff); color: inherit; font: inherit; }
+.solver-lesson { margin: 1rem 0; min-width: 0; }
+.lesson-stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .4rem; }
+.lesson-stage { display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; padding: .65rem; text-align: left; border: 1px solid var(--border); border-radius: .5rem; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+.lesson-stage small { opacity: .75; }
+.lesson-stage.active { border-color: var(--green); background: color-mix(in srgb, var(--green) 12%, transparent); }
+.lesson-instruction { margin-top: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: .6rem; line-height: 1.55; }
+.lesson-instruction h3, .lesson-instruction h4 { margin: 0 0 .6rem; }
+.lesson-instruction p { margin: .6rem 0; }
+.lesson-checkpoint { padding: .6rem; background: #e8af3820; border-radius: .4rem; }
+.lesson-checkpoint.complete { background: color-mix(in srgb, var(--green) 12%, transparent); }
+.lesson-next { border-top: 1px solid var(--border); padding-top: .6rem; }
+.lesson-algorithm { flex-wrap: wrap; }
+
+.lesson-notation-help { margin: .75rem 0; font-size: .85rem; line-height: 1.5; }
+.lesson-notation-help summary { cursor: pointer; color: var(--green); }

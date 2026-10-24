@@ -1,3 +1,4 @@
+import { verifyLesson, type LessonStage, type LessonChunk } from "./teaching";
 import { api, ApiError } from "./api";
 import {
   FACE_ORDER,
@@ -15,7 +16,12 @@ export type CubeTurn = {
   layer_count: number;
   amount: 1 | 2 | -1;
 };
+export type SolverMethod = "unrestricted" | "reduction" | "beginner" | "reduction_beginner" | "meyer";
 export type Solution = {
+  method?: SolverMethod;
+  stages?: LessonStage[];
+  chunks?: LessonChunk[];
+  post_reduction_method?: "beginner" | null;
   notation: string[];
   moves: (CubeTurn | { kind: "cube_rotation"; axis: "x" | "y" | "z"; amount: 1 | 2 | -1 })[];
   move_count: number;
@@ -24,6 +30,7 @@ export type Solution = {
   optimality: "global_proved" | "unproved";
 };
 export type Job = {
+  method?: SolverMethod;
   id: string;
   input: string;
   status: string;
@@ -37,20 +44,22 @@ export type Job = {
 };
 export const terminal = (job: Job) =>
   ["complete", "optimal_proved", "timed_out", "cancelled", "failed"].includes(job.status);
-export const solverRequest = (value: string, size: CubeSize = 3) => ({
+export const solverRequest = (value: string, size: CubeSize = 3, method: SolverMethod = size === 3 ? "unrestricted" : "reduction") => ({
   schema_version: 1,
   puzzle: { type: "cube", size },
   state: { encoding: "cube_facelets_v1", face_order: [...FACE_ORDER], value },
   solver: {
     metric: size === 3 ? "HTM" : "OBTM",
-    objective: size === 3 ? "optimal" : "solution",
-    method: size === 3 ? "unrestricted" : "reduction",
+    objective: method === "unrestricted" ? "optimal" : "solution",
+    method,
+    ...((method === "reduction_beginner" || method === "meyer") ? { post_reduction_method: "beginner" } : {}),
     constraints: [],
   },
   execution: { fallback_after_ms: 5000, continue_search: true },
 });
 export function verifySolution(value: string, solution: Solution, size: CubeSize = 3) {
   validateFacelets(value, size);
+  verifyLesson(solution);
   if (
     solution.metric !== (size === 3 ? "HTM" : "OBTM") ||
     solution.move_count !== solution.notation.filter(m => size === 3 || !/^[xyz]/.test(m)).length ||
@@ -64,11 +73,11 @@ export function verifySolution(value: string, solution: Solution, size: CubeSize
   if (cubiesToFacelets(end) !== solvedFacelets(size))
     throw Error("Solution does not solve the entered cube");
 }
-export async function createJob(value: string, size: CubeSize = 3) {
+export async function createJob(value: string, size: CubeSize = 3, method?: SolverMethod) {
   validateFacelets(value, size);
   return api<Job>("/solver/jobs", {
     method: "POST",
-    body: JSON.stringify(solverRequest(value, size)),
+    body: JSON.stringify(solverRequest(value, size, method)),
     signal: AbortSignal.timeout(10000),
   });
 }

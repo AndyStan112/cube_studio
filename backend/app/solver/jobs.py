@@ -34,6 +34,8 @@ class Job:
             "status": self.status,
             "metric": self.request.solver.metric,
             "puzzle_size": self.request.puzzle.size,
+            "method": self.request.solver.method,
+            "post_reduction_method": self.request.solver.post_reduction_method,
             "elapsed_ms": int(
                 (self.finished or time.monotonic()) * 1000 - self.created * 1000
             ),
@@ -142,6 +144,8 @@ class Manager:
                 "id": job.id,
                 "facelets": job.request.state.value,
                 "budget_ms": self.budget,
+                "method": job.request.solver.method,
+                "post_reduction_method": job.request.solver.post_reduction_method,
             },
         )
         previous_progress = None
@@ -197,6 +201,8 @@ class Manager:
                 except Exception:
                     pass
                 job.error = (
+                    "Method solver unavailable or failed. Reconnect and retry the guided solve."
+                    if job.request.solver.method in ("beginner", "meyer", "reduction_beginner") else
                     "Native worker unavailable or failed. Use the offline solver." if job.request.puzzle.size == 3
                     else "Bigger-cube solver unavailable or failed. Please retry when the solver is online."
                 )
