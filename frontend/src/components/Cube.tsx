@@ -37,6 +37,7 @@ function Model({
   focus,
   initialState,
   size = 3,
+  highlightHomes,
 }: {
   moves: string[];
   step: number;
@@ -45,6 +46,7 @@ function Model({
   focus: StickerFocus;
   initialState?: Cubie[];
   size?: CubeSize;
+  highlightHomes?: [number, number, number][];
 }) {
   const states = useMemo(
     () => algorithmStates(moves, initialState, size),
@@ -118,8 +120,8 @@ function Model({
                 <planeGeometry args={[0.9, 0.9]} />
                 <meshStandardMaterial
                   color={
-                    maskIrrelevant && !isRelevantSticker(c.home, face, focus, size)
-                      ? "#000000"
+                    (highlightHomes ? !highlightHomes.some(home => home.every((n, i) => n === c.home[i])) : maskIrrelevant && !isRelevantSticker(c.home, face, focus, size))
+                      ? "#302a3f"
                       : color
                   }
                   roughness={0.36}
@@ -147,6 +149,8 @@ export default function Cube({
   focus,
   initialState,
   size = 3,
+  highlightHomes,
+  viewPosition,
 }: {
   moves: string[];
   step: number;
@@ -156,10 +160,12 @@ export default function Cube({
   focus: StickerFocus;
   initialState?: Cubie[];
   size?: CubeSize;
+  highlightHomes?: [number, number, number][];
+  viewPosition?: [number, number, number];
 }) {
   return (
     <Canvas
-      camera={{ position: defaultView, fov: 38 }}
+      camera={{ position: viewPosition ?? defaultView, fov: 38 }}
       dpr={[1, 2]}
       fallback={<p>3D needs a browser with WebGL support.</p>}
     >
@@ -167,7 +173,7 @@ export default function Cube({
       <directionalLight position={[4, 8, 5]} intensity={2.5} />
       <Suspense fallback={null}>
         <Model
-          {...{ moves, step, transparent, maskIrrelevant, focus, initialState, size }}
+          {...{ moves, step, transparent, maskIrrelevant, focus, initialState, size, highlightHomes }}
         />
       </Suspense>
       <CameraControls resetView={resetView} />

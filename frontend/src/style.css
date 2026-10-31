@@ -454,7 +454,8 @@ select:focus {
   align-items: center;
   gap: 4px;
   min-height: 47px;
-  min-width: 100px;
+  min-width: 0;
+  flex: 1;
   justify-content: center;
   font-size: 10px;
   color: #8b9b87;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined, Settings } from "lucide-react";
+import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined, Settings, GraduationCap } from "lucide-react";
 import {
   api,
   ApiError,
@@ -17,10 +17,13 @@ import SolverPage from "./components/SolverPage";
 import AuthModal from "./components/AuthModal";
 import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
+import LearningPage from "./components/LearningPage";
+import { useLearning } from "./lib/useLearning";
+import { levelInfo } from "./lib/learning";
 import SettingsPage from "./components/SettingsPage";
 import StatsPage from "./components/StatsPage";
 import { readTraining, storeTraining, type TrainingData } from "./lib/training";
-type Page = "timer" | "algorithms" | "solver" | "stats" | "settings";
+type Page = "timer" | "algorithms" | "solver" | "stats" | "settings" | "learn";
 export default function App() {
   const [event, setEvent] = useState<CubeEvent>(() => {
     const saved = readStored<CubeEvent>("cube-studio-event-v1", "333");
@@ -40,6 +43,7 @@ export default function App() {
       algorithms: [],
     })),
     [loading, setLoading] = useState(false);
+  const { progress, award } = useLearning(user?.id);
   const [training, setTraining] = useState<TrainingData>(() => readTraining());
   useEffect(() => { setTraining(readTraining(user?.id)); }, [user?.id]);
   const updateTraining = (data: TrainingData) => { storeTraining(data, user?.id); setTraining(data); };
@@ -124,6 +128,7 @@ export default function App() {
           <span className="brand-dot">.</span>
         </a>
         <nav>
+          <button className={page === "learn" ? "nav-link active" : "nav-link"} onClick={() => setPage("learn")}><GraduationCap size={20}/>Learn</button>
           <button
             className={page === "timer" ? "nav-link active" : "nav-link"}
             onClick={() => setPage("timer")}
@@ -163,9 +168,10 @@ export default function App() {
               ? "Timer"
               : page === "solver"
                 ? "Solver"
-                : page === "stats" ? "Statistics" : page === "settings" ? "Settings" : "Algorithms"}
+                : page === "learn" ? "Learn" : page === "stats" ? "Statistics" : page === "settings" ? "Settings" : "Algorithms"}
           </h1>
           <div className="topbar-right">
+            <button className="learning-level-badge" onClick={() => setPage("learn")} aria-label={`Level ${levelInfo(progress.xp).level}, ${progress.xp} XP. Open learning.`}>Lv {levelInfo(progress.xp).level}</button>
             <label className="puzzle-picker">
               <span>Puzzle</span>
               <select aria-label="Puzzle" value={event} disabled={timerLocked}
@@ -243,13 +249,14 @@ export default function App() {
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
+          ) : page === "learn" ? <LearningPage {...{progress,award}} /> : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
             : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           ) : null}
         </main>
       </div>
       <nav className="mobile-nav">
+        <button className={page === "learn" ? "active" : ""} onClick={() => setPage("learn")}><GraduationCap size={19}/>Learn</button>
         <button
           className={page === "timer" ? "active" : ""}
           onClick={() => setPage("timer")}
