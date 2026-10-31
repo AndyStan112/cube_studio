@@ -1,13 +1,32 @@
 import { env } from "node:process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+// Installed apps detect icon changes from their URLs, independently of the favicon.
+// Keep the manifest URL and app ID stable, and only change this content-derived revision.
+const iconFiles = ["cube.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "maskable-512.png"];
+const iconHash = createHash("sha256");
+for (const file of iconFiles) iconHash.update(readFileSync(new URL(`./public/icons/${file}`, import.meta.url)));
+const iconRevision = iconHash.digest("hex").slice(0, 16);
+const iconUrl = (file: string) => `/icons/${file}?v=${iconRevision}`;
+
 export default defineConfig({
   plugins: [
     react(),
+    {
+      name: "version-install-icons",
+      transformIndexHtml: {
+        order: "pre",
+        handler: (html) => html
+          .replace('href="/icons/cube.svg"', `href="${iconUrl("cube.svg")}"`)
+          .replace('href="/icons/apple-touch-icon.png"', `href="${iconUrl("apple-touch-icon.png")}"`),
+      },
+    },
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["icons/*.png", "icons/cube.svg", "solver-licenses.txt"],
+      includeAssets: ["solver-licenses.txt"],
       manifest: {
         id: "/",
         name: "Cube Studio",
@@ -20,19 +39,19 @@ export default defineConfig({
         theme_color: "#130E2A",
         icons: [
           {
-            src: "/icons/icon-192.png",
+            src: iconUrl("icon-192.png"),
             sizes: "192x192",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/icons/icon-512.png",
+            src: iconUrl("icon-512.png"),
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/icons/maskable-512.png",
+            src: iconUrl("maskable-512.png"),
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
@@ -41,6 +60,9 @@ export default defineConfig({
       },
       workbox: {
         clientsClaim: true,
+        // Cache the exact URLs referenced by HTML and the install manifest.
+        globIgnores: ["**/icons/**"],
+        additionalManifestEntries: iconFiles.map(file => ({ url: iconUrl(file), revision: null })),
         // Includes the bundled offline solver worker; tables are built locally.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],

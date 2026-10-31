@@ -26,6 +26,16 @@ The service worker caches the app, 3D assets, and offline solver worker after th
 
 Scrambles fall back to local practice random moves when the API is unavailable. Timer solves can be saved without signing in; new offline solves stay on this device and are labeled accordingly. Previously loaded account history and the current demo user are stored locally. Offline penalty edits and deletions of online solves are queued and retried on reconnection or the next visit. Initial sign-in still requires the API. Solution playback and solving use the bundled offline solver when the backend is unavailable. Clear browser site data to remove locally stored history and catalogs. App updates wait for the user to reload.
 
+Install icons (including the Apple touch icon) use content-derived version URLs,
+so changing the artwork updates both the manifest icon metadata and the offline
+cache. Keep the manifest URL, app ID and start URL stable. Existing installed
+icons are refreshed by the browser/OS separately from app content; recent Chrome
+versions can ask the user to review the icon update. iOS Home Screen icons may
+retain their installation-time artwork. Do not use clearing site data as an icon
+refresh step: learning progress, XP and some solve history are stored locally.
+See [Chrome’s icon update behavior](https://developer.chrome.com/blog/improvements-to-web-app-updates)
+and [platform metadata update behavior](https://web.dev/learn/pwa/update).
+
 ## Features
 
 - Mock sign-in with three hardcoded, shared demo users (Andy, Alex, Sam). No passwords, registration, or real OAuth. Anyone can select any demo user and access that profile’s solves.
