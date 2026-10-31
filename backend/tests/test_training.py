@@ -16,7 +16,7 @@ def test_solve_metadata_round_trip(monkeypatch):
     )
     monkeypatch.setattr(app.state, 'db', db, raising=False)
     client = TestClient(app)
-    metadata = {"session_id": "session-a", "cube": "cube-1", "cube_name": "My 4x4", "method": "Meyer"}
+    metadata = {"session_id": "session-a", "cube": "cube-1", "cube_name": "My 4x4", "method": "Meyer", "inspection_ms": 16000}
     response = client.post('/api/solves', headers={"Authorization": "Bearer mock:demo-andy"}, json={
         "scramble_id": str(scramble_id), "time_ms": 42000, "penalty": "+2", **metadata,
     })

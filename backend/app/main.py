@@ -36,6 +36,7 @@ class SolveInput(BaseModel):
     cube: str | None = Field(default=None, max_length=100)
     cube_name: str | None = Field(default=None, max_length=100)
     method: str | None = Field(default=None, max_length=100)
+    inspection_ms: int | None = Field(default=None, ge=0, le=86400000)
     scramble_id: str
     time_ms: int = Field(gt=0, le=86400000)
     penalty: Literal["none", "+2", "DNF"] = "none"
@@ -88,7 +89,7 @@ async def solves(event: CubeEvent = "333", user=Depends(current_user)):
     return [serialize_solve(doc) for doc in docs]
 
 def serialize_solve(doc):
-    return {**{key: doc[key] for key in ("session_id", "cube", "cube_name", "method") if key in doc}, "id": str(doc["_id"]), "scramble": doc["scramble"], "event": doc.get("event", "333"), "time_ms": doc["time_ms"], "penalty": doc["penalty"], "created_at": doc["created_at"].isoformat()}
+    return {**{key: doc[key] for key in ("session_id", "cube", "cube_name", "method", "inspection_ms") if key in doc}, "id": str(doc["_id"]), "scramble": doc["scramble"], "event": doc.get("event", "333"), "time_ms": doc["time_ms"], "penalty": doc["penalty"], "created_at": doc["created_at"].isoformat()}
 
 @app.post('/api/solves', status_code=201)
 async def save_solve(data: SolveInput, user=Depends(current_user)):
@@ -96,7 +97,7 @@ async def save_solve(data: SolveInput, user=Depends(current_user)):
     if not scramble_doc:
         raise HTTPException(422, "Scramble expired. Generate a new one.")
     doc = {"user_id": user.id, "scramble": scramble_doc["moves"], "event": scramble_doc.get("event", "333"), "time_ms": data.time_ms, "penalty": data.penalty, "created_at": datetime.now(timezone.utc)}
-    doc.update(data.model_dump(include={"session_id", "cube", "cube_name", "method"}, exclude_none=True))
+    doc.update(data.model_dump(include={"session_id", "cube", "cube_name", "method", "inspection_ms"}, exclude_none=True))
     doc["_id"] = (await app.state.db.solves.insert_one(doc)).inserted_id
     return serialize_solve(doc)
 

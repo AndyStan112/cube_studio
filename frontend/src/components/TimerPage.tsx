@@ -23,7 +23,7 @@ import {
 } from "../lib/api";
 import { forEvent, puzzles, type CubeEvent } from "../lib/puzzles";
 import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
-import { createSession } from '../lib/training';
+import { createSession, inspectionPenalty } from '../lib/training';
 import { applyMove, solved } from "../lib/cube";
 const Cube = lazy(() => import("./Cube"));
 const noMoves: string[] = [];
@@ -61,9 +61,13 @@ export default function TimerPage({
     [busy, setBusy] = useState(false),
     [penalty, setPenalty] = useState<Solve["penalty"]>("none");
   const [showPreview, setShowPreview] = useState(false);
+  const [inspecting, setInspecting] = useState(false);
+  const [inspectionElapsed, setInspectionElapsed] = useState(0);
+  const [inspectionMs, setInspectionMs] = useState<number | undefined>();
+  const inspectionStart = useRef(0);
   const [newSessionName, setNewSessionName] = useState('');
   const session = training.sessions.find(s => s.id === training.active[event] && s.event === event) ?? training.sessions.find(s => s.event === event);
-  const locked = running || pending !== null || busy || (manualMode && !!manual.trim());
+  const locked = running || inspecting || pending !== null || busy || (manualMode && !!manual.trim());
   const puzzle = puzzles[event];
   const eventSolves = forEvent(solves, event).filter(s => (s.session_id ?? `legacy:${event}`) === session?.id);
   function updateSession(patch: Partial<NonNullable<typeof session>>) {
@@ -78,28 +82,36 @@ export default function TimerPage({
   useEffect(() => () => onLockChange(false), [onLockChange]);
   const start = useRef(0);
   const toggle = useCallback(() => {
-    if (!scramble || pending !== null || busy || loading) return;
+    if (!scramble || pending !== null || busy || loading || manualMode) return;
     if (running) {
       const ms = Math.max(1, Math.round(performance.now() - start.current));
       setElapsed(ms);
       setPending(ms);
       setRunning(false);
+    } else if (training.settings.inspection && !inspecting) {
+      inspectionStart.current = performance.now();
+      setInspectionElapsed(0); setInspectionMs(undefined); setInspecting(true); setPenalty('none');
     } else {
+      if (inspecting) {
+        const duration = performance.now() - inspectionStart.current;
+        setInspectionMs(Math.round(duration)); setPenalty(inspectionPenalty(duration)); setInspecting(false);
+      } else setInspectionMs(undefined);
       start.current = performance.now();
       setElapsed(0);
       setRunning(true);
     }
-  }, [scramble, pending, busy, loading, running]);
+  }, [scramble, pending, busy, loading, running, inspecting, training.settings.inspection, manualMode]);
   useEffect(() => {
-    if (!running) return;
+    if (!running && !inspecting) return;
     let frame: number;
     const tick = () => {
-      setElapsed(performance.now() - start.current);
+      if (inspecting) setInspectionElapsed(performance.now() - inspectionStart.current);
+      else setElapsed(performance.now() - start.current);
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [running]);
+  }, [running, inspecting]);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (
@@ -124,7 +136,7 @@ export default function TimerPage({
       return;
     }
     if (!scramble || !session) return;
-    const metadata = { session_id: session.id, cube: session.cube, cube_name: training.cubes.find(c => c.id === session.cube)?.name, method: session.method };
+    const metadata = { session_id: session.id, cube: session.cube, cube_name: training.cubes.find(c => c.id === session.cube)?.name, method: session.method, inspection_ms: manualMode ? undefined : inspectionMs };
     setBusy(true);
     try {
       let s: Solve;
@@ -211,6 +223,8 @@ export default function TimerPage({
           <input disabled={locked} aria-label="New session name" placeholder="New session name" value={newSessionName} maxLength={100} onChange={e => setNewSessionName(e.target.value)} /><button className="button" disabled={locked}>New session</button>
         </form>
         <p className="small-muted">Times below belong to this session. Cube and method selections apply to future solves. Manage cubes and defaults in Settings.</p>
+        <label className="check-setting"><input type="checkbox" disabled={locked} checked={training.settings.inspection} onChange={e => updateTraining({ ...training, settings: { ...training.settings, inspection: e.target.checked } })} />WCA-style inspection · 15 seconds</label>
+        {training.settings.inspection && <p className="small-muted">Tap once to inspect, again to solve. Inspection stays separate from solve time. At 15s: +2; at 17s: DNF. <a href="https://www.worldcubeassociation.org/regulations/#A4d" target="_blank" rel="noreferrer">WCA rules</a></p>}
       </section>
       <div className="timer-layout">
         <section className="timer-card card">
@@ -244,35 +258,37 @@ export default function TimerPage({
           <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={locked || loading} />
           <div className={`timer-zone ${running ? "is-running" : ""}`}>
             <div className="timer-status">
-              {running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
+              {inspecting ? "INSPECTION" : running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
             </div>
             <button
               className="time-display"
               onClick={toggle}
-              disabled={pending !== null || busy || !scramble || loading}
-              aria-label={running ? "Stop timer" : "Start timer"}
+              disabled={manualMode || pending !== null || busy || !scramble || loading}
+              aria-label={inspecting ? "Start solve" : running ? "Stop timer" : "Start timer"}
             >
-              {formatTime(elapsed)}
+              {inspecting ? inspectionElapsed >= 17000 ? "DNF" : inspectionElapsed >= 15000 ? "+2" : ((15000 - inspectionElapsed) / 1000).toFixed(1) : formatTime(elapsed)}
               <span>s</span>
             </button>
             <div className="timer-hint">
-              {running ? (
+              {inspecting ? "Inspecting · Tap or press space to start solve" : running ? (
                 "Tap to stop"
               ) : pending !== null ? (
                 "Save or discard"
               ) : (
                 <>
-                  Tap to start <kbd>space</kbd>
+                  {manualMode ? "Enter a time below" : <>Tap to start <kbd>space</kbd></>}
                 </>
               )}
             </div>
             <div className="timer-ring" />
           </div>
+          {inspecting && <button className="text-button" onClick={() => { setInspecting(false); setInspectionMs(undefined); setInspectionElapsed(0); }}>Cancel inspection</button>}
+          {pending !== null && inspectionMs !== undefined && <p className="small-muted">Inspection: {formatTime(inspectionMs)}s · {inspectionPenalty(inspectionMs) === 'none' ? 'No inspection penalty' : inspectionPenalty(inspectionMs)}</p>}
           <div className="timer-entry">
             <div className="entry-switch">
               <button
                 className={!manualMode ? "selected" : ""}
-                disabled={running || pending !== null}
+                disabled={running || inspecting || pending !== null}
                 onClick={() => setManualMode(false)}
               >
                 <Timer size={15} />
@@ -280,7 +296,7 @@ export default function TimerPage({
               </button>
               <button
                 className={manualMode ? "selected" : ""}
-                disabled={running || pending !== null}
+                disabled={running || inspecting || pending !== null}
                 onClick={() => setManualMode(true)}
               >
                 <Plus size={15} />
@@ -432,7 +448,7 @@ export default function TimerPage({
                 <details className="solve-details">
                   <summary>Scramble</summary>
                   <p>{s.scramble}</p>
-                  <p>{s.cube_name || 'Unspecified cube'} · {s.method || 'Unspecified method'}</p>
+                  <p>{s.cube_name || 'Unspecified cube'} · {s.method || 'Unspecified method'}{s.inspection_ms !== undefined && ` · Inspection ${formatTime(s.inspection_ms)}s`}</p>
                   <button className="text-button" onClick={() => updateTraining({ ...training, scrambles: [{ id: `saved:${crypto.randomUUID()}`, moves: s.scramble, event, name: `Solve ${eventSolves.length - i}`, created_at: new Date().toISOString() }, ...training.scrambles] })}>Save scramble to library</button>
                 </details>
               </li>

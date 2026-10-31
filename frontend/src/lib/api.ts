@@ -8,6 +8,7 @@ export type Solve = {
   cube?: string;
   cube_name?: string;
   method?: string;
+  inspection_ms?: number;
   event?: CubeEvent;
   id: string;
   scramble: string;
