@@ -27,6 +27,7 @@ import {
 import { practiceMoves, type CubeEvent } from "../lib/puzzles";
 import "./SolverPage.css";
 import SolverLesson from "./SolverLesson";
+import CameraInput from "./CameraInput";
 import { moveDescription } from "../lib/teaching";
 const FaceletCube = lazy(() => import("./FaceletCube"));
 const Cube = lazy(() => import("./Cube"));
@@ -48,6 +49,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   const solvedValue = solvedFacelets(size);
   const savedKey = size === 3 ? "cube-studio-solver-job-v1" : `cube-studio-solver-job-v1:${size}`;
   const { value, setValue, representation, setRepresentation } = useSolverInput(size);
+  const [cameraReady, setCameraReady] = useState(false);
   const [color, setColor] = useState("U"),
     [error, setError] = useState(""),
     [status, setStatus] = useState("Ready"),
@@ -303,6 +305,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
     } else setStatus("Cancelled");
   }
   function editValue(next: SetStateAction<string>) {
+    setCameraReady(false);
     generation.current++;
     setValue(next);
     setSelected(null);
@@ -345,14 +348,15 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
         <h2>Your {size}×{size} cube</h2>
         <p className="solver-hint">Yellow up · Red front{size !== 3 && " · Online reduction solver"}</p>
         <div className="representation-toggle" role="group" aria-label="Cube representation">
-          {(["2d", "text", "3d"] as const).map((view) => (
+          {(["camera", "2d", "text", "3d"] as const).map((view) => (
             <button key={view} className="button" aria-pressed={representation === view}
               onClick={() => setRepresentation(view)}>
-              {view === "text" ? "Text" : view.toUpperCase()}
+              {view === "camera" ? "Camera" : view === "text" ? "Text" : view.toUpperCase()}
             </button>
           ))}
         </div>
-        {representation !== "text" && <>
+        {representation === "camera" && <CameraInput size={size} disabled={locked} onChange={editValue} onReady={setCameraReady} />}
+        {representation !== "text" && representation !== "camera" && <>
         <div className="solver-palette">
           {[...FACE_ORDER].map((f) => (
             <button
@@ -472,7 +476,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
         <div className="solver-actions">
           <button
             className="button"
-            disabled={locked}
+            disabled={locked || (representation === "camera" && !cameraReady)}
             onClick={() => void start()}
           >
             Solve
@@ -489,7 +493,7 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
           </button>
           {size === 3 && !guided && <button
             className="button"
-            disabled={locked}
+            disabled={locked || (representation === "camera" && !cameraReady)}
             onClick={() => void start(true)}
           >
             Offline

@@ -9,7 +9,12 @@ describe("shared solver input", () => {
     expect(state.value).toBe("R" + SOLVED_FACELETS.slice(1));
     state = solverInputReducer(state, { type: "representation", representation: "2d" });
     state = solverInputReducer(state, { type: "representation", representation: "3d" });
+    state = solverInputReducer(state, { type: "representation", representation: "camera" });
     expect(state.value[0]).toBe("R");
+  });
+  it("shares an extracted camera state with the manual editors", () => {
+    const state = solverInputReducer({ value: "", representation: "camera" }, { type: "value", value: SOLVED_FACELETS });
+    expect(solverInputReducer(state, { type: "representation", representation: "3d" }).value).toBe(SOLVED_FACELETS);
   });
   it("preserves incomplete text while switching views", () => {
     let state: SolverInput = { value: SOLVED_FACELETS, representation: "text" };

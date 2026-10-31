@@ -1,0 +1,21 @@
+.camera-input fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.camera-calibration { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.camera-calibration summary { cursor: pointer; font-weight: 600; }
+.camera-calibration label { display: block; font-size: 13px; margin: 8px 0; }
+.camera-calibration select, .camera-calibration input { width: 100%; box-sizing: border-box; padding: 9px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface, #fff); color: inherit; }
+.camera-upload { position: relative; cursor: pointer; }
+.camera-upload input { display: block; width: 100%; font-size: 11px; margin-top: 6px; }
+.camera-guide { border-left: 3px solid var(--green, #326b55); padding: 8px 12px; margin: 12px 0; }
+.camera-guide p { font-size: 13px; line-height: 1.5; margin: 6px 0; }
+.camera-view { position: relative; width: 100%; background: #18211d; border-radius: 8px; overflow: hidden; }
+.camera-view video { width: 100%; height: 100%; display: block; }
+.camera-grid { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; border: 2px solid white; box-shadow: 0 0 0 1px #222; pointer-events: none; }
+.camera-grid span { border: 1px solid #ffffffaa; }
+.camera-faces { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin: 12px 0; }
+.camera-faces button { padding: 7px 3px; border: 1px solid var(--border); border-radius: 5px; background: transparent; color: inherit; cursor: pointer; }
+.camera-faces button[aria-pressed=true] { outline: 2px solid var(--green, #326b55); }
+.camera-samples { display: grid; gap: 1px; margin: 6px 2px 0; }
+.camera-samples i { aspect-ratio: 1; border-radius: 1px; }
+.camera-seek { display: block; font-size: 12px; margin: 8px 0; }
+.camera-seek input { display: block; width: 100%; }
+.camera-input .solver-actions .button { font-size: 12px; padding: 9px 10px; }

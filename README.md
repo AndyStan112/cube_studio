@@ -38,6 +38,16 @@ Scrambles fall back to local practice random moves when the API is unavailable. 
 - Real animated layer turns, forward/back steps, move selection, reset, autoplay, playback speed, a camera reset to yellow up / red front, drag/pinch orbit controls, and see-through mode. Standard notation explanations use the perspective of the face being turned.
 - Responsive layouts and mobile bottom navigation.
 
+## Camera input
+
+The solver opens in Camera mode for 3×3, 4×4 and 5×5 cubes. Use a live camera with the alignment grid, capture faces individually, or start the guided 24-second scan (one capture every four seconds). Browser camera access needs HTTPS or localhost. Camera tracks stop when you leave the input, hide the tab, or start solving.
+
+Alternatively, upload a video under two minutes and 200 MB. Hold the six faces for equal amounts of time in **U R F D L B** order, filling the centered square. The app samples the middle of each hold. Use the video timeline and Capture button to replace individual faces if the timing or alignment differs. All sampling and color recognition run locally; videos are not uploaded to the server. This is guided, aligned recognition, not arbitrary handheld video tracking.
+
+Keep yellow up and red front as your reference, without turning layers during the scan. Side faces have yellow along the top, the yellow face has orange along the top, and the white face has red along the top. Each face is read left to right, top to bottom, looking straight at it.
+
+Cube calibrations are available above the capture controls. Save named settings for different cubes and lighting. Odd cubes use the six fixed-center colors, so calibration can use a scrambled cube; calibrate a 4×4 while solved. Automatic selection tries the suggested palette and all saved calibrations, ranks confident matches by color distance, and requires the existing cube-state and piece-orientation checks to pass. If none passes, choose another setting, recalibrate, or recapture unclear faces. Extract state updates the shared preview and enables Solve. Manual 2D, text and 3D editing remain available. Calibrations are saved in this browser and are removed when its site data is cleared.
+
 ## Deployment
 
 See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` run tests and publish images; only successful builds publish manifests to the generated `deployments` branch, which Flux watches. Automated commits stay off `master`.
@@ -104,7 +114,7 @@ React was chosen because React Three Fiber integrates Three.js scene objects and
 
 Next features should get separate service/router boundaries as they are implemented:
 
-1. **Recognition**: camera/upload input → validated six-face state with explicit face order and orientation. Validate solvability before asking a solver to proceed.
+1. **Recognition**: guided camera/upload input now produces a validated six-face state with explicit face order and orientation. Future work can add automatic face tracking and perspective correction for unaligned video.
 2. **Solving**: solver adapter → standard move list plus metadata (method, elapsed time, optimality status). Add a user solver-timeout setting and run CPU work outside the async request loop. Herbert Kociemba's two-phase algorithm is generally a near-optimal solver; do not label its output globally optimal. A strict optimal search and timeout/fallback need separate implementations and result states.
 3. **Algorithm sets**: `GET /api/algorithm-catalog` returns independent `sets` and `algorithms`. Sets and algorithms include `puzzle_size` (3, 4, or 5; older cached entries default to 3). Each algorithm has stable `id`, `memberships`, and `variations`; each variation has stable `id`, `name`, and `moves`, plus an optional case label. Save future practice records against `(algorithm_id, variation_id)` so set membership does not duplicate progress. Each membership references a `set_id` and its `section_ids`. Sets define their own `sections` with stable IDs and sticker `focus` values (`all`, `last-layer`, `last-layer-corners`, `corner-orientation`, `corner-permutation`). Add or reorganize sections in `backend/app/algorithm_catalog.json` and update those memberships; an algorithm can be in multiple sets or sections without copying it. Orientation focus keeps yellow corner stickers; permutation focus keeps side corner stickers. The current catalog is seeded in that JSON file; a database can preserve these IDs and relationships. `GET /api/algorithms` retains the original default-variation response for older installed clients. The catalog API also derives the earlier `set_ids` field for installed clients. The new catalog has a versioned offline cache so old cached response shapes are not reused.
 4. **Roux teaching**: separate curriculum for first block, second block, CMLL, and last six edges, reusing cube visualization and playback for stage-specific drills. Current OLL examples are trainer demonstrations, not a Roux curriculum.
