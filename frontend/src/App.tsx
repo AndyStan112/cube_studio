@@ -172,7 +172,7 @@ export default function App() {
           </h1>
           <div className="topbar-right">
             <button className="learning-level-badge" onClick={() => setPage("learn")} aria-label={`Level ${levelInfo(progress.xp).level}, ${progress.xp} XP. Open learning.`}>Lv {levelInfo(progress.xp).level}</button>
-            <label className="puzzle-picker">
+            <label className="puzzle-picker" hidden={page === "learn"}>
               <span>Puzzle</span>
               <select aria-label="Puzzle" value={event} disabled={timerLocked}
                 title={timerLocked ? "Save or discard this time before changing puzzles." : "Choose puzzle"}
@@ -250,7 +250,7 @@ export default function App() {
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : page === "learn" ? <LearningPage {...{progress,award}} /> : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
+          ) : page === "learn" ? <LearningPage key={user?.id ?? "guest"} {...{progress,award}} /> : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
             : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           ) : null}

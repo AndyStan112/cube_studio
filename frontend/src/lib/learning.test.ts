@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { applyMove, inverse, solved } from './cube';
 import { skills, trees, prerequisitesMet, availableSkill } from './curriculum';
@@ -12,6 +13,30 @@ describe('visual curriculum cases', () => {
       expect(checkSkillMoves(challenge.solution, challenge.solution.join(' '), challenge.goal, challenge.target)).toBe(true);
     });
   }
+  it('really starts the loading-spot exercise with the edge at DF and the base solved', () => {
+    const state = caseState(skills['loading-spot'].cases[0].solution);
+    expect(state.find(c => c.home.join(',') === '-1,0,1')!.position.toArray()).toEqual([0,-1,1]);
+    expect(state.find(c => c.home.join(',') === '-1,-1,0')!.position.toArray()).toEqual([-1,-1,0]);
+    expect(state.find(c => c.home.join(',') === '-1,-1,1')!.position.y).toBe(1);
+  });
+  it('demonstrates a real back loading spot and preserves the existing front square', () => {
+    const state = caseState(skills['flexible-loading'].cases[0].solution);
+    expect(state.find(c => c.home.join(',') === '-1,0,-1')!.position.toArray()).toEqual([0,-1,-1]);
+    expect(goalMet(state,'left-square')).toBe(true);
+    expect(goalMet(caseState(skills['first-block'].cases[0].solution),'left-square')).toBe(true);
+  });
+  it('starts the arrow cases with the stated bad-edge counts', () => {
+    const counts = skills['roux-arrow'].cases.map(challenge => caseState(challenge.solution).filter(c => c.home.filter(n => n !== 0).length === 2 && c.home[1] !== 0 && Math.abs(new Vector3(0,c.home[1],0).applyQuaternion(c.rotation).y) < .99).length);
+    expect(counts[0]).toBe(4);
+    expect(counts[1]).toBe(4);
+    expect(counts[3]).toBe(2);
+    expect(counts[4]).toBe(6);
+  });
+  it('allows a harmless top alignment during Roux edge orientation', () => {
+    expect(goalMet(applyMove(solved(),'U'),'roux-oriented')).toBe(true);
+    expect(goalMet(applyMove(solved(),'R'),'roux-oriented')).toBe(false);
+    expect(goalMet(applyMove(solved(),'M'),'roux-oriented')).toBe(false);
+  });
   it('accepts alternate solutions and rejects unrelated turns', () => {
     expect(checkSkillMoves(['F2'], 'U U\' F F', 'edge', [0,-1,1])).toBe(true);
     expect(checkSkillMoves(['F2'], 'R', 'edge', [0,-1,1])).toBe(false);
@@ -77,7 +102,7 @@ describe('leveling and XP provenance', () => {
     const action = {type:'solve' as const,id:'solve-1',dnf:false,event:'333' as const,method:'Roux',sessionId:'session-1',cubeId:'gan',manual:false};
     const {progress,earned} = earnLearning(emptyLearning(),action);
     expect(earned).toBe(10);
-    expect(progress.ledger[0]).toMatchObject({source:'timer',amount:10,solveId:'solve-1',sessionId:'session-1',cubeId:'gan',event:'333',manual:false});
+    expect(progress.ledger[0]).toMatchObject({source:'timer',amount:10,solveId:'solve-1',sessionId:'session-1',cubeId:'gan',event:'333',manual:false,methodId:'roux'});
     expect(earnLearning(progress,action).earned).toBe(0);
     expect(earnLearning(progress,{...action,id:'solve-2',dnf:true}).earned).toBe(0);
   });

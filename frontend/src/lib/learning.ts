@@ -2,7 +2,7 @@ import type { CubeEvent } from './puzzles';
 import { readStored, writeStored } from './offline';
 
 export type SkillProgress = { lesson: boolean; drills: number; passed: boolean; passedAt?: string };
-export type XPContext = { method?: string; event?: CubeEvent; sessionId?: string; cubeId?: string; manual?: boolean };
+export type XPContext = { method?: string; methodId?: string; event?: CubeEvent; sessionId?: string; cubeId?: string; manual?: boolean };
 export type XPEvent = XPContext & { id: string; source: 'lesson' | 'drill' | 'test' | 'timer' | 'legacy'; amount: number; createdAt: string; skillId?: string; solveId?: string; repeat: boolean };
 export type LearningProgress = { ledger: XPEvent[]; xp: number; skills: Record<string, SkillProgress>; rewardedSolves: string[] };
 export type LearningAction = ({ type: 'lesson' | 'drill' | 'test'; skill: string } | { type: 'solve'; id: string; dnf: boolean }) & XPContext;
@@ -26,7 +26,8 @@ export function levelInfo(xp: number) {
 export const drillReward = (completed: number) => Math.max(5, Math.round(20 / Math.sqrt(completed + 1)));
 export function earnLearning(progress: LearningProgress, action: LearningAction): { progress: LearningProgress; earned: number } {
   const { method, event, sessionId, cubeId, manual } = action;
-  const record = (amount: number, source: XPEvent['source'], repeat: boolean, extra: Partial<XPEvent> = {}): XPEvent => ({ id: crypto.randomUUID(), source, amount, createdAt: new Date().toISOString(), repeat, method, event, sessionId, cubeId, manual, ...extra });
+  const methodId = action.methodId ?? (method && ['beginner','roux','cfop','zz','reduction','meyer'].includes(method.toLowerCase()) ? method.toLowerCase() : undefined);
+  const record = (amount: number, source: XPEvent['source'], repeat: boolean, extra: Partial<XPEvent> = {}): XPEvent => ({ id: crypto.randomUUID(), source, amount, createdAt: new Date().toISOString(), repeat, method, methodId, event, sessionId, cubeId, manual, ...extra });
   if (action.type === 'solve') {
     if (action.dnf || progress.rewardedSolves.includes(action.id)) return { progress, earned: 0 };
     return { progress: { ...progress, xp: progress.xp + 10, ledger: [...progress.ledger, record(10, 'timer', false, { solveId: action.id })], rewardedSolves: [...progress.rewardedSolves, action.id] }, earned: 10 };

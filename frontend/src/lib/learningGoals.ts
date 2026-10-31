@@ -25,6 +25,8 @@ const udStickerVertical = (c: Cubie) => Math.abs(new Vector3(0, Math.sign(c.home
 export function goalMet(state: Cubie[], goal: Goal, target: Home = [0, -1, 1]) {
   const all = (predicate: (c: Cubie) => boolean) => state.filter(predicate).every(atHome);
   const blocks = () => all(c => leftBlock(c) || rightBlock(c));
+  const cornersAligned = () => ['', 'U', 'U2', "U'"].some(move => (move ? applyMove(state,move) : state).filter(isCorner).every(atHome));
+  const oriented = () => blocks() && cornersAligned() && state.filter(c => (isEdge(c) && c.home[1] !== 0) || (c.home[0] === 0 && c.home[2] === 0 && c.home[1] !== 0)).every(udStickerVertical);
   switch (goal) {
     case 'edge': return all(c => c.home.every((n, i) => n === target[i]));
     case 'cross': return all(c => c.home[1] === -1 && isEdge(c));
@@ -36,8 +38,8 @@ export function goalMet(state: Cubie[], goal: Goal, target: Home = [0, -1, 1]) {
     case 'left-square': return all(c => leftBlock(c) && c.home[2] >= 0);
     case 'left-block': return all(leftBlock);
     case 'two-blocks': return blocks();
-    case 'roux-oriented': return blocks() && all(isCorner) && state.filter(c => isEdge(c) && (c.home[1] !== 0)).every(udStickerVertical);
-    case 'roux-lr': return blocks() && all(isCorner) && all(c => isEdge(c) && Math.abs(c.home[0]) === 1);
+    case 'roux-oriented': return oriented();
+    case 'roux-lr': return oriented() && all(isCorner) && all(c => isEdge(c) && Math.abs(c.home[0]) === 1);
     case 'solved': return state.every(atHome);
   }
 }

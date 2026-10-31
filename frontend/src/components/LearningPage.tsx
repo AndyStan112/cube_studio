@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronRight, GitBranch, LockKeyhole, Sparkles, Trophy, Zap } from 'lucide-react';
 import { applyMove, inverse, type Cubie } from '../lib/cube';
 import { skills, trees, availableSkill, prerequisitesMet, type MethodId, type SkillNode } from '../lib/curriculum';
@@ -15,11 +15,12 @@ export default function LearningPage({ progress, award }: Props) {
   const [method, setMethod] = useState<MethodId>('beginner');
   const [selected, setSelected] = useState<string | null>(null);
   const [activity, setActivity] = useState(false);
+  useEffect(() => { window.scrollTo({top:0,behavior:'instant'}); }, [selected,method]);
   const tree = trees[method], level = levelInfo(progress.xp);
   const continueNode = tree.nodes.find(n => n.kind === 'core' && !progress.skills[n.id]?.passed && !(n.id === 'loading-spot' && progress.skills['two-lines']?.passed) && prerequisitesMet(method,n.id,progress));
   if (selected) return <SkillFlow key={`${method}:${selected}`} skill={skills[selected]} method={method} progress={progress} award={award} onBack={() => setSelected(null)} />;
   return <div className="learning-shell">
-    <section className="learning-hero"><div><span className="learning-eyebrow"><Sparkles size={15}/> YOUR NEXT BREAKTHROUGH</span><h2>One skill at a time.</h2><p>See it. Try it. Make it yours.</p></div><div className="level-card"><span className="level-orb">{level.level}</span><div><strong>Level {level.level}</strong><span>{level.current} / {level.needed} XP to level {level.level+1}</span><div className="xp-track" role="progressbar" aria-label="Level progress" aria-valuenow={level.current} aria-valuemin={0} aria-valuemax={level.needed}><i style={{width:`${level.fraction*100}%`}}/></div></div></div></section>
+    <section className="learning-hero"><div><span className="learning-eyebrow"><Sparkles size={15}/> YOUR NEXT BREAKTHROUGH · 3×3</span><h2>One skill at a time.</h2><p>See it. Try it. Make it yours.</p></div><div className="level-card"><span className="level-orb">{level.level}</span><div><strong>Level {level.level}</strong><span>{level.current} / {level.needed} XP to level {level.level+1}</span><div className="xp-track" role="progressbar" aria-label="Level progress" aria-valuenow={level.current} aria-valuemin={0} aria-valuemax={level.needed}><i style={{width:`${level.fraction*100}%`}}/></div></div></div></section>
     <div className="learning-toolbar"><div className="method-switch" aria-label="Learning method">{(['beginner','roux'] as const).map(id => <button key={id} aria-pressed={method === id} onClick={() => setMethod(id)}>{trees[id].title}</button>)}</div><button className="text-button" aria-expanded={activity} onClick={() => setActivity(v => !v)}><Zap size={15}/>{progress.xp.toLocaleString()} XP · Activity</button></div>
     {activity && <XPActivity progress={progress}/>}
     <section className="tree-intro"><div><h3>{tree.title} path</h3><p>{tree.description}</p></div>{continueNode ? <button className="button" onClick={() => setSelected(continueNode.id)}>Continue <ArrowRight size={16}/></button> : <span className="learning-pill"><Trophy size={15}/> Path complete</span>}</section>
@@ -49,6 +50,7 @@ function SkillFlow({skill,method,progress,award,onBack}: Props & {skill:SkillNod
   const [notice,setNotice] = useState('');
   const [celebration,setCelebration] = useState(false);
   const [testAttempt,setTestAttempt] = useState(0);
+  useEffect(() => { window.scrollTo({top:0,behavior:'instant'}); }, [phase,slide,celebration]);
   const grant = (type:'lesson'|'drill'|'test') => { const amount = award({type,skill:skill.id,method,event:'333'}); setNotice(amount ? `+${amount} XP${type === 'test' ? ' · Skill mastered!' : ''}` : type === 'test' ? 'Test passed again. Nice work.' : 'Already completed. Keep practicing!'); return amount; };
   return <div className="learning-shell skill-flow"><button className="text-button" onClick={onBack}><ArrowLeft size={16}/> {trees[method].title} tree</button><header className="skill-flow-heading"><div><span className="learning-eyebrow">{status.passed ? 'MASTERED · KEEP IT FRESH' : 'YOUR NEXT SKILL'}</span><h2>{skill.title}</h2><p>{skill.subtitle}</p></div><span className="learning-pill">{status.passed ? <Check size={15}/> : <Trophy size={15}/>} {status.passed ? 'Test passed' : '150 XP first pass'}</span></header>
     <nav className="skill-phases" aria-label="Skill steps">{(['lesson','drill','test'] as const).map((value,index) => <button key={value} aria-current={phase === value ? 'step' : undefined} disabled={value === 'drill' && !status.lesson || value === 'test' && (!status.lesson || !status.drills)} onClick={() => {setPhase(value);setNotice('');setCelebration(false);}}><span>{value === 'lesson' && status.lesson || value === 'drill' && status.drills || value === 'test' && status.passed ? <Check size={14}/> : index+1}</span>{value === 'drill' ? 'Exercises' : value === 'test' ? 'Test' : 'Lesson'}</button>)}</nav>
@@ -71,6 +73,7 @@ function SkillTest({skill,onPass,onRestart}: {skill:SkillNode;onPass:()=>void;on
   const challenge = skill.cases[index];
   const initial = useMemo(() => challenge ? caseState(challenge.solution) : undefined,[challenge]);
   const total = skill.quiz ? questions.length : skill.cases.length;
+  useEffect(() => { window.scrollTo({top:0,behavior:'instant'}); }, [index]);
   function check(answerValue = answer) {
     try {
       let passed: boolean;

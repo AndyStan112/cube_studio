@@ -49,7 +49,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
   const scrambleWorker = useRef(new OfflineSolver());
   const scrambleJob = useRef<string | null>(null);
   const [flow, setFlow] = useState<'input' | 'solution'>('input');
-  const flowTop = useRef<HTMLDivElement>(null);
+  useEffect(() => { window.scrollTo({top:0,behavior:'instant'}); }, [flow]);
   const [method, setMethod] = useState<SolverMethod>(size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner");
   const [viewedStage, setViewedStage] = useState<number | null>(null);
   const guided = method === "beginner" || method === "reduction_beginner" || method === "meyer";
@@ -267,7 +267,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
       return;
     }
     setFlow('solution');
-    flowTop.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    window.scrollTo({top:0,behavior:'instant'});
     const ticket = ++generation.current;
     localStorage.removeItem(savedKey);
     setBusy(true);
@@ -403,7 +403,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
     </div>
   );
   return (
-    <div className="solver-flow" ref={flowTop}>
+    <div className="solver-flow">
       <nav className="solver-flow-steps" aria-label="Solver steps">
         <button aria-current={flow === 'input' ? 'step' : undefined} disabled={locked} onClick={() => {setFlow('input');setPlaying(false);}}><span>1</span>Set up cube</button>
         <ArrowRight size={17}/>

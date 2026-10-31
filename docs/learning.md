@@ -38,3 +38,15 @@ method/category/session/cube context when available, and repeat status. Its sum
 matches the displayed total. Deleting a solve does not remove earned XP.
 Learning data is saved per local profile under `cube-studio-learning-v1:*` and
 cleared by the existing all-data reset. It does not yet synchronize online.
+
+## Cubing references
+
+The curriculum uses original short captions and independently replayed cube
+examples. Roux block structure and LSE arrow actions were checked against
+[Bradley Harris's Roux first-block guide](https://bradleykh.github.io/CubeTools/roux2.html)
+and [his LSE edge-orientation tutorial](https://bradleykh.github.io/CubeTools/tutorials/roux/lse-edge-orientation/).
+The loading-spot demo deliberately puts the blue-red edge at DF while preserving
+the blue-white base at DL. The upper corners may be offset by a U turn during
+edge orientation; the goal checks the corner group rather than requiring an
+unnecessary top-layer alignment. UL/UR placement also checks preserved edge
+orientation.
