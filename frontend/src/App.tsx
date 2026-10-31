@@ -239,6 +239,7 @@ export default function App() {
                 setSolves,
                 notify,
               }}
+              onSolveSaved={(solve, manual) => award({ type: 'solve', id: solve.id, dnf: solve.penalty === 'DNF', event: solve.event ?? event, method: solve.method, sessionId: solve.session_id, cubeId: solve.cube, manual })}
               onSignIn={() => setAuthOpen(true)}
             /></div>
           {page === "solver" ? (

@@ -39,6 +39,7 @@ export default function TimerPage({
   setSolves,
   notify,
   onSignIn,
+  onSolveSaved,
 }: TrainingProps & {
   active: boolean;
   onSelectScramble: (scramble: Scramble) => void;
@@ -52,6 +53,7 @@ export default function TimerPage({
   setSolves: React.Dispatch<React.SetStateAction<Solve[]>>;
   notify: (e: unknown) => void;
   onSignIn: () => void;
+  onSolveSaved: (solve: Solve, manual: boolean) => number;
 }) {
   const [running, setRunning] = useState(false),
     [elapsed, setElapsed] = useState(0),
@@ -60,6 +62,7 @@ export default function TimerPage({
     [pending, setPending] = useState<number | null>(null),
     [busy, setBusy] = useState(false),
     [penalty, setPenalty] = useState<Solve["penalty"]>("none");
+  const [xpEarned, setXpEarned] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [inspecting, setInspecting] = useState(false);
   const [inspectionElapsed, setInspectionElapsed] = useState(0);
@@ -154,6 +157,7 @@ export default function TimerPage({
       s = { ...s, ...metadata };
       writeStored(solvesKey(user?.id), [s, ...solves]);
       setSolves((prev) => [s, ...prev]);
+      setXpEarned(onSolveSaved(s, manualMode));
       setPending(null);
       setManual("");
       setElapsed(0);
@@ -212,6 +216,7 @@ export default function TimerPage({
   };
   return (
     <>
+      {xpEarned > 0 && <p className="timer-xp-notice" role="status">+{xpEarned} XP · Solve saved. Keep going.</p>}
       <section className="card session-controls">
         <div className="stats-filters">
           <label>Session<select aria-label="Session" disabled={locked} value={session?.id ?? ''} onChange={e => updateTraining({ ...training, active: { ...training.active, [event]: e.target.value } })}>{training.sessions.filter(s => s.event === event).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
