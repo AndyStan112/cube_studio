@@ -233,7 +233,7 @@ export default function App() {
             /></div>
           {page === "solver" ? (
             <>
-              <SolverPage key={event} size={puzzles[event].size} />
+              <SolverPage key={event} size={puzzles[event].size} training={training} updateTraining={updateTraining} />
               {event !== "333" && <details className="card practice-panel" onToggle={e => setPracticeOpen(e.currentTarget.open)}>
                 <summary>Scramble playback and return sequence</summary>
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}

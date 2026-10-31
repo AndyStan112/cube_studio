@@ -28,6 +28,8 @@ import { practiceMoves, type CubeEvent } from "../lib/puzzles";
 import "./SolverPage.css";
 import SolverLesson from "./SolverLesson";
 import CameraInput from "./CameraInput";
+import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
+import { stateScramble } from '../lib/training';
 import { moveDescription } from "../lib/teaching";
 const FaceletCube = lazy(() => import("./FaceletCube"));
 const Cube = lazy(() => import("./Cube"));
@@ -40,7 +42,12 @@ const faceNames: Record<string, string> = {
   L: "Left · blue",
   B: "Back · orange",
 };
-export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
+export default function SolverPage({ size = 3, training, updateTraining }: TrainingProps & { size?: CubeSize }) {
+  const event = `${size}${size}${size}` as CubeEvent;
+  const [stateSequence, setStateSequence] = useState<{ value: string; moves: string } | null>(null);
+  const [generatingScramble, setGeneratingScramble] = useState(false);
+  const scrambleWorker = useRef(new OfflineSolver());
+  const scrambleJob = useRef<string | null>(null);
   const [method, setMethod] = useState<SolverMethod>(size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner");
   const [viewedStage, setViewedStage] = useState<number | null>(null);
   const guided = method === "beginner" || method === "reduction_beginner" || method === "meyer";
@@ -67,10 +74,12 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   const initial = useMemo(() => faceletsToCubies(input, size), [input, size]);
   const moves = useMemo(() => selected?.notation ?? [], [selected]);
   const running = !!job && !terminal(job),
-    locked = busy || running;
+    locked = busy || running || generatingScramble;
   function choose(solution: Solution, state = input) {
     verifySolution(state, solution, size);
     if (guided && solution.method !== method) throw Error("The worker returned a different method. Start a new guided solve after updating the solver service.");
+    const sequence = stateScramble(state, solution.notation, size);
+    setStateSequence({ value: state, moves: sequence.join(' ') });
     setViewedStage(null);
     setSelected(solution);
     setInput(state);
@@ -124,6 +133,8 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
     return () => {
       generation.current++;
       offline.current.cancel();
+      scrambleWorker.current.cancel();
+      if (scrambleJob.current) void cancelJob(scrambleJob.current).catch(() => {});
     };
   }, []);
   useEffect(() => {
@@ -288,6 +299,9 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   }
   async function cancel() {
     generation.current++;
+    scrambleWorker.current.cancel();
+    if (scrambleJob.current) { void cancelJob(scrambleJob.current).catch(() => {}); scrambleJob.current = null; }
+    setGeneratingScramble(false);
     offline.current.cancel();
     setBusy(false);
     setPlaying(false);
@@ -306,6 +320,8 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   }
   function editValue(next: SetStateAction<string>) {
     setCameraReady(false);
+    setStateSequence(null);
+    scrambleWorker.current.cancel();
     generation.current++;
     setValue(next);
     setSelected(null);
@@ -320,7 +336,43 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
   }
   function demo() {
     const sequence = practiceMoves(`${size}${size}${size}` as CubeEvent);
-    editValue(cubiesToFacelets(sequence.reduce((s, m) => applyMove(s, m), solved(size))));
+    const next = cubiesToFacelets(sequence.reduce((s, m) => applyMove(s, m), solved(size)));
+    editValue(next);
+    setStateSequence({ value: next, moves: sequence.join(' ') });
+    setRepresentation('2d');
+  }
+  async function generateStateScramble() {
+    setError('');
+    try { validateFacelets(value, size); faceletsToCubies(value, size); } catch (e) { setError((e as Error).message); return; }
+    const ticket = ++generation.current;
+    setGeneratingScramble(true);
+    setStatus('Generating a scramble for this state…');
+    try {
+      let solution: Solution;
+      if (size === 3) solution = await scrambleWorker.current.solve(value, message => { if (generation.current === ticket) setStatus(message); });
+      else {
+        let next = await createJob(value, size, 'reduction');
+        scrambleJob.current = next.id;
+        const deadline = performance.now() + 180000;
+        while (!next.solution && !next.candidate && !terminal(next)) {
+          if (generation.current !== ticket) return;
+          if (performance.now() > deadline) throw Error('Scramble generation timed out. Try again.');
+          await new Promise(resolve => setTimeout(resolve, 700));
+          if (generation.current !== ticket) return;
+          next = await getJob(next.id);
+        }
+        if (!next.solution && !next.candidate) throw Error(next.error || 'No solution was found for this state.');
+        solution = (next.solution ?? next.candidate)!;
+      }
+      if (generation.current !== ticket) return;
+      verifySolution(value, solution, size);
+      setStateSequence({ value, moves: stateScramble(value, solution.notation, size).join(' ') });
+      setStatus('State scramble ready');
+    } catch (e) { if (generation.current === ticket) { setError((e as Error).message); setStatus('Ready'); } }
+    finally {
+      if (generation.current === ticket) setGeneratingScramble(false);
+      if (scrambleJob.current) { void cancelJob(scrambleJob.current).catch(() => {}); scrambleJob.current = null; }
+    }
   }
   function jump(n: number) {
     setPlaying(false);
@@ -503,6 +555,15 @@ export default function SolverPage({ size = 3 }: { size?: CubeSize }) {
               Cancel
             </button>
           )}
+        </div>
+        <div className="state-scramble">
+          <h3>Scramble for this cube</h3>
+          {stateSequence?.value === value ? <p className="scramble-text">{stateSequence.moves || 'Solved cube · no moves needed'}</p> : <p className="small-muted">Generate a sequence that leads from a solved cube to your entered or scanned state.</p>}
+          <button className="button" disabled={locked || value === solvedValue} onClick={() => void generateStateScramble()}>{generatingScramble ? 'Generating…' : 'Generate state scramble'}</button>
+          <ScrambleLibrary {...{ training, updateTraining, event }} disabled={locked} current={stateSequence?.value === value ? { id: 'local:state', moves: stateSequence.moves, event } : null} onSelect={scramble => {
+            const next = cubiesToFacelets(scramble.moves.split(/\s+/).reduce((s, m) => applyMove(s, m), solved(size)));
+            editValue(next); setStateSequence({ value: next, moves: scramble.moves }); setRepresentation('2d');
+          }} />
         </div>
         {error && (
           <p role="alert" className="error-banner">
