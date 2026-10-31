@@ -7,8 +7,8 @@ import './CameraInput.css';
 
 const labels = ['Up · yellow', 'Right · green', 'Front · red', 'Down · white', 'Left · blue', 'Back · orange'];
 const guidance = ['Show yellow, with orange along its top edge.', 'Show green, with yellow along its top edge.', 'Show red, with yellow along its top edge.', 'Show white, with red along its top edge.', 'Show blue, with yellow along its top edge.', 'Show orange, with yellow along its top edge.'];
-export default function CameraInput({ size, disabled, onChange, onReady }: {
-  size: CubeSize; disabled: boolean; onChange: (value: string) => void; onReady: (ready: boolean) => void;
+export default function CameraInput({ size, disabled, onChange, onReady, defaultCalibration = 'auto' }: {
+  defaultCalibration?: string; size: CubeSize; disabled: boolean; onChange: (value: string) => void; onReady: (ready: boolean) => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -24,7 +24,7 @@ export default function CameraInput({ size, disabled, onChange, onReady }: {
     const saved = readStored<unknown>(calibrationKey, []);
     return Array.isArray(saved) ? saved.filter(isCalibration) : [];
   });
-  const [selected, setSelected] = useState('auto');
+  const [selected, setSelected] = useState(defaultCalibration);
   const [calibrating, setCalibrating] = useState(false);
   const [name, setName] = useState('My cube');
   const [message, setMessage] = useState('');

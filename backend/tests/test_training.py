@@ -29,3 +29,15 @@ def test_solve_metadata_round_trip(monkeypatch):
     assert isinstance(saved['created_at'], datetime)
     assert saved['created_at'].tzinfo == timezone.utc
 
+
+def test_reset_requires_auth_and_confirmation_and_scopes_deletion(monkeypatch):
+    collection = SimpleNamespace(delete_many=AsyncMock())
+    monkeypatch.setattr(app.state, 'db', SimpleNamespace(solves=collection), raising=False)
+    client = TestClient(app)
+    payload = {"confirmation": "DELETE ALL DATA"}
+    assert client.post('/api/data/reset', json=payload).status_code == 401
+    headers = {"Authorization": "Bearer mock:demo-andy"}
+    assert client.post('/api/data/reset', headers=headers, json={"confirmation": "yes"}).status_code == 422
+    collection.delete_many.assert_not_called()
+    assert client.post('/api/data/reset', headers=headers, json=payload).status_code == 204
+    collection.delete_many.assert_awaited_once_with({"user_id": "demo-andy"})

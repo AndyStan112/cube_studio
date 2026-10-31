@@ -67,7 +67,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
     [busy, setBusy] = useState(false),
     [step, setStep] = useState(0),
     [playing, setPlaying] = useState(false),
-    [transparent, setTransparent] = useState(false),
+    [transparent, setTransparent] = useState(training.settings.transparent),
     [resetView, setResetView] = useState(0);
   const offline = useRef(new OfflineSolver()),
     generation = useRef(0);
@@ -87,6 +87,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
     setPlaying(false);
   }
   useEffect(() => {
+    setRepresentation(training.settings.representation);
     const ticket = generation.current;
     const id = localStorage.getItem(savedKey);
     if (id)
@@ -230,9 +231,9 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
       setViewedStage(null);
       setStep(next);
       if (selected?.stages?.some(stage => stage.end === next)) setPlaying(false);
-    }, selected?.stages ? 1400 : 800);
+    }, selected?.stages ? Math.max(1400, training.settings.playbackMs) : training.settings.playbackMs);
     return () => clearTimeout(timer);
-  }, [playing, step, moves.length, selected]);
+  }, [playing, step, moves.length, selected, training.settings.playbackMs]);
   async function runOffline(state: string, ticket: number) {
     setMode("Offline");
     setBusy(true);
@@ -407,7 +408,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             </button>
           ))}
         </div>
-        {representation === "camera" && <CameraInput size={size} disabled={locked} onChange={editValue} onReady={setCameraReady} />}
+        {representation === "camera" && <CameraInput defaultCalibration={training.cubes.find(c => c.id === (training.sessions.find(s => s.id === training.active[event])?.cube || training.settings.defaultCube) && c.event === event)?.calibrationId || 'auto'} size={size} disabled={locked} onChange={editValue} onReady={setCameraReady} />}
         {representation !== "text" && representation !== "camera" && <>
         <div className="solver-palette">
           {[...FACE_ORDER].map((f) => (

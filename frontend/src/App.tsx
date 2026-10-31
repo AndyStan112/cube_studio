@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined } from "lucide-react";
+import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined, Settings } from "lucide-react";
 import {
   api,
   ApiError,
@@ -17,9 +17,10 @@ import SolverPage from "./components/SolverPage";
 import AuthModal from "./components/AuthModal";
 import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
+import SettingsPage from "./components/SettingsPage";
 import StatsPage from "./components/StatsPage";
 import { readTraining, storeTraining, type TrainingData } from "./lib/training";
-type Page = "timer" | "algorithms" | "solver" | "stats";
+type Page = "timer" | "algorithms" | "solver" | "stats" | "settings";
 export default function App() {
   const [event, setEvent] = useState<CubeEvent>(() => {
     const saved = readStored<CubeEvent>("cube-studio-event-v1", "333");
@@ -162,7 +163,7 @@ export default function App() {
               ? "Timer"
               : page === "solver"
                 ? "Solver"
-                : page === "stats" ? "Statistics" : "Algorithms"}
+                : page === "stats" ? "Statistics" : page === "settings" ? "Settings" : "Algorithms"}
           </h1>
           <div className="topbar-right">
             <label className="puzzle-picker">
@@ -177,11 +178,12 @@ export default function App() {
                 {cubeEvents.map(value => <option key={value} value={value}>{puzzles[value].label}</option>)}
               </select>
             </label>
+            <button className="icon-button" aria-label="Settings" onClick={() => setPage("settings")}><Settings size={20} /></button>
             {user ? (
               <>
-                <span className="avatar" title={`${user.name} · Demo user`}>
+                <button className="avatar" aria-label="Profile settings" onClick={() => setPage("settings")} title={`${user.name} · Settings`}>
                   {user.name[0].toUpperCase()}
-                </span>
+                </button>
                 <span className="user-name">{user.name}</span>
                 <button
                   className="icon-button"
@@ -241,7 +243,8 @@ export default function App() {
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
+          ) : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
+            : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           ) : null}
         </main>

@@ -113,3 +113,10 @@ async def delete_solve(solve_id: str, user=Depends(current_user)):
     result = await app.state.db.solves.delete_one({"_id": oid(solve_id), "user_id": user.id})
     if not result.deleted_count:
         raise HTTPException(404, "Solve not found")
+
+class ResetInput(BaseModel):
+    confirmation: Literal["DELETE ALL DATA"]
+
+@app.post('/api/data/reset', status_code=204)
+async def reset_data(data: ResetInput, user=Depends(current_user)):
+    await app.state.db.solves.delete_many({"user_id": user.id})
