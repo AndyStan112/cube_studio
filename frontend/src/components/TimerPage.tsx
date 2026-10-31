@@ -22,11 +22,13 @@ import {
   type User,
 } from "../lib/api";
 import { forEvent, puzzles, type CubeEvent } from "../lib/puzzles";
+import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
 import { applyMove, solved } from "../lib/cube";
 const Cube = lazy(() => import("./Cube"));
 const noMoves: string[] = [];
 export default function TimerPage({
   event,
+  training, updateTraining, onSelectScramble,
   onLockChange,
   scramble,
   loading,
@@ -36,7 +38,8 @@ export default function TimerPage({
   setSolves,
   notify,
   onSignIn,
-}: {
+}: TrainingProps & {
+  onSelectScramble: (scramble: Scramble) => void;
   event: CubeEvent;
   onLockChange: (locked: boolean) => void;
   scramble: Scramble | null;
@@ -216,6 +219,7 @@ export default function TimerPage({
               </Suspense>
             </div>}
           </details>
+          <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={running || pending !== null || loading || busy} />
           <div className={`timer-zone ${running ? "is-running" : ""}`}>
             <div className="timer-status">
               {running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
@@ -406,6 +410,7 @@ export default function TimerPage({
                 <details className="solve-details">
                   <summary>Scramble</summary>
                   <p>{s.scramble}</p>
+                  <button className="text-button" onClick={() => updateTraining({ ...training, scrambles: [{ id: `saved:${crypto.randomUUID()}`, moves: s.scramble, event, name: `Solve ${eventSolves.length - i}`, created_at: new Date().toISOString() }, ...training.scrambles] })}>Save scramble to library</button>
                 </details>
               </li>
             ))}

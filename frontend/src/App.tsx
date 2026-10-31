@@ -17,6 +17,7 @@ import SolverPage from "./components/SolverPage";
 import AuthModal from "./components/AuthModal";
 import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
+import { readTraining, storeTraining, type TrainingData } from "./lib/training";
 type Page = "timer" | "algorithms" | "solver";
 export default function App() {
   const [event, setEvent] = useState<CubeEvent>(() => {
@@ -37,6 +38,9 @@ export default function App() {
       algorithms: [],
     })),
     [loading, setLoading] = useState(false);
+  const [training, setTraining] = useState<TrainingData>(() => readTraining());
+  useEffect(() => { setTraining(readTraining(user?.id)); }, [user?.id]);
+  const updateTraining = (data: TrainingData) => { storeTraining(data, user?.id); setTraining(data); };
   const notify = useCallback(
     (e: unknown) =>
       setError(e instanceof Error ? e.message : "Something went wrong"),
@@ -213,6 +217,8 @@ export default function App() {
             <TimerPage
               key={event}
               event={event}
+              training={training} updateTraining={updateTraining}
+              onSelectScramble={setScramble}
               onLockChange={setTimerLocked}
               scramble={scramble?.event === event ? scramble : null}
               {...{

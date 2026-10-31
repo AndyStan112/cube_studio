@@ -1125,3 +1125,45 @@ select:focus {
 }
 .practice-panel { margin-top: 20px; padding: 16px; }
 .practice-panel > summary { cursor: pointer; margin-bottom: 12px; }
+
+/* Training sessions, preferences and progress */
+[hidden] { display: none !important; }
+.session-controls, .settings-card { padding: 24px; margin-bottom: 20px; }
+.settings-layout, .stats-page { max-width: 1200px; margin: 0 auto; }
+.settings-card h2 { margin: 0 0 16px; }
+.settings-card h3 { margin: 24px 0 12px; }
+.stats-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+.settings-card label, .session-controls label, .stats-filters label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.settings-card > label { margin: 18px 0; max-width: 480px; }
+.settings-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+.settings-row input { flex: 1; min-width: 140px; }
+.settings-card input:not([type="checkbox"]), .session-controls input, .scramble-library input, .stats-filters select, .settings-card select, .session-controls select { padding: 11px 12px; border: 1px solid var(--border, #dce2df); border-radius: 8px; background: var(--surface, #fff); color: var(--text, #25382e); font: inherit; min-width: 0; width: 100%; }
+.settings-row input, .settings-row select { width: auto !important; }
+.check-setting { display: flex !important; flex-direction: row !important; align-items: center; gap: 10px; }
+.check-setting input { width: 17px; height: 17px; accent-color: var(--green); }
+.settings-item, .saved-scramble { border-top: 1px solid var(--border); padding: 18px 0; }
+.settings-item { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.settings-item label { flex: 1; min-width: 150px; }
+.calibration-swatches { display: flex; gap: 4px; }
+.calibration-swatches span { width: 22px; height: 22px; border: 1px solid #ccc; border-radius: 4px; }
+.scramble-library { margin: 18px 0; }
+.scramble-library summary { font-size: 13px; cursor: pointer; color: var(--green); }
+.scramble-library fieldset { border: 0; padding: 8px 0; min-width: 0; }
+.scramble-text { font-family: monospace; line-height: 1.8; overflow-wrap: anywhere; }
+.state-scramble { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); }
+.danger-zone { border-color: #dca8a8; }
+.danger-zone h2, .danger-zone .delete { color: #f87171; }
+.danger-button { background: #b42318 !important; border-color: #b42318 !important; color: white !important; }
+.danger-button:hover { background: #912018 !important; }
+.danger-zone [role="alertdialog"] { padding: 18px; border: 1px solid #db8d87; border-radius: 8px; background: var(--surface, #fff5f4); }
+.progress-chart { width: 100%; height: auto; min-height: 160px; color: var(--text); }
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.table-scroll { overflow-x: auto; }
+.table-scroll table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.table-scroll th, .table-scroll td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.avatar { cursor: pointer; border: 0; }
+@media (max-width: 800px) { .stats-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .comparison-grid { grid-template-columns: 1fr; gap: 0; } .session-controls, .settings-card { padding: 18px; } }
+@media (max-width: 450px) { .stats-filters { grid-template-columns: 1fr; } .topbar-right { gap: 8px; } }
+
+.stats-page > .session-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 600px) { .stats-page > .session-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 20px; } }
