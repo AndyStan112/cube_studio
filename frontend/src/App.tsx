@@ -165,8 +165,8 @@ export default function App() {
           <div className="topbar-right">
             <label className="puzzle-picker">
               <span>Puzzle</span>
-              <select aria-label="Puzzle" value={event} disabled={page === "timer" && timerLocked}
-                title={page === "timer" && timerLocked ? "Save or discard this time before changing puzzles." : "Choose puzzle"}
+              <select aria-label="Puzzle" value={event} disabled={timerLocked}
+                title={timerLocked ? "Save or discard this time before changing puzzles." : "Choose puzzle"}
                 onChange={(e) => {
                   const next = e.target.value as CubeEvent;
                   writeStored("cube-studio-event-v1", next);
@@ -213,10 +213,10 @@ export default function App() {
               </button>
             </div>
           )}
-          {page === "timer" ? (
-            <TimerPage
-              key={event}
+          <div hidden={page !== "timer"}><TimerPage
+              key={`${event}:${user?.id ?? "guest"}`}
               event={event}
+              active={page === "timer"}
               training={training} updateTraining={updateTraining}
               onSelectScramble={setScramble}
               onLockChange={setTimerLocked}
@@ -230,8 +230,8 @@ export default function App() {
                 notify,
               }}
               onSignIn={() => setAuthOpen(true)}
-            />
-          ) : page === "solver" ? (
+            /></div>
+          {page === "solver" ? (
             <>
               <SolverPage key={event} size={puzzles[event].size} />
               {event !== "333" && <details className="card practice-panel" onToggle={e => setPracticeOpen(e.currentTarget.open)}>
@@ -239,9 +239,9 @@ export default function App() {
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : (
+          ) : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
-          )}
+          ) : null}
         </main>
       </div>
       <nav className="mobile-nav">

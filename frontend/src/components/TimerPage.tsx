@@ -23,12 +23,13 @@ import {
 } from "../lib/api";
 import { forEvent, puzzles, type CubeEvent } from "../lib/puzzles";
 import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
+import { createSession } from '../lib/training';
 import { applyMove, solved } from "../lib/cube";
 const Cube = lazy(() => import("./Cube"));
 const noMoves: string[] = [];
 export default function TimerPage({
   event,
-  training, updateTraining, onSelectScramble,
+  training, updateTraining, onSelectScramble, active,
   onLockChange,
   scramble,
   loading,
@@ -39,6 +40,7 @@ export default function TimerPage({
   notify,
   onSignIn,
 }: TrainingProps & {
+  active: boolean;
   onSelectScramble: (scramble: Scramble) => void;
   event: CubeEvent;
   onLockChange: (locked: boolean) => void;
@@ -59,14 +61,20 @@ export default function TimerPage({
     [busy, setBusy] = useState(false),
     [penalty, setPenalty] = useState<Solve["penalty"]>("none");
   const [showPreview, setShowPreview] = useState(false);
+  const [newSessionName, setNewSessionName] = useState('');
+  const session = training.sessions.find(s => s.id === training.active[event] && s.event === event) ?? training.sessions.find(s => s.event === event);
+  const locked = running || pending !== null || busy || (manualMode && !!manual.trim());
   const puzzle = puzzles[event];
-  const eventSolves = forEvent(solves, event);
+  const eventSolves = forEvent(solves, event).filter(s => (s.session_id ?? `legacy:${event}`) === session?.id);
+  function updateSession(patch: Partial<NonNullable<typeof session>>) {
+    if (session) updateTraining({ ...training, sessions: training.sessions.map(s => s.id === session.id ? { ...s, ...patch } : s) });
+  }
   const preview = useMemo(() => showPreview && scramble
     ? scramble.moves.split(/\s+/).reduce((state, move) => applyMove(state, move), solved(puzzle.size))
     : undefined, [showPreview, scramble, puzzle.size]);
   useEffect(() => {
-    onLockChange(running || pending !== null || busy || (manualMode && manual.trim().length > 0));
-  }, [running, pending, busy, manualMode, manual, onLockChange]);
+    onLockChange(locked);
+  }, [locked, onLockChange]);
   useEffect(() => () => onLockChange(false), [onLockChange]);
   const start = useRef(0);
   const toggle = useCallback(() => {
@@ -95,7 +103,7 @@ export default function TimerPage({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (
-        e.code === "Space" &&
+        active && e.code === "Space" &&
         !e.repeat &&
         !(
           e.target instanceof HTMLElement &&
@@ -108,28 +116,30 @@ export default function TimerPage({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [toggle]);
+  }, [toggle, active]);
   const save = async () => {
     const ms = manualMode ? parseTime(manual) : pending;
     if (!ms) {
       notify(new Error("Enter a time such as 24.53 or 1:02.45."));
       return;
     }
-    if (!scramble) return;
+    if (!scramble || !session) return;
+    const metadata = { session_id: session.id, cube: session.cube, cube_name: training.cubes.find(c => c.id === session.cube)?.name, method: session.method };
     setBusy(true);
     try {
       let s: Solve;
       try {
-        if (!user || !navigator.onLine || scramble.id.startsWith("local:")) throw Error("Local solve");
+        if (!user || !navigator.onLine || !scramble.id.match(/^[a-f0-9]{24}$/i)) throw Error("Local solve");
         s = await api<Solve>("/solves", {
           method: "POST",
-          body: JSON.stringify({ scramble_id: scramble.id, time_ms: ms, penalty }),
+          body: JSON.stringify({ scramble_id: scramble.id, time_ms: ms, penalty, ...metadata }),
           signal: AbortSignal.timeout(6000),
         });
       } catch (error) {
         if (error instanceof ApiError && error.status < 500) throw error;
         s = localSolve(scramble, ms, penalty);
       }
+      s = { ...s, ...metadata };
       writeStored(solvesKey(user?.id), [s, ...solves]);
       setSolves((prev) => [s, ...prev]);
       setPending(null);
@@ -190,6 +200,18 @@ export default function TimerPage({
   };
   return (
     <>
+      <section className="card session-controls">
+        <div className="stats-filters">
+          <label>Session<select aria-label="Session" disabled={locked} value={session?.id ?? ''} onChange={e => updateTraining({ ...training, active: { ...training.active, [event]: e.target.value } })}>{training.sessions.filter(s => s.event === event).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+          <label>Session name<input disabled={locked} value={session?.name ?? ''} maxLength={100} onChange={e => updateSession({ name: e.target.value })} /></label>
+          <label>Cube<select disabled={locked} value={session?.cube ?? ''} onChange={e => updateSession({ cube: e.target.value })}><option value="">Unspecified</option>{training.cubes.filter(c => c.event === event).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+          <label>Method<select disabled={locked} value={session?.method ?? ''} onChange={e => updateSession({ method: e.target.value })}>{training.methods.map(m => <option key={m}>{m}</option>)}</select></label>
+        </div>
+        <form className="settings-row" onSubmit={e => { e.preventDefault(); const next = createSession(event, training, newSessionName); updateTraining({ ...training, sessions: [...training.sessions, next], active: { ...training.active, [event]: next.id } }); setNewSessionName(''); }}>
+          <input disabled={locked} aria-label="New session name" placeholder="New session name" value={newSessionName} maxLength={100} onChange={e => setNewSessionName(e.target.value)} /><button className="button" disabled={locked}>New session</button>
+        </form>
+        <p className="small-muted">Times below belong to this session. Cube and method selections apply to future solves. Manage cubes and defaults in Settings.</p>
+      </section>
       <div className="timer-layout">
         <section className="timer-card card">
           <div className="card-top">
@@ -199,7 +221,7 @@ export default function TimerPage({
             </span>
             <button
               className="text-button"
-              disabled={running || pending !== null || loading || busy}
+              disabled={locked || loading}
               onClick={() => void loadScramble()}
             >
               <Shuffle size={15} />
@@ -219,7 +241,7 @@ export default function TimerPage({
               </Suspense>
             </div>}
           </details>
-          <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={running || pending !== null || loading || busy} />
+          <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={locked || loading} />
           <div className={`timer-zone ${running ? "is-running" : ""}`}>
             <div className="timer-status">
               {running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
@@ -410,6 +432,7 @@ export default function TimerPage({
                 <details className="solve-details">
                   <summary>Scramble</summary>
                   <p>{s.scramble}</p>
+                  <p>{s.cube_name || 'Unspecified cube'} · {s.method || 'Unspecified method'}</p>
                   <button className="text-button" onClick={() => updateTraining({ ...training, scrambles: [{ id: `saved:${crypto.randomUUID()}`, moves: s.scramble, event, name: `Solve ${eventSolves.length - i}`, created_at: new Date().toISOString() }, ...training.scrambles] })}>Save scramble to library</button>
                 </details>
               </li>

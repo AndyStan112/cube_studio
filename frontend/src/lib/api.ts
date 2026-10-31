@@ -4,6 +4,10 @@ import type { StickerFocus } from "./stickerFocus";
 import { authProvider } from "./auth";
 export type { User } from "./auth";
 export type Solve = {
+  session_id?: string;
+  cube?: string;
+  cube_name?: string;
+  method?: string;
   event?: CubeEvent;
   id: string;
   scramble: string;
