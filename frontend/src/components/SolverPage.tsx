@@ -48,6 +48,8 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
   const [generatingScramble, setGeneratingScramble] = useState(false);
   const scrambleWorker = useRef(new OfflineSolver());
   const scrambleJob = useRef<string | null>(null);
+  const [flow, setFlow] = useState<'input' | 'solution'>('input');
+  const flowTop = useRef<HTMLDivElement>(null);
   const [method, setMethod] = useState<SolverMethod>(size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner");
   const [viewedStage, setViewedStage] = useState<number | null>(null);
   const guided = method === "beginner" || method === "reduction_beginner" || method === "meyer";
@@ -80,6 +82,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
     if (guided && solution.method !== method) throw Error("The worker returned a different method. Start a new guided solve after updating the solver service.");
     const sequence = stateScramble(state, solution.notation, size);
     setStateSequence({ value: state, moves: sequence.join(' ') });
+    setFlow('solution');
     setViewedStage(null);
     setSelected(solution);
     setInput(state);
@@ -96,6 +99,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
           if (generation.current !== ticket) return;
           setMethod(j.method ?? (size === 3 ? "unrestricted" : "reduction"));
           setJob(j);
+          setFlow('solution');
           setInput(j.input);
           setValue(j.input);
           setMode("Online");
@@ -112,6 +116,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
               const savedMethod = saved.method ?? (size === 3 ? "unrestricted" : "reduction");
               setMethod(savedMethod);
               setMode("Offline");
+              setFlow("solution");
               setInput(saved.input);
               setValue(saved.input);
               if (terminal(saved)) {
@@ -261,6 +266,8 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
       setError((e as Error).message);
       return;
     }
+    setFlow('solution');
+    flowTop.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
     const ticket = ++generation.current;
     localStorage.removeItem(savedKey);
     setBusy(true);
@@ -396,8 +403,14 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
     </div>
   );
   return (
-    <div className="solver-layout">
-      <section className="card solver-input">
+    <div className="solver-flow" ref={flowTop}>
+      <nav className="solver-flow-steps" aria-label="Solver steps">
+        <button aria-current={flow === 'input' ? 'step' : undefined} disabled={locked} onClick={() => {setFlow('input');setPlaying(false);}}><span>1</span>Set up cube</button>
+        <ArrowRight size={17}/>
+        <button aria-current={flow === 'solution' ? 'step' : undefined} disabled={!selected && !job && !busy} onClick={() => setFlow('solution')}><span>2</span>Follow solution</button>
+      </nav>
+      <div className="solver-layout solver-workspace">
+      {flow === 'input' && <section className="card solver-input">
         <h2>Your {size}×{size} cube</h2>
         <p className="solver-hint">Yellow up · Red front{size !== 3 && " · Online reduction solver"}</p>
         <div className="representation-toggle" role="group" aria-label="Cube representation">
@@ -498,6 +511,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             }
           />
         </div>}
+        <details className="solver-method-config"><summary>Solve style · {guided ? 'Guided' : 'Automatic'}</summary>
         <div className="solver-methods">
           <label htmlFor="solver-mode">Solve style</label>
           <select id="solver-mode" disabled={locked} value={guided ? 'guided' : 'unrestricted'} onChange={e => {
@@ -523,16 +537,17 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
               <select id="post-reduction-method" disabled={locked} defaultValue="beginner"><option value="beginner">Beginner’s layer-by-layer</option></select>
               <p className="solver-hint">{method === 'meyer' ? 'Opposite centers, left block, remaining centers and wings; then the beginner 3×3 finish.' : 'Centers first, then matching edge groups; then the beginner 3×3 finish.'} Named three-piece cycles show their setup, core and undo. Complete each action before checking preserved pieces.</p>
             </>}
-            <p className="solver-hint">Seven beginner stages, named actions, and checked goals. No unrestricted 3×3 fallback. Guided solving currently requires a connection.</p>
+            <p className="solver-hint">Guided solving needs a connection. Playback pauses at each checkpoint.</p>
           </>}
         </div>
+        </details>
         <div className="solver-actions">
           <button
             className="button"
             disabled={locked || (representation === "camera" && !cameraReady)}
             onClick={() => void start()}
           >
-            Solve
+            Solve this cube <ArrowRight size={16}/>
           </button>
           <button className="button" disabled={locked} onClick={demo}>
             Scramble
@@ -557,24 +572,20 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             </button>
           )}
         </div>
-        <div className="state-scramble">
-          <h3>Scramble for this cube</h3>
+        <details className="state-scramble" open={stateSequence?.value === value || undefined}><summary>Scramble for this cube</summary>
           {stateSequence?.value === value ? <p className="scramble-text">{stateSequence.moves || 'Solved cube · no moves needed'}</p> : <p className="small-muted">Generate a sequence that leads from a solved cube to your entered or scanned state.</p>}
           <button className="button" disabled={locked || value === solvedValue} onClick={() => void generateStateScramble()}>{generatingScramble ? 'Generating…' : 'Generate state scramble'}</button>
           <ScrambleLibrary {...{ training, updateTraining, event }} disabled={locked} current={stateSequence?.value === value ? { id: 'local:state', moves: stateSequence.moves, event } : null} onSelect={scramble => {
             const next = cubiesToFacelets(scramble.moves.split(/\s+/).reduce((s, m) => applyMove(s, m), solved(size)));
             editValue(next); setStateSequence({ value: next, moves: scramble.moves }); setRepresentation('2d');
           }} />
-        </div>
-        {error && (
-          <p role="alert" className="error-banner">
-            {error}
-          </p>
-        )}
-      </section>
-      <section className="card trainer-card">
+        </details>
+      </section>}
+      {flow === 'solution' && <section className="card trainer-card">
         <div className="trainer-heading">
-          <h2>{selected ? "Solution" : "Cube preview"}</h2>
+          <h2>{selected ? "Your solution" : locked ? "Preparing your solution" : "Solution"}</h2>
+          <button className="text-button" disabled={locked} onClick={() => {setFlow('input');setPlaying(false);}}><ArrowLeft size={15}/> Edit cube</button>
+          {locked && <button className="text-button" onClick={() => void cancel()}>Cancel</button>}
           {mode && <span className="outline-label">{mode}</span>}
         </div>
         {(locked || (!selected && status !== "Ready")) && (
@@ -656,6 +667,8 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             <span>{selected.move_count} {selected.move_count === 1 ? "move" : "moves"}</span>
           </div>
         )}
+        <div className={selected?.stages ? 'guided-workspace' : 'automatic-workspace'}>
+        <div className="solver-cube-column">
         {selected ? <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
           <Suspense fallback={<p>Loading cube…</p>}>
             <Cube
@@ -676,21 +689,6 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             {viewerTools}
           </FaceletCube>
         </Suspense>}
-        {selected?.stages && <SolverLesson solution={selected} step={step} viewedStage={viewedStage}
-          onJump={jump} onStage={index => { jump(selected.stages![index].start); setViewedStage(index); }} />}
-        {!selected?.stages && <div className="notation">
-          {moves.map((m, i) => (
-            <button
-              key={i}
-              className={i < step ? "completed" : i === step ? "next" : ""}
-              onClick={() => jump(i + 1)}
-              title={moveDescription(m)}
-              aria-label={`Go to move ${i + 1}: ${moveDescription(m)}`}
-            >
-              {m}
-            </button>
-          ))}
-        </div>}
         <div className="solver-actions">
           <button
             className="button"
@@ -734,7 +732,27 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             {step} / {moves.length}
           </span>
         </div>
-      </section>
+        </div>
+        {selected?.stages && <SolverLesson solution={selected} step={step} viewedStage={viewedStage}
+          onJump={jump} onStage={index => { jump(selected.stages![index].start); setViewedStage(index); }} />}
+        </div>
+        {!selected?.stages && <div className="notation">
+          {moves.map((m, i) => (
+            <button
+              key={i}
+              className={i < step ? "completed" : i === step ? "next" : ""}
+              onClick={() => jump(i + 1)}
+              title={moveDescription(m)}
+              aria-label={`Go to move ${i + 1}: ${moveDescription(m)}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>}
+
+      </section>}
+      </div>
+      {error && <p role="alert" className="error-banner">{error}</p>}
     </div>
   );
 }
