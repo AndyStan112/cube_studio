@@ -19,6 +19,7 @@ export type LessonChunk = {
 const faces: Record<string, string> = { U: 'top', D: 'bottom', R: 'right', L: 'left', F: 'front', B: 'back' };
 export function moveDescription(move: string) {
   const direction = move.endsWith('2') ? '180° (a half turn)' : move.endsWith("'") ? '90° counterclockwise' : '90° clockwise';
+  if (/^[MES](2|')?$/.test(move)) return `${move}: turn the middle slice ${direction}, looking from the ${{ M: 'left', E: 'bottom', S: 'front' }[move[0]]} side.`;
   const rotation = /^[xyz]/.test(move);
   if (rotation) return `${move}: rotate the whole cube ${direction} around the ${ { x: 'right–left', y: 'top–bottom', z: 'front–back' }[move[0]]} axis, looking from the ${ { x: 'right', y: 'top', z: 'front' }[move[0]]} side.`;
   const match = /^([2-5])?([URFDLB])(w)?/.exec(move);

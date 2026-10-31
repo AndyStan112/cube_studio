@@ -32,7 +32,14 @@ export function solved(size: CubeSize = 3): Cubie[] {
       }
   return result;
 }
-export function moveInfo(move: string, size: CubeSize = 3) {
+export type MoveInfo = { axis: 'x' | 'y' | 'z'; layer: number; direction: number; layers: number[]; vector: Vector3; angle: number };
+export function moveInfo(move: string, size: CubeSize = 3): MoveInfo {
+  const slice = /^([MES])(2|')?$/.exec(move);
+  if (slice) {
+    if (size !== 3 && size !== 5) throw new Error('Middle-slice notation requires an odd cube.');
+    const face = { M: 'L', E: 'D', S: 'F' }[slice[1]];
+    return moveInfo(`${(size + 1) / 2}${face}${slice[2] ?? ''}`, size);
+  }
   // A prefix alone selects one slice (2R); w selects a block (Rw, 3Rw).
   const rotation = /^([xyz])(2|')?$/.exec(move);
   const rotationFaces: Record<string, string> = { x: "R", y: "U", z: "F" };
