@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Box, Layers3, LogOut, Timer, X } from "lucide-react";
+import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined } from "lucide-react";
 import {
   api,
   ApiError,
@@ -9,7 +9,7 @@ import {
   type User,
 } from "./lib/api";
 import { cachedCatalog, refreshCatalog, flushSolveEdits, localScramble, readStored, writeStored, solvesKey } from "./lib/offline";
-import { cubeEvents, puzzles, solveEvent, type CubeEvent } from "./lib/puzzles";
+import { cubeEvents, puzzles, type CubeEvent } from "./lib/puzzles";
 import BigCubePractice from "./components/BigCubePractice";
 import TimerPage from "./components/TimerPage";
 import AlgorithmPage from "./components/AlgorithmPage";
@@ -17,8 +17,9 @@ import SolverPage from "./components/SolverPage";
 import AuthModal from "./components/AuthModal";
 import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
+import StatsPage from "./components/StatsPage";
 import { readTraining, storeTraining, type TrainingData } from "./lib/training";
-type Page = "timer" | "algorithms" | "solver";
+type Page = "timer" | "algorithms" | "solver" | "stats";
 export default function App() {
   const [event, setEvent] = useState<CubeEvent>(() => {
     const saved = readStored<CubeEvent>("cube-studio-event-v1", "333");
@@ -78,10 +79,10 @@ export default function App() {
     setSolves(readStored<Solve[]>(solvesKey(user?.id), []));
     const refresh = () => {
       if (user)
-        flushSolveEdits(user.id).then(() => api<Solve[]>(`/solves?event=${event}`, { signal: AbortSignal.timeout(6000) }))
+        flushSolveEdits(user.id).then(() => Promise.all(cubeEvents.map(category => api<Solve[]>(`/solves?event=${category}`, { signal: AbortSignal.timeout(6000) })))).then(groups => groups.flat())
           .then((items) => {
             if (active) {
-              const retained = readStored<Solve[]>(solvesKey(user.id), []).filter(s => s.id.startsWith("local:") || solveEvent(s) !== event);
+              const retained = readStored<Solve[]>(solvesKey(user.id), []).filter(s => s.id.startsWith("local:"));
               const merged = [...retained, ...items].sort((a, b) => b.created_at.localeCompare(a.created_at));
               writeStored(solvesKey(user?.id), merged);
               setSolves(merged);
@@ -143,6 +144,7 @@ export default function App() {
             <Box size={20} />
             Solver
           </button>
+          <button className={page === "stats" ? "nav-link active" : "nav-link"} onClick={() => setPage("stats")}><ChartNoAxesCombined size={20} />Stats</button>
         </nav>
       </aside>
       <div className="main-shell">
@@ -160,7 +162,7 @@ export default function App() {
               ? "Timer"
               : page === "solver"
                 ? "Solver"
-                : "Algorithms"}
+                : page === "stats" ? "Statistics" : "Algorithms"}
           </h1>
           <div className="topbar-right">
             <label className="puzzle-picker">
@@ -239,7 +241,7 @@ export default function App() {
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : page === "algorithms" ? (
+          ) : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           ) : null}
         </main>
@@ -266,6 +268,7 @@ export default function App() {
           <Box size={19} />
           Solver
         </button>
+        <button className={page === "stats" ? "active" : ""} onClick={() => setPage("stats")}><ChartNoAxesCombined size={19} />Stats</button>
       </nav>
       {authOpen && (
         <AuthModal onClose={() => setAuthOpen(false)} onSuccess={signedIn} />
