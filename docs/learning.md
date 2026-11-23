@@ -1,11 +1,19 @@
 # Learning progression
 
-The learning page is a 3×3 curriculum with two method trees. Skill IDs identify
-knowledge, not a tree membership: notation, connecting an edge, Sune and J perm
-share progress and first-pass rewards across Beginner and Roux. Prerequisite
-checks include the entire method route, so a shared Sune pass never bypasses
-Roux block building. Loading-spot and two-lines are alternative routes to the
-first block; speed branches never gate the main route.
+The learning page is a connected 3×3 skill map covering layer building and Roux
+block building. The visible edges are derived from the actual method prerequisites.
+Notation opens independent edge, slice and block-building choices. Loading spot
+and two lines are alternative routes into the first block; the second block also
+requires slice turns. The routes meet at shared corner skills and branch again
+for their finishes. Optional cross-planning and flexible-loading nodes do not gate
+the main routes.
+
+Skill IDs identify knowledge rather than a route membership. Existing completed
+skills and first-pass rewards carry over. Prerequisite checks include the entire
+method route, so a shared Sune pass never bypasses Roux block building. Tapping a
+locked node shows its requirements. Each node shows saved lesson, practice and
+test completion, and resumes at the next unfinished phase. Browser Back returns
+to the map without discarding earned progress.
 
 Every skill has a visual lesson, trusted physical drills, and a checked test.
 Notation tests classify moves. Cube tests apply submitted moves to the actual

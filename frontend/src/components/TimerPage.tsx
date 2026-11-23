@@ -1,11 +1,12 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
-  ArrowRight,
   Check,
   Plus,
   RotateCcw,
   Shuffle,
+  Info,
+  ChevronRight,
   Timer,
   Trash2,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import {
 } from "../lib/api";
 import { forEvent, puzzles, type CubeEvent } from "../lib/puzzles";
 import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
+import Sheet from './Sheet';
 import { createSession, inspectionPenalty } from '../lib/training';
 import { applyMove, solved } from "../lib/cube";
 const Cube = lazy(() => import("./Cube"));
@@ -38,7 +40,6 @@ export default function TimerPage({
   solves,
   setSolves,
   notify,
-  onSignIn,
   onSolveSaved,
 }: TrainingProps & {
   active: boolean;
@@ -52,7 +53,6 @@ export default function TimerPage({
   solves: Solve[];
   setSolves: React.Dispatch<React.SetStateAction<Solve[]>>;
   notify: (e: unknown) => void;
-  onSignIn: () => void;
   onSolveSaved: (solve: Solve, manual: boolean) => number;
 }) {
   const [running, setRunning] = useState(false),
@@ -63,7 +63,9 @@ export default function TimerPage({
     [busy, setBusy] = useState(false),
     [penalty, setPenalty] = useState<Solve["penalty"]>("none");
   const [xpEarned, setXpEarned] = useState(0);
+  useEffect(() => { if (!xpEarned) return; const timer = setTimeout(() => setXpEarned(0), 3000); return () => clearTimeout(timer); }, [xpEarned]);
   const [showPreview, setShowPreview] = useState(false);
+  const [sheet, setSheet] = useState<'session' | 'info' | null>(null);
   const [inspecting, setInspecting] = useState(false);
   const [inspectionElapsed, setInspectionElapsed] = useState(0);
   const [inspectionMs, setInspectionMs] = useState<number | undefined>();
@@ -122,7 +124,7 @@ export default function TimerPage({
         !e.repeat &&
         !(
           e.target instanceof HTMLElement &&
-          e.target.closest('input,button,select,textarea,[role="dialog"]')
+          e.target.closest('input,button,select,textarea,dialog,[role="dialog"]')
         )
       ) {
         e.preventDefault();
@@ -216,8 +218,10 @@ export default function TimerPage({
   };
   return (
     <>
-      {xpEarned > 0 && <p className="timer-xp-notice" role="status">+{xpEarned} XP · Solve saved. Keep going.</p>}
-      <section className="card session-controls">
+      {xpEarned > 0 && <p className="timer-xp-notice" role="status">+{xpEarned} XP · Saved</p>}
+      <div className="timer-session-bar"><button className="session-switcher" disabled={locked} onClick={() => setSheet('session')}><span>{session?.name || 'Session'}</span><ChevronRight size={18}/></button><button className="icon-button" aria-label="Timer information" disabled={running || inspecting} onClick={() => setSheet('info')}><Info size={21}/></button></div>
+      {sheet && <Sheet title={sheet === 'session' ? 'Session settings' : 'Timer information'} onClose={() => setSheet(null)}>{sheet === 'session' ? <>
+      <section className="session-controls">
         <div className="stats-filters">
           <label>Session<select aria-label="Session" disabled={locked} value={session?.id ?? ''} onChange={e => updateTraining({ ...training, active: { ...training.active, [event]: e.target.value } })}>{training.sessions.filter(s => s.event === event).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
           <label>Session name<input disabled={locked} value={session?.name ?? ''} maxLength={100} onChange={e => updateSession({ name: e.target.value })} /></label>
@@ -227,10 +231,10 @@ export default function TimerPage({
         <form className="settings-row" onSubmit={e => { e.preventDefault(); const next = createSession(event, training, newSessionName); updateTraining({ ...training, sessions: [...training.sessions, next], active: { ...training.active, [event]: next.id } }); setNewSessionName(''); }}>
           <input disabled={locked} aria-label="New session name" placeholder="New session name" value={newSessionName} maxLength={100} onChange={e => setNewSessionName(e.target.value)} /><button className="button" disabled={locked}>New session</button>
         </form>
-        <p className="small-muted">Times below belong to this session. Cube and method selections apply to future solves. Manage cubes and defaults in Settings.</p>
         <label className="check-setting"><input type="checkbox" disabled={locked} checked={training.settings.inspection} onChange={e => updateTraining({ ...training, settings: { ...training.settings, inspection: e.target.checked } })} />WCA-style inspection · 15 seconds</label>
         {training.settings.inspection && <p className="small-muted">Tap once to inspect, again to solve. Inspection stays separate from solve time. At 15s: +2; at 17s: DNF. <a href="https://www.worldcubeassociation.org/regulations/#A4d" target="_blank" rel="noreferrer">WCA rules</a></p>}
       </section>
+        <button className="button" onClick={() => setSheet(null)}>Done</button></> : <div className="solver-info-copy"><p>Tap the timer to start and stop. On a keyboard, press Space.</p><p>Session, cube and method choices apply to future solves. Times stay in the session where they were recorded.</p><p>Inspection allows 15 seconds. Starting after 15 seconds adds +2; after 17 seconds the attempt is DNF.</p><p>Solves save on this device. Sign in from Settings to save solve history online.</p></div>}</Sheet>}
       <div className="timer-layout">
         <section className="timer-card card">
           <div className="card-top">
@@ -250,17 +254,7 @@ export default function TimerPage({
           <div className="scramble" aria-label="Current scramble">
             {scramble?.moves || (loading ? "Generating…" : "No scramble")}
           </div>
-          <div className="scramble-note">{scramble?.moves.split(/\s+/).length ?? puzzle.scrambleLength} moves · Yellow top, red front · Practice scramble</div>
-          <details className="scramble-preview" onToggle={(e) => setShowPreview(e.currentTarget.open)}>
-            <summary>Preview scramble</summary>
-            {showPreview && preview && <div className="cube-stage">
-              <Suspense fallback={<p>Loading cube…</p>}>
-                <Cube key={scramble?.id} size={puzzle.size} initialState={preview} moves={noMoves} step={0}
-                  transparent={false} resetView={0} maskIrrelevant={false} focus="all" />
-              </Suspense>
-            </div>}
-          </details>
-          <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={locked || loading} />
+          <div className="scramble-note">{scramble?.moves.split(/\s+/).length ?? puzzle.scrambleLength} moves · Yellow up, red front</div>
           <div className={`timer-zone ${running ? "is-running" : ""}`}>
             <div className="timer-status">
               {inspecting ? "INSPECTION" : running ? "RUNNING" : pending !== null ? "UNSAVED" : "READY"}
@@ -358,7 +352,17 @@ export default function TimerPage({
                 )}
               </div>
             )}
-          </div>
+          </div>          <details className="scramble-preview" onToggle={(e) => setShowPreview(e.currentTarget.open)}>
+            <summary>Preview scramble</summary>
+            {showPreview && preview && <div className="cube-stage">
+              <Suspense fallback={<p>Loading cube…</p>}>
+                <Cube key={scramble?.id} size={puzzle.size} initialState={preview} moves={noMoves} step={0}
+                  transparent={false} resetView={0} maskIrrelevant={false} focus="all" />
+              </Suspense>
+            </div>}
+          </details>
+          <ScrambleLibrary {...{ training, updateTraining, event }} current={scramble} onSelect={onSelectScramble} disabled={locked || loading} />
+
         </section>
       </div>
       <section className="session-stats" aria-label="Solve statistics">
@@ -411,10 +415,8 @@ export default function TimerPage({
         </div>
         {!user && !eventSolves.length ? (
           <div className="empty-state">
-            <p>Solves are saved on this device. Sign in for online history.</p>
-            <button className="button" onClick={onSignIn}>
-              Sign in <ArrowRight size={16} />
-            </button>
+            <p>No solves in this session.</p>
+
           </div>
         ) : !eventSolves.length ? (
           <div className="empty-state">
@@ -429,7 +431,6 @@ export default function TimerPage({
                   <strong className="solve-time">
                     {s.penalty === "DNF" ? "DNF" : formatTime(effective(s))}
                     {s.penalty === "+2" && <small> +2</small>}
-                    {s.id.startsWith("local:") && <small> · On this device</small>}
                   </strong>
                   <select
                     aria-label={`Penalty for solve ${eventSolves.length - i}`}

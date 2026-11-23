@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Box, Layers3, LogOut, Timer, X, ChartNoAxesCombined, Settings, GraduationCap } from "lucide-react";
+import { ArrowLeft, Box, Layers3, Timer, X, ChartNoAxesCombined, Settings, GraduationCap } from "lucide-react";
 import {
   api,
   ApiError,
@@ -19,7 +19,6 @@ import { authProvider } from "./lib/auth";
 import PwaStatus from "./components/PwaStatus";
 import LearningPage from "./components/LearningPage";
 import { useLearning } from "./lib/useLearning";
-import { levelInfo } from "./lib/learning";
 import SettingsPage from "./components/SettingsPage";
 import StatsPage from "./components/StatsPage";
 import { readTraining, storeTraining, type TrainingData } from "./lib/training";
@@ -36,6 +35,21 @@ export default function App() {
     [user, setUser] = useState<User | null>(null),
     [authOpen, setAuthOpen] = useState(false),
     [error, setError] = useState("");
+  const pageScroll = useRef<Partial<Record<Page, number>>>({});
+  const previousPage = useRef<Page>(page);
+  useEffect(() => {
+    const previous = previousPage.current;
+    if (previous === page) return;
+    previousPage.current = page;
+    window.scrollTo({ top: pageScroll.current[page] ?? 0, behavior: 'instant' });
+  }, [page]);
+  useEffect(() => { const track = () => { pageScroll.current[previousPage.current] = window.scrollY; }; window.addEventListener('scroll', track, { passive: true }); return () => window.removeEventListener('scroll', track); }, []);
+  const closeSolver = useCallback(() => setPage('timer'), []);
+  const selectSolverSize = useCallback((size: 3 | 4 | 5) => {
+    const next = `${size}${size}${size}` as CubeEvent;
+    writeStored('cube-studio-event-v1', next);
+    setEvent(next);
+  }, []);
   const [solves, setSolves] = useState<Solve[]>([]),
     [scramble, setScramble] = useState<Scramble | null>(null),
     [catalog, setCatalog] = useState<AlgorithmCatalog>(() => cachedCatalog() ?? ({
@@ -118,7 +132,7 @@ export default function App() {
     }
   };
   return (
-    <div className="app-shell">
+    <div className={`app-shell${page === 'solver' ? ' solver-open' : ''}`}>
       <aside className="sidebar">
         <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
           <span className="brand-icon">
@@ -155,14 +169,7 @@ export default function App() {
       </aside>
       <div className="main-shell">
         <header className="topbar">
-          <a
-            className="mobile-brand"
-            href="#"
-            onClick={(e) => e.preventDefault()}
-          >
-            <Box size={23} />
-            Cube Studio
-          </a>
+          {page === 'settings' && <button className="icon-button" aria-label="Back to timer" onClick={() => setPage('timer')}><ArrowLeft size={22}/></button>}
           <h1 className="screen-title">
             {page === "timer"
               ? "Timer"
@@ -171,8 +178,7 @@ export default function App() {
                 : page === "learn" ? "Learn" : page === "stats" ? "Statistics" : page === "settings" ? "Settings" : "Algorithms"}
           </h1>
           <div className="topbar-right">
-            <button className="learning-level-badge" onClick={() => setPage("learn")} aria-label={`Level ${levelInfo(progress.xp).level}, ${progress.xp} XP. Open learning.`}>Lv {levelInfo(progress.xp).level}</button>
-            <label className="puzzle-picker" hidden={page === "learn"}>
+            <label className="puzzle-picker" hidden={page !== "timer" && page !== "algorithms"}>
               <span>Puzzle</span>
               <select aria-label="Puzzle" value={event} disabled={timerLocked}
                 title={timerLocked ? "Save or discard this time before changing puzzles." : "Choose puzzle"}
@@ -184,29 +190,8 @@ export default function App() {
                 {cubeEvents.map(value => <option key={value} value={value}>{puzzles[value].label}</option>)}
               </select>
             </label>
-            <button className="icon-button" aria-label="Settings" onClick={() => setPage("settings")}><Settings size={20} /></button>
-            {user ? (
-              <>
-                <button className="avatar" aria-label="Profile settings" onClick={() => setPage("settings")} title={`${user.name} · Settings`}>
-                  {user.name[0].toUpperCase()}
-                </button>
-                <span className="user-name">{user.name}</span>
-                <button
-                  className="icon-button"
-                  onClick={signOut}
-                  aria-label="Sign out"
-                >
-                  <LogOut size={17} />
-                </button>
-              </>
-            ) : (
-              <button
-                className="button small"
-                onClick={() => setAuthOpen(true)}
-              >
-                Sign in <ArrowUpRight size={15} />
-              </button>
-            )}
+            {page !== 'settings' && <button className="icon-button" aria-label="Settings" onClick={() => setPage('settings')}><Settings size={22}/></button>}
+
           </div>
         </header>
         <main>
@@ -240,18 +225,17 @@ export default function App() {
                 notify,
               }}
               onSolveSaved={(solve, manual) => award({ type: 'solve', id: solve.id, dnf: solve.penalty === 'DNF', event: solve.event ?? event, method: solve.method, sessionId: solve.session_id, cubeId: solve.cube, manual })}
-              onSignIn={() => setAuthOpen(true)}
             /></div>
           {page === "solver" ? (
             <>
-              <SolverPage key={event} size={puzzles[event].size} training={training} updateTraining={updateTraining} />
+              <SolverPage key={event} size={puzzles[event].size} training={training} updateTraining={updateTraining} onClose={closeSolver} onSizeChange={selectSolverSize} />
               {event !== "333" && <details className="card practice-panel" onToggle={e => setPracticeOpen(e.currentTarget.open)}>
                 <summary>Scramble playback and return sequence</summary>
                 {practiceOpen && <BigCubePractice key={event} event={event} scramble={scramble?.event === event ? scramble : null} />}
               </details>}
             </>
-          ) : page === "learn" ? <LearningPage key={user?.id ?? "guest"} {...{progress,award}} /> : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} />
-            : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} /> : page === "algorithms" ? (
+          ) : page === "learn" ? <LearningPage key={user?.id ?? "guest"} {...{progress,award}} /> : page === "settings" ? <SettingsPage {...{ training, updateTraining, user, notify }} onSignIn={() => setAuthOpen(true)} onSignOut={signOut} />
+            : page === "stats" ? <StatsPage {...{ solves, training, updateTraining }} onTimer={() => setPage('timer')} /> : page === "algorithms" ? (
             <AlgorithmPage {...catalog} puzzleSize={puzzles[event].size} />
           ) : null}
         </main>

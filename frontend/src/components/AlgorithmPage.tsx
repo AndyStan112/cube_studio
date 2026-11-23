@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   Info,
+  ListFilter,
   Pause,
   Play,
   RotateCcw,
@@ -16,6 +17,7 @@ import { type Algorithm, type AlgorithmCatalog } from "../lib/api";
 import type { CubeSize } from "../lib/cube";
 import { describeMove } from "../lib/notation";
 import { belongsTo, algorithmFocus } from "../lib/catalog";
+import Sheet from './Sheet';
 const Cube = lazy(() => import("./Cube"));
 function InfoCircle({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -42,6 +44,7 @@ function InfoCircle({ label, children }: { label: string; children: ReactNode })
 }
 
 export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPuzzle }: AlgorithmCatalog & { puzzleSize: CubeSize }) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const puzzleSets = sets.filter((item) => (item.puzzle_size ?? 3) === selectedPuzzle);
   const [selectedSet, setSelectedSet] = useState("all"),
     [selectedSection, setSelectedSection] = useState("all"),
@@ -112,9 +115,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
     setPlaying(false);
     setStep(Math.max(0, Math.min(moves.length, n)));
   };
-  return (
-    <div className="algorithm-layout">
-      <aside className="card algorithm-library">
+  const library = <>      <aside className="card algorithm-library">
         <label className="library-set">
           <span>Set</span>
           <select
@@ -155,7 +156,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
               key={item.id}
               className={`algorithm-option ${item.id === algorithm?.id ? "selected" : ""}`}
               aria-pressed={item.id === algorithm?.id}
-              onClick={() => selectAlgorithm(item)}
+              onClick={() => { selectAlgorithm(item); setLibraryOpen(false); }}
             >
               <span className="alg-number">
                 {String(index + 1).padStart(2, "0")}
@@ -175,6 +176,12 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
           <p className="empty-state">No algorithms in this section.</p>
         )}
       </aside>
+</>;
+  return (
+    <div className="algorithm-layout">
+      <div className="algorithm-mobile-picker"><button className="text-button" onClick={() => {setPlaying(false);setLibraryOpen(true);}}><ListFilter size={19}/>Choose algorithm</button></div>
+      <div className="algorithm-desktop-library">{library}</div>
+      {libraryOpen && <Sheet title="Algorithms" onClose={() => setLibraryOpen(false)}>{library}</Sheet>}
       <section className="card trainer-card">
         <div className="trainer-heading">
           <div>
@@ -189,7 +196,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
           </div>
           <span className="outline-label">{moves.length} moves</span>
         </div>
-        {algorithm && <p className="algorithm-description">{algorithm.description}</p>}
+        {algorithm && <div className="algorithm-detail-access"><InfoCircle label="Algorithm details"><p>{algorithm.description}</p></InfoCircle></div>}
         {algorithm && algorithm.variations.length > 1 && (
           <label className="variation-control">
             <span>Variation</span>
@@ -296,7 +303,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
             {!moves.length
               ? sets.length
                 ? "Choose an algorithm to practise."
-                : "Connect to the API to load the trainer."
+                : "Connect to load algorithms."
               : step === moves.length
                 ? "Solved"
                 : `Next: ${moves[step]}`}

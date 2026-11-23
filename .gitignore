@@ -14,3 +14,7 @@ __pycache__/
 /docs/BIBLIOGRAPHY.local.md
 # contains lcoal files for testing stuf in development only
 local
+
+# Local solver-flow sketches and generated preview used for design review.
+/design/solver-flow-sketches.html
+/design/solver-flow-preview.html

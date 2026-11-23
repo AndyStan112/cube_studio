@@ -400,7 +400,7 @@ export default function CameraInput({
     onChange(match.value);
     onReady(true);
     close();
-    setMessage("Video scan checked. Cube ready to solve.");
+    setMessage("");
   }
   useEffect(
     () => () => {

@@ -74,7 +74,7 @@ export async function api<T>(
     });
   } catch {
     throw new Error(
-      "Cannot reach the API. Check that Docker Compose is running.",
+      "Cannot connect. Check your connection and try again.",
     );
   }
   if (!response.ok) {

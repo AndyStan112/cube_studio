@@ -1,0 +1,22 @@
+.app-sheet * {box-sizing:border-box;}
+.app-sheet .button {min-height:52px;padding:12px 18px;background:var(--solver-action);color:var(--solver-on-action);border:0;border-radius:12px;box-shadow:none;font-size:1rem;font-weight:600;}
+.app-sheet .button:hover {background:var(--solver-action);box-shadow:none;}
+.app-sheet .icon-button {display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:48px;min-height:48px;border:0;background:transparent;color:var(--solver-dim);border-radius:10px;box-shadow:none;}
+.app-sheet .text-button {color:var(--solver-action);font-size:.875rem;min-height:48px;}
+.app-sheet button:focus-visible {outline:2px solid var(--solver-action);outline-offset:-2px;}
+.app-sheet button:disabled {opacity:.45;}
+/* Modal sheets use the browser's focus trap and Escape handling. */
+.app-sheet {
+  --solver-bg:var(--bg);--solver-surface:var(--surface);--solver-text:var(--text);--solver-dim:var(--text-dim);--solver-line:var(--border);--solver-action:var(--green);--solver-on-action:var(--on-accent);
+  color-scheme:dark;position:fixed;inset:auto 0 0;width:100%;max-width:540px;max-height:min(90dvh,850px);margin:auto auto 0;border:0;padding:0;background:var(--solver-surface);color:var(--solver-text);border-radius:24px 24px 0 0;overscroll-behavior:contain;
+}
+.app-sheet::backdrop {background:#0009;}.app-sheet-content {padding:12px max(22px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));}
+.app-sheet-content > header {display:flex;gap:12px;align-items:center;justify-content:space-between;}.app-sheet-content h2 {font-size:1.25rem;font-weight:600;margin:8px 0;}.app-sheet-content > .button {width:100%;margin-top:16px;}
+.app-sheet .representation-toggle,.app-sheet .solver-actions {display:flex;flex-wrap:wrap;gap:8px;margin:20px 0;}.app-sheet .representation-toggle .button,.app-sheet .solver-actions .button {background:transparent;color:var(--solver-dim);border:1px solid var(--solver-line);font-size:.875rem;box-shadow:none;}.app-sheet .representation-toggle .button[aria-pressed=true] {background:var(--solver-action);color:var(--solver-on-action);}
+.solver-info-copy {font-size:1rem;line-height:1.65;color:var(--solver-dim);}.solver-info-copy h3 {font-size:1rem;color:var(--solver-text);margin:22px 0 8px;}.solver-info-copy p {margin:12px 0;}
+.solver-stage-list button {display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;text-align:left;min-height:56px;padding:12px 0;border:0;border-bottom:1px solid var(--solver-line);background:transparent;color:var(--solver-text);font:inherit;}.solver-stage-list button[aria-current=step] {color:var(--solver-action);}
+.app-sheet .state-scramble {border-top:1px solid var(--solver-line);padding:16px 0;font-size:.875rem;color:var(--solver-dim);}.app-sheet .state-scramble summary {min-height:44px;padding:10px 0;color:var(--solver-action);}
+
+@media(min-width:1000px) {.app-sheet {margin-bottom:24px;border-radius:20px;}}
+
+@media(prefers-reduced-motion:reduce) {.app-sheet * {scroll-behavior:auto;transition:none;}}

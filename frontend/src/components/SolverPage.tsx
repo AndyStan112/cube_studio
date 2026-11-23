@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
-import { ArrowLeft, ArrowRight, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { Check, ChevronLeft, Eye, EyeOff, GraduationCap, Info, Pause, Play, RotateCcw, Settings2, SkipBack, SkipForward, X } from "lucide-react";
 import { readStored, writeStored } from "../lib/offline";
 import { useSolverInput } from "../lib/solverInput";
 import { ApiError } from "../lib/api";
@@ -28,6 +28,7 @@ import { practiceMoves, type CubeEvent } from "../lib/puzzles";
 import "./SolverPage.css";
 import SolverLesson from "./SolverLesson";
 import CameraInput from "./CameraInput";
+import Sheet from './Sheet';
 import ScrambleLibrary, { type TrainingProps } from './ScrambleLibrary';
 import { stateScramble } from '../lib/training';
 import { moveDescription } from "../lib/teaching";
@@ -42,15 +43,20 @@ const faceNames: Record<string, string> = {
   L: "Left · blue",
   B: "Back · orange",
 };
-export default function SolverPage({ size = 3, training, updateTraining }: TrainingProps & { size?: CubeSize }) {
+export default function SolverPage({ size = 3, training, updateTraining, onClose, onSizeChange }: TrainingProps & { size?: CubeSize; onClose: () => void; onSizeChange: (size: CubeSize) => void }) {
   const event = `${size}${size}${size}` as CubeEvent;
   const [stateSequence, setStateSequence] = useState<{ value: string; moves: string } | null>(null);
   const [generatingScramble, setGeneratingScramble] = useState(false);
   const scrambleWorker = useRef(new OfflineSolver());
   const scrambleJob = useRef<string | null>(null);
-  const [flow, setFlow] = useState<'input' | 'solution'>('input');
+  const methodKey = `cube-studio-solver-method-v1:${size}`;
+  const savedMethod = readStored<SolverMethod | null>(methodKey, null);
+  const validMethods: SolverMethod[] = size === 3 ? ['beginner', 'unrestricted'] : size === 4 ? ['meyer', 'reduction_beginner', 'reduction'] : ['reduction_beginner', 'reduction'];
+  const rememberedMethod = savedMethod && validMethods.includes(savedMethod) ? savedMethod : null;
+  const [flow, setFlow] = useState<'style' | 'input' | 'solution'>(rememberedMethod ? 'input' : 'style');
+  const [sheet, setSheet] = useState<'style' | 'info' | 'tools' | null>(null);
   useEffect(() => { window.scrollTo({top:0,behavior:'instant'}); }, [flow]);
-  const [method, setMethod] = useState<SolverMethod>(size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner");
+  const [method, setMethod] = useState<SolverMethod>(rememberedMethod ?? (size === 3 ? "beginner" : size === 4 ? "meyer" : "reduction_beginner"));
   const [viewedStage, setViewedStage] = useState<number | null>(null);
   const guided = method === "beginner" || method === "reduction_beginner" || method === "meyer";
   const area = size * size;
@@ -77,12 +83,65 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
   const moves = useMemo(() => selected?.notation ?? [], [selected]);
   const running = !!job && !terminal(job),
     locked = busy || running || generatingScramble;
+  const methodLabel = method === 'meyer' ? 'Meyer' : method === 'beginner' ? 'Beginner · layer by layer' : method === 'reduction_beginner' ? 'Reduction · beginner finish' : 'Automatic';
+  const flowRef = useRef(flow);
+  flowRef.current = flow;
+  const lockedRef = useRef(locked);
+  lockedRef.current = locked;
+  const cancelRef = useRef(cancel);
+  cancelRef.current = cancel;
+  const historySession = useRef(crypto.randomUUID());
+  const historyInitialized = useRef(false);
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+  useEffect(() => {
+    // Keep the wizard's back stack local to the solver, including device back.
+    if (!historyInitialized.current) {
+      historyInitialized.current = true;
+      history.pushState({ ...history.state, cubeSolver: { size, flow: flowRef.current, session: historySession.current } }, '');
+    }
+    const back = (event: PopStateEvent) => {
+      if (lockedRef.current) void cancelRef.current();
+      if (event.state?.cubeSolver?.session === historySession.current) {
+        setPlaying(false);
+        setSheet(null);
+        setFlow(event.state.cubeSolver.flow);
+      } else onClose();
+    };
+    window.addEventListener('popstate', back);
+    return () => { window.removeEventListener('popstate', back); };
+  }, [size, onClose]);
+  function goTo(next: typeof flow) {
+    if (next !== flowRef.current) history.pushState({ ...history.state, cubeSolver: { size, flow: next, session: historySession.current } }, '');
+    setFlow(next);
+    setPlaying(false);
+  }
+  function changeMethod(next: SolverMethod) {
+    if (locked || next === method) return;
+    setMethod(next);
+    setSelected(null); setJob(null); setPlaying(false); setStep(0); setViewedStage(null);
+    localStorage.removeItem(savedKey); localStorage.removeItem(`${savedKey}:snapshot`);
+    writeStored(methodKey, next);
+  }
+  const styleChoices = <div className="solver-style-choices" role="group" aria-label="Solve style">
+    <button aria-pressed={guided} disabled={locked} onClick={() => changeMethod(size === 3 ? 'beginner' : size === 4 ? 'meyer' : 'reduction_beginner')}>
+      <GraduationCap size={23}/><span><strong>Guided</strong><small>Learn one stage at a time</small></span><span className="solver-radio" aria-hidden="true"/>
+    </button>
+    <button aria-pressed={!guided} disabled={locked} onClick={() => changeMethod(size === 3 ? 'unrestricted' : 'reduction')}>
+      <Play size={23}/><span><strong>Automatic</strong><small>Follow a move sequence</small></span><span className="solver-radio" aria-hidden="true"/>
+    </button>
+    {guided && size === 4 && <div className="solver-method-choice" role="group" aria-label="Guided method">{(['meyer', 'reduction_beginner'] as const).map(value => <button key={value} aria-pressed={method === value} disabled={locked} onClick={() => changeMethod(value)}>{value === 'meyer' ? 'Meyer' : 'Reduction'}</button>)}</div>}
+    {guided && <p className="solver-method-name">{methodLabel}</p>}
+  </div>;
   function choose(solution: Solution, state = input) {
     verifySolution(state, solution, size);
     if (guided && solution.method !== method) throw Error("The worker returned a different method. Start a new guided solve after updating the solver service.");
     const sequence = stateScramble(state, solution.notation, size);
     setStateSequence({ value: state, moves: sequence.join(' ') });
-    setFlow('solution');
+    goTo('solution');
     setViewedStage(null);
     setSelected(solution);
     setInput(state);
@@ -266,7 +325,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
       setError((e as Error).message);
       return;
     }
-    setFlow('solution');
+    goTo('solution');
     window.scrollTo({top:0,behavior:'instant'});
     const ticket = ++generation.current;
     localStorage.removeItem(savedKey);
@@ -404,24 +463,25 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
   );
   return (
     <div className="solver-flow">
-      <nav className="solver-flow-steps" aria-label="Solver steps">
-        <button aria-current={flow === 'input' ? 'step' : undefined} disabled={locked} onClick={() => {setFlow('input');setPlaying(false);}}><span>1</span>Set up cube</button>
-        <ArrowRight size={17}/>
-        <button aria-current={flow === 'solution' ? 'step' : undefined} disabled={!selected && !job && !busy} onClick={() => setFlow('solution')}><span>2</span>Follow solution</button>
-      </nav>
-      <div className="solver-layout solver-workspace">
-      {flow === 'input' && <section className="card solver-input">
-        <h2>Your {size}×{size} cube</h2>
-        <p className="solver-hint">{representation === 'camera' ? cameraReady ? 'Match your cube to the preview' : 'Show all six faces in the video' : <>Yellow up · Red front{size !== 3 && " · Online reduction solver"}</>}</p>
-        <div className="representation-toggle" role="group" aria-label="Cube representation">
-          {(["camera", "2d", "text", "3d"] as const).map((view) => (
-            <button key={view} className="button" aria-pressed={representation === view}
-              onClick={() => setRepresentation(view)}>
-              {view === "camera" ? "Video" : view === "text" ? "Text" : view.toUpperCase()}
-            </button>
-          ))}
-        </div>
-        {representation === "camera" && <CameraInput defaultCalibration={training.cubes.find(c => c.id === (training.sessions.find(s => s.id === training.active[event])?.cube || training.settings.defaultCube) && c.event === event)?.calibrationId || 'auto'} size={size} disabled={locked} onChange={editValue} onReady={setCameraReady} />}
+      <header className="solver-app-header">
+        <button className="icon-button" aria-label="Back" disabled={locked} onClick={() => flow === 'solution' ? goTo('input') : flow === 'input' ? goTo('style') : onClose()}><ChevronLeft size={24}/></button>
+        <h1>{flow === 'style' ? 'New solve' : flow === 'solution' ? guided ? 'Guided solve' : 'Your solution' : cameraReady ? 'Cube scanned' : `${representation === 'camera' ? 'Scan' : 'Set up'} your ${size}×${size}`}</h1>
+        <button className="icon-button" aria-label="Solver information" onClick={() => { setPlaying(false); setSheet('info'); }}><Info size={22}/></button>
+        <button className="icon-button" aria-label={locked ? 'Cancel search' : 'Close solver'} onClick={() => locked ? void cancel() : onClose()}><X size={22}/></button>
+      </header>
+      {flow === 'style' && <section className="solver-style-screen">
+        <div className="solver-size-choice" role="group" aria-label="Puzzle size">{([3,4,5] as const).map(value => <button key={value} aria-pressed={size === value} onClick={() => onSizeChange(value)}>{value}×{value}</button>)}</div>
+        <h2>How do you want to solve?</h2>
+        {styleChoices}
+        <div className="solver-bottom-action"><button className="button" onClick={() => { writeStored(methodKey, method); goTo('input'); }}>Continue to scan</button></div>
+      </section>}
+      <div className="solver-layout solver-workspace" hidden={flow === 'style'}>
+      <section hidden={flow !== 'input'} className={`solver-input ${representation === 'camera' ? 'camera-workspace' : ''}`}>
+        <div className="solver-input-toolbar"><button className="text-button" disabled={locked} onClick={() => setSheet('tools')}><Settings2 size={18}/> Input options</button><span>{size}×{size}</span></div>
+        {representation === "camera" && <>
+          {cameraReady && <div className="solver-scan-preview"><Suspense fallback={<p>Loading cube…</p>}><FaceletCube size={size} value={value} color={color} disabled onChange={editValue} transparent={transparent} resetView={resetView}>{viewerTools}</FaceletCube></Suspense><span className="solver-scan-checked"><Check size={17}/> Six faces checked</span></div>}
+          <CameraInput defaultCalibration={training.cubes.find(c => c.id === (training.sessions.find(s => s.id === training.active[event])?.cube || training.settings.defaultCube) && c.event === event)?.calibrationId || 'auto'} size={size} disabled={locked} onChange={editValue} onReady={setCameraReady} />
+        </>}
         {representation !== "text" && representation !== "camera" && <>
         <div className="solver-palette">
           {[...FACE_ORDER].map((f) => (
@@ -477,10 +537,6 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
         <p className="solver-hint">Pick a color, then a sticker.{representation === "3d" && " Drag to orbit · Pinch to zoom"}</p>
         </>}
         {representation === "text" && <div className="solver-facelets">
-          <p id="facelet-format">
-            A facelet is one sticker. Enter {stickerCount} letters: {area} per face, in{" "}
-            <strong>U R F D L B</strong> order.
-          </p>
           <div className="facelet-legend">
             {[...FACE_ORDER].map((f) => (
               <span key={f}>
@@ -489,17 +545,12 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
               </span>
             ))}
           </div>
-          <p id="facelet-traversal">
-            Read each face left to right, top to bottom, looking directly at it.
-            Keep U above the side faces, B above U, and F above D. {size % 2 === 1 ? `Letter ${Math.floor(area / 2) + 1} is the fixed center.` : "The 4×4 has no fixed centers; use the displayed color reference."}
-          </p>
           <label className="facelet-label" htmlFor="solver-facelets">
             Cube facelets
           </label>
           <textarea
             id="solver-facelets"
             aria-label="Cube facelets"
-            aria-describedby="facelet-format facelet-traversal"
             value={value}
             spellCheck={false}
             autoCapitalize="characters"
@@ -511,83 +562,14 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             }
           />
         </div>}
-        <details className="solver-method-config"><summary>Solve style · {guided ? 'Guided' : 'Automatic'}</summary>
-        <div className="solver-methods">
-          <label htmlFor="solver-mode">Solve style</label>
-          <select id="solver-mode" disabled={locked} value={guided ? 'guided' : 'unrestricted'} onChange={e => {
-            setMethod(e.target.value === 'guided' ? size === 3 ? 'beginner' : size === 4 ? 'meyer' : 'reduction_beginner' : size === 3 ? 'unrestricted' : 'reduction');
-            setSelected(null); setJob(null); setPlaying(false); setStep(0); setViewedStage(null);
-            localStorage.removeItem(savedKey); localStorage.removeItem(`${savedKey}:snapshot`);
-          }}>
-            <option value="guided">Guided method · learn step by step</option>
-            <option value="unrestricted">{size === 3 ? 'Unrestricted · shortest-solution search' : 'Automatic reduction · compact solution'}</option>
-          </select>
-          {guided && <>
-            <label htmlFor="solver-method">{size === 3 ? '3×3 method' : 'Big-cube method'}</label>
-            <select id="solver-method" disabled={locked} value={method === 'meyer' ? 'meyer' : size === 3 ? 'beginner' : 'reduction'} onChange={e => {
-              setMethod(e.target.value === 'meyer' ? 'meyer' : size === 3 ? 'beginner' : 'reduction_beginner');
-              setSelected(null); setJob(null); setPlaying(false); setStep(0); setViewedStage(null);
-              localStorage.removeItem(savedKey); localStorage.removeItem(`${savedKey}:snapshot`);
-            }}>
-              {size === 3 ? <option value="beginner">Beginner’s layer-by-layer</option> : <option value="reduction">Reduction</option>}
-              {size === 4 && <option value="meyer">Meyer · preserve the left block</option>}
-            </select>
-            {size !== 3 && <>
-              <label htmlFor="post-reduction-method">After reduction · 3×3 method</label>
-              <select id="post-reduction-method" disabled={locked} defaultValue="beginner"><option value="beginner">Beginner’s layer-by-layer</option></select>
-              <p className="solver-hint">{method === 'meyer' ? 'Opposite centers, left block, remaining centers and wings; then the beginner 3×3 finish.' : 'Centers first, then matching edge groups; then the beginner 3×3 finish.'} Named three-piece cycles show their setup, core and undo. Complete each action before checking preserved pieces.</p>
-            </>}
-            <p className="solver-hint">Guided solving needs a connection. Playback pauses at each checkpoint.</p>
-          </>}
+        <div className="solver-input-footer">
+          <div className="solver-style-summary"><span><strong>{guided ? 'Guided' : 'Automatic'}</strong>{guided && <small>{methodLabel}</small>}</span><button className="text-button" disabled={locked} onClick={() => setSheet('style')}>Change</button></div>
+          <button className="button solver-start" disabled={locked || (representation === 'camera' && !cameraReady)} onClick={() => void start()}>{locked ? 'Preparing…' : guided ? 'Start guided solve' : 'Start solution'}</button>
         </div>
-        </details>
-        <div className="solver-actions">
-          <button
-            className="button"
-            disabled={locked || (representation === "camera" && !cameraReady)}
-            onClick={() => void start()}
-          >
-            Solve this cube <ArrowRight size={16}/>
-          </button>
-          <button className="button" disabled={locked} onClick={demo}>
-            Scramble
-          </button>
-          <button
-            className="button"
-            disabled={locked}
-            onClick={() => editValue(solvedValue)}
-          >
-            Reset cube
-          </button>
-          {size === 3 && !guided && <button
-            className="button"
-            disabled={locked || (representation === "camera" && !cameraReady)}
-            onClick={() => void start(true)}
-          >
-            Offline
-          </button>}
-          {locked && (
-            <button className="button" onClick={() => void cancel()}>
-              Cancel
-            </button>
-          )}
-        </div>
-        <details className="state-scramble" open={stateSequence?.value === value || undefined}><summary>Scramble for this cube</summary>
-          {stateSequence?.value === value ? <p className="scramble-text">{stateSequence.moves || 'Solved cube · no moves needed'}</p> : <p className="small-muted">Generate a sequence that leads from a solved cube to your entered or scanned state.</p>}
-          <button className="button" disabled={locked || value === solvedValue} onClick={() => void generateStateScramble()}>{generatingScramble ? 'Generating…' : 'Generate state scramble'}</button>
-          <ScrambleLibrary {...{ training, updateTraining, event }} disabled={locked} current={stateSequence?.value === value ? { id: 'local:state', moves: stateSequence.moves, event } : null} onSelect={scramble => {
-            const next = cubiesToFacelets(scramble.moves.split(/\s+/).reduce((s, m) => applyMove(s, m), solved(size)));
-            editValue(next); setStateSequence({ value: next, moves: scramble.moves }); setRepresentation('2d');
-          }} />
-        </details>
-      </section>}
-      {flow === 'solution' && <section className="card trainer-card">
-        <div className="trainer-heading">
-          <h2>{selected ? "Your solution" : locked ? "Preparing your solution" : "Solution"}</h2>
-          <button className="text-button" disabled={locked} onClick={() => {setFlow('input');setPlaying(false);}}><ArrowLeft size={15}/> Edit cube</button>
-          {locked && <button className="text-button" onClick={() => void cancel()}>Cancel</button>}
-          {mode && <span className="outline-label">{mode}</span>}
-        </div>
+
+      </section>
+      {flow === 'solution' && <section className="trainer-card">
+        {locked && <div className="solver-job-actions"><button className="text-button" onClick={() => void cancel()}>Cancel search</button></div>}
         {(locked || (!selected && status !== "Ready")) && (
           <p className="solver-status" role="status" aria-live="polite">
             {status === "searching" ? guided ? "Planning and checking the method stages…" : size === 3 ? "Finding the shortest solution…" : "Solving centers and edges…" : status}
@@ -650,23 +632,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             Use offline solver
           </button>
         )}
-        {selected && (
-          <div
-            className="solver-result"
-            title={
-              selected.stages ? "A verified method-constrained lesson. Stage goals and the final solve are checked; shortest length is not claimed." : selected.optimality === "global_proved"
-                ? "Proved globally optimal in HTM (a half turn counts as one move)."
-                : size === 3 ? "Verified solution; optimality has not been proved. A half turn counts as one move." : "Verified reduction solution. Optimality has not been proved. Outer block turns count as one move."
-            }
-          >
-            <strong>
-              {selected.stages ? "Guided solve" : selected.optimality === "global_proved"
-                ? "Optimal"
-                : size === 3 ? "Near-optimal" : "Verified solution"}
-            </strong>
-            <span>{selected.move_count} {selected.move_count === 1 ? "move" : "moves"}</span>
-          </div>
-        )}
+        {selected && <div className="solver-result"><span>{selected.move_count} {selected.move_count === 1 ? 'move' : 'moves'}</span><span>{selected.optimality === 'global_proved' ? 'Optimal' : 'Verified'}</span></div>}
         <div className={selected?.stages ? 'guided-workspace' : 'automatic-workspace'}>
         <div className="solver-cube-column">
         {selected ? <div className={`cube-stage ${transparent ? "is-see-through" : ""}`}>
@@ -692,12 +658,13 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
         <div className="solver-actions">
           <button
             className="button"
+            aria-label="Restart playback"
             onClick={() => {
               jump(0);
               setResetView((n) => n + 1);
             }}
           >
-            Reset
+            <RotateCcw size={20} aria-hidden="true" />
           </button>
           <button
             className="button"
@@ -706,18 +673,20 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             title="Previous move"
             onClick={() => jump(step - 1)}
           >
-            <ArrowLeft size={19} aria-hidden="true" />
+            <SkipBack size={20} aria-hidden="true" />
           </button>
           <button
             className="button"
             disabled={!moves.length}
+            aria-label={playing ? 'Pause playback' : 'Play solution'}
+            aria-pressed={playing}
             onClick={() => {
               setViewedStage(null);
               if (step === moves.length) setStep(0);
               setPlaying((p) => !p);
             }}
           >
-            {playing ? "Pause" : "Play"}
+            {playing ? <Pause size={23} aria-hidden="true"/> : <Play size={23} aria-hidden="true"/>}
           </button>
           <button
             className="button"
@@ -726,7 +695,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
             title="Next move"
             onClick={() => jump(step + 1)}
           >
-            <ArrowRight size={19} aria-hidden="true" />
+            <SkipForward size={20} aria-hidden="true" />
           </button>
           <span>
             {step} / {moves.length}
@@ -734,6 +703,7 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
         </div>
         </div>
         {selected?.stages && <SolverLesson solution={selected} step={step} viewedStage={viewedStage}
+          onInspect={() => setPlaying(false)}
           onJump={jump} onStage={index => { jump(selected.stages![index].start); setViewedStage(index); }} />}
         </div>
         {!selected?.stages && <div className="notation">
@@ -752,6 +722,28 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
 
       </section>}
       </div>
+      {sheet && <Sheet title={sheet === 'style' ? 'Solve style' : sheet === 'tools' ? 'Input options' : 'Solver information'} onClose={() => setSheet(null)}>
+        {sheet === 'style' ? <>{styleChoices}<button className="button" onClick={() => { writeStored(methodKey, method); setSheet(null); }}>Use this style</button></> : sheet === 'tools' ? <>
+          <div className="representation-toggle" role="group" aria-label="Cube input">{(['camera','2d','text','3d'] as const).map(view => <button className="button" key={view} aria-pressed={representation === view} disabled={locked} onClick={() => { setRepresentation(view); setSheet(null); }}>{view === 'camera' ? 'Video' : view === 'text' ? 'Text' : view.toUpperCase()}</button>)}</div>
+          <div className="solver-actions"><button className="button" disabled={locked} onClick={() => { demo(); setSheet(null); }}>Try a scramble</button><button className="button" disabled={locked} onClick={() => { editValue(solvedValue); setSheet(null); }}>Reset cube</button>{size === 3 && !guided && <button className="button" disabled={locked || (representation === 'camera' && !cameraReady)} onClick={() => { setSheet(null); void start(true); }}>Solve offline</button>}</div>
+        <details className="state-scramble" open={stateSequence?.value === value || undefined}><summary>Scramble for this cube</summary>
+          {stateSequence?.value === value ? <p className="scramble-text">{stateSequence.moves || 'Solved cube · no moves needed'}</p> : <p className="small-muted">Generate a sequence that leads from a solved cube to your entered or scanned state.</p>}
+          <button className="button" disabled={locked || value === solvedValue} onClick={() => void generateStateScramble()}>{generatingScramble ? 'Generating…' : 'Generate state scramble'}</button>
+          <ScrambleLibrary {...{ training, updateTraining, event }} disabled={locked} current={stateSequence?.value === value ? { id: 'local:state', moves: stateSequence.moves, event } : null} onSelect={scramble => {
+            const next = cubiesToFacelets(scramble.moves.split(/\s+/).reduce((s, m) => applyMove(s, m), solved(size)));
+            editValue(next); setStateSequence({ value: next, moves: scramble.moves }); setRepresentation('2d');
+          }} />
+        </details>
+        </> : <div className="solver-info-copy">
+          <h3>{guided ? 'Guided solving' : 'Automatic solving'}</h3>
+          <p>{guided ? 'The solution follows a teaching method. Play advances the cube and pauses at checkpoints so you can match your physical cube before continuing. Guided solving needs an internet connection.' : size === 3 ? 'The solver searches for a short solution. Verified means the moves solve your cube; Optimal means the search has proved there is no shorter solution in the half-turn metric.' : 'The solver reduces the centers and edge groups, then solves the cube. The result is verified, but shortest length is not guaranteed.'}</p>
+          {guided && <><h3>{methodLabel}</h3><p>{method === 'meyer' ? 'Solve opposite centers, build and preserve the left block, then finish centers and edge groups before the beginner 3×3 finish.' : method === 'reduction_beginner' ? 'Group the centers and edges, then finish using the beginner 3×3 method.' : 'Build the white cross, finish the first two layers, then solve the last layer.'}</p></>}
+          {mode && <p>Execution: {mode.toLowerCase()}.</p>}
+          <h3>Controls</h3><p>Play or pause the animation, step backward or forward one move, or restart playback. Drag the cube to orbit and pinch to zoom. Reset view restores yellow up and red front.</p>
+          <h3>Entering a cube</h3><p>Scan all six faces with live video or upload a video. Input options also includes sticker editors, text input, and saved scrambles. Changing solve style keeps your scanned cube.</p>
+          {representation === 'text' && <p>Enter {stickerCount} stickers in U R F D L B order, reading each face left to right, top to bottom. {area} letters per face. Read each face left to right, top to bottom, looking directly at it. Keep U above the side faces, B above U, and F above D. {size % 2 === 1 ? `Letter ${Math.floor(area / 2) + 1} is the fixed center.` : 'The 4×4 has no fixed centers; use the displayed color reference.'}</p>}
+        </div>}
+      </Sheet>}
       {error && <p role="alert" className="error-banner">{error}</p>}
     </div>
   );

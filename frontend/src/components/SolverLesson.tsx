@@ -1,6 +1,8 @@
-import { ArrowLeft, ArrowRight, Check, Target } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Check, ChevronDown, Info, RotateCcw } from 'lucide-react';
 import { moveDescription } from '../lib/teaching';
 import type { Solution } from '../lib/solver';
+import Sheet from './Sheet';
 function turnLabel(move: string) {
   const face = {U:'Top',D:'Bottom',R:'Right',L:'Left',F:'Front',B:'Back',x:'Whole cube · right axis',y:'Whole cube · up axis',z:'Whole cube · front axis'}[move.replace(/^[2-5]/,'')[0] as 'R'];
   const layers = /^[2-5]/.test(move) ? move.includes('w') ? ` · outer ${move[0]} layers` : ` · inner layer ${move[0]}` : move.includes('w') ? ' · outer two layers' : '';
@@ -23,10 +25,12 @@ const goals: Record<string,string> = {
   'reduction-remaining-centers':'All six centers match the displayed color scheme.',
   'reduction-edge-pairing':'Each edge is a matching color group.',
 };
-export default function SolverLesson({ solution, step, viewedStage, onStage, onJump }: {
+export default function SolverLesson({ solution, step, viewedStage, onStage, onJump, onInspect }: {
   solution: Solution; step: number; viewedStage: number | null;
   onStage: (index: number) => void; onJump: (step: number) => void;
+  onInspect: () => void;
 }) {
+  const [sheet, setSheet] = useState<'details' | 'stages' | null>(null);
   const stages = solution.stages!;
   const found = stages.findIndex(stage => step <= stage.end);
   const index = viewedStage ?? (found === -1 ? stages.length-1 : found);
@@ -34,12 +38,10 @@ export default function SolverLesson({ solution, step, viewedStage, onStage, onJ
   const chunk = solution.chunks?.find(c => c.start >= stage.start && c.start < stage.end && step < c.end);
   const next = step < stage.end ? solution.notation[step] : undefined;
   return <section className="solver-lesson compact-lesson" aria-label="Guided solve">
-    <span className="learning-eyebrow">STAGE {index+1} / {stages.length}</span>
-    <label className="guided-stage-select">Choose stage<select aria-label="Guided solve stage" value={index} onChange={e => onStage(Number(e.target.value))}>{stages.map((s,i) => <option key={s.id} value={i}>{i+1}. {s.title}{s.skipped ? ' · already solved' : ''}</option>)}</select></label>
-    <h3>{stage.title}</h3>
-    <div className={`guided-goal ${complete ? 'complete' : ''}`}><span>{complete ? <Check size={17}/> : <Target size={17}/>} {complete ? stage.skipped ? 'Already in place' : 'Checkpoint reached' : 'Your goal'}</span><p>{goals[stage.id] ?? 'Match the highlighted pieces and preserve the completed parts.'}</p></div>
-    {next && !complete ? <><div className="guided-next"><span>NEXT TURN</span><strong title={moveDescription(next)}>{next}</strong><p>{turnLabel(next)}</p></div>{chunk && <div className="guided-action"><span>{chunk.name}</span><div className="learning-moves" aria-label="Current action moves">{solution.notation.slice(Math.max(chunk.start,step-2),Math.min(chunk.end,step+5)).map((move,i) => {const offset=Math.max(chunk.start,step-2)+i;return <button key={offset} title={moveDescription(move)} className={offset<step?'done':offset===step?'next':''} onClick={() => onJump(offset+1)}>{move}</button>;})}</div><small>{chunk.end-Math.max(step,chunk.start)} turns left in this action</small></div>}</> : <p className="guided-done">Check your physical cube against the goal, then continue.</p>}
-    <div className="guided-stage-actions"><button className="icon-button" aria-label="Previous stage" disabled={!index} onClick={() => onStage(index-1)}><ArrowLeft size={17}/></button><button className="text-button" onClick={() => onJump(stage.start)}>Replay stage</button>{index<stages.length-1 && <button className="button" onClick={() => onStage(index+1)}>Next stage <ArrowRight size={15}/></button>}</div>
-    <details className="guided-details"><summary>Why this works</summary><p>{stage.explanation}</p>{chunk && <p>{chunk.explanation}</p>}<p>{stage.checkpoint}</p></details>
+    <div className="guided-stage-heading"><button className="guided-stage-picker" aria-label={`Choose stage: ${stage.title}`} onClick={() => { onInspect(); setSheet('stages'); }}><small>Stage {index+1} / {stages.length}</small><strong>{stage.title} <ChevronDown size={18}/></strong></button><button className="icon-button" aria-label="Stage details" onClick={() => { onInspect(); setSheet('details'); }}><Info size={22}/></button></div>
+    <div className={`guided-goal ${complete ? 'complete' : ''}`}>{complete && <span><Check size={17}/> {stage.skipped ? 'Already in place' : 'Checkpoint reached'}</span>}<p>{goals[stage.id] ?? 'Match the highlighted pieces and preserve the completed parts.'}</p></div>
+    {next && !complete && <><div className="guided-next"><strong title={moveDescription(next)}>{next}</strong><p>{turnLabel(next)}</p></div>{chunk && <div className="guided-action"><div className="learning-moves" aria-label="Current action moves">{solution.notation.slice(Math.max(chunk.start,step-2),Math.min(chunk.end,step+5)).map((move,i) => {const offset=Math.max(chunk.start,step-2)+i;return <button key={offset} aria-label={`Go to move ${offset+1}: ${moveDescription(move)}`} className={offset<step?'done':offset===step?'next':''} onClick={() => onJump(offset+1)}>{move}</button>;})}</div></div>}</>}
+    <div className="guided-stage-actions"><button className="icon-button" aria-label="Previous stage" disabled={!index} onClick={() => onStage(index-1)}><ArrowLeft size={20}/></button><button className="icon-button" aria-label="Replay stage" onClick={() => onJump(stage.start)}><RotateCcw size={20}/></button>{index<stages.length-1 && <button className="button" onClick={() => onStage(index+1)}>Next stage</button>}</div>
+    {sheet && <Sheet title={sheet === 'details' ? stage.title : 'Solve stages'} onClose={() => setSheet(null)}>{sheet === 'details' ? <div className="solver-info-copy"><p>{stage.explanation}</p>{chunk && <><h3>{chunk.name}</h3><p>{chunk.explanation}</p></>}<h3>Checkpoint</h3><p>{stage.checkpoint}</p></div> : <div className="solver-stage-list">{stages.map((s,i) => <button key={s.id} aria-current={i === index ? 'step' : undefined} onClick={() => { onStage(i); setSheet(null); }}><span>{i+1}. {s.title}</span>{(s.skipped || step >= s.end) && <Check size={18}/>}</button>)}</div>}</Sheet>}
   </section>;
 }

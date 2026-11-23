@@ -5,8 +5,10 @@ import { readStored, writeStored } from '../lib/offline';
 import { cubeEvents, puzzles, type CubeEvent } from '../lib/puzzles';
 import { clearLocalData } from '../lib/training';
 import type { Representation } from '../lib/solverInput';
+import Sheet from './Sheet';
+import { Info } from 'lucide-react';
 import type { TrainingProps } from './ScrambleLibrary';
-export default function SettingsPage({ training, updateTraining, user, notify }: TrainingProps & { user: User | null; notify: (e: unknown) => void }) {
+export default function SettingsPage({ training, updateTraining, user, notify, onSignIn, onSignOut }: TrainingProps & { user: User | null; notify: (e: unknown) => void; onSignIn: () => void; onSignOut: () => void }) {
   const [profiles, setProfiles] = useState<Calibration[]>(() => readStored<unknown[]>(calibrationKey, []).filter(isCalibration));
   const [cubeName, setCubeName] = useState('');
   const [event, setEvent] = useState<CubeEvent>('333');
@@ -14,6 +16,7 @@ export default function SettingsPage({ training, updateTraining, user, notify }:
   const [confirm, setConfirm] = useState(false);
   const [confirmation, setConfirmation] = useState('');
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState(false);
   const settings = training.settings;
   function saveProfiles(next: Calibration[]) { setProfiles(next); writeStored(calibrationKey, next); }
   async function reset() {
@@ -25,15 +28,17 @@ export default function SettingsPage({ training, updateTraining, user, notify }:
     } catch (e) { notify(e); setBusy(false); }
   }
   return <div className="settings-layout">
-    <section className="card settings-card"><h2>Preferences</h2><p className="small-muted">Settings, sessions, saved scrambles and calibrations are saved on this device. Signed-in solve history also saves online.</p>
+    <section className="card settings-card account-settings"><div><h2>{user ? user.name : 'Account'}</h2><button className="text-button" onClick={user ? onSignOut : onSignIn}>{user ? 'Sign out' : 'Sign in'}</button></div><button className="icon-button" aria-label="About saved data" onClick={() => setInfo(true)}><Info size={21}/></button></section>
+    {info && <Sheet title="Saved data" onClose={() => setInfo(false)}><div className="solver-info-copy"><p>Settings, sessions, learning progress, saved scrambles and calibrations are saved on this device. Signed-in solve history also saves online.</p><p>Video scans learn colors automatically. A saved color profile can be linked to each cube.</p></div></Sheet>}
+    <section className="card settings-card"><h2>Preferences</h2>
       <label className="check-setting"><input type="checkbox" checked={settings.inspection} onChange={e => updateTraining({ ...training, settings: { ...settings, inspection: e.target.checked } })} />Use WCA-style inspection by default</label>
       <label>Default cube<select value={settings.defaultCube} onChange={e => updateTraining({ ...training, settings: { ...settings, defaultCube: e.target.value } })}><option value="">Unspecified</option>{training.cubes.map(c => <option key={c.id} value={c.id}>{c.name} · {puzzles[c.event].label}</option>)}</select></label>
       <label>Default method<select value={settings.defaultMethod} onChange={e => updateTraining({ ...training, settings: { ...settings, defaultMethod: e.target.value } })}>{training.methods.map(m => <option key={m}>{m}</option>)}</select></label>
-      <label>Solver input view<select value={settings.representation} onChange={e => updateTraining({ ...training, settings: { ...settings, representation: e.target.value as Representation } })}>{['camera', '2d', '3d', 'text'].map(v => <option key={v}>{v}</option>)}</select></label>
+      <label>Solver input view<select value={settings.representation} onChange={e => updateTraining({ ...training, settings: { ...settings, representation: e.target.value as Representation } })}>{['camera', '2d', '3d', 'text'].map(v => <option key={v} value={v}>{v === 'camera' ? 'Video scan' : v === 'text' ? 'Text' : v.toUpperCase()}</option>)}</select></label>
       <label className="check-setting"><input type="checkbox" checked={settings.transparent} onChange={e => updateTraining({ ...training, settings: { ...settings, transparent: e.target.checked } })} />See-through cube by default</label>
       <label>Solution playback speed<select value={settings.playbackMs} onChange={e => updateTraining({ ...training, settings: { ...settings, playbackMs: Number(e.target.value) } })}><option value={400}>Fast · 0.4s per move</option><option value={800}>Normal · 0.8s per move</option><option value={1400}>Slow · 1.4s per move</option><option value={2000}>Very slow · 2s per move</option></select></label>
     </section>
-    <section className="card settings-card"><h2>My cubes</h2><p className="small-muted">Video scans learn colors automatically. You can also link an existing color profile.</p>
+    <section className="card settings-card"><h2>My cubes</h2>
       <form className="settings-row" onSubmit={e => { e.preventDefault(); if (!cubeName.trim()) return; updateTraining({ ...training, cubes: [...training.cubes, { id: crypto.randomUUID(), name: cubeName.trim(), event, calibrationId: '' }] }); setCubeName(''); }}>
         <input aria-label="New cube name" placeholder="e.g. GAN 12" value={cubeName} maxLength={100} onChange={e => setCubeName(e.target.value)} required />
         <select aria-label="Cube category" value={event} onChange={e => setEvent(e.target.value as CubeEvent)}>{cubeEvents.map(v => <option key={v} value={v}>{puzzles[v].label}</option>)}</select><button className="button">Add cube</button>
@@ -48,7 +53,7 @@ export default function SettingsPage({ training, updateTraining, user, notify }:
       {profiles.map(p => <div className="settings-item" key={p.id}><label>Calibration name<input value={p.name} maxLength={60} onChange={e => saveProfiles(profiles.map(x => x.id === p.id ? { ...x, name: e.target.value } : x))} /></label><div className="calibration-swatches">{p.colors.map((rgb, i) => <span key={i} style={{ background: `rgb(${rgb.join(',')})` }} />)}</div><button className="text-button delete" onClick={() => { saveProfiles(profiles.filter(x => x.id !== p.id)); updateTraining({ ...training, cubes: training.cubes.map(c => c.calibrationId === p.id ? { ...c, calibrationId: '' } : c) }); }}>Delete calibration</button></div>)}
     </section>
     <section className="card settings-card danger-zone"><h2>Clear all data</h2><p>Delete all Cube Studio data on this device: times for all local profiles, sessions, saved scrambles, cubes, calibrations and preferences.{user && ' Also permanently delete all online solve history for the signed-in account.'} This cannot be undone.</p>
-      {!confirm ? <button className="button danger-button" onClick={() => setConfirm(true)}>Clear all data…</button> : <div role="alertdialog" aria-modal="true" aria-label="Confirm clearing all data"><p className="delete">Type DELETE ALL DATA to confirm permanent deletion.</p><input autoFocus aria-label="Deletion confirmation" value={confirmation} onChange={e => setConfirmation(e.target.value)} /><div className="settings-row"><button className="button danger-button" disabled={busy || confirmation !== 'DELETE ALL DATA'} onClick={() => void reset()}>{busy ? 'Deleting…' : 'Permanently delete all data'}</button><button className="button" disabled={busy} onClick={() => { setConfirm(false); setConfirmation(''); }}>Cancel</button></div></div>}
+      {!confirm ? <button className="button danger-button" onClick={() => setConfirm(true)}>Clear all data…</button> : <Sheet title="Clear all data" onClose={() => { if (!busy) { setConfirm(false); setConfirmation(''); } }}><p className="small-muted">Delete local times, learning progress, sessions, saved scrambles, cubes, calibrations and preferences.{user && ' Also permanently delete online solve history for this account.'} This cannot be undone.</p><p className="delete">Type DELETE ALL DATA to confirm permanent deletion.</p><input autoFocus aria-label="Deletion confirmation" value={confirmation} onChange={e => setConfirmation(e.target.value)} /><div className="settings-row"><button className="button danger-button" disabled={busy || confirmation !== 'DELETE ALL DATA'} onClick={() => void reset()}>{busy ? 'Deleting…' : 'Permanently delete all data'}</button><button className="button" disabled={busy} onClick={() => { setConfirm(false); setConfirmation(''); }}>Cancel</button></div></Sheet>}
     </section>
   </div>;
 }
