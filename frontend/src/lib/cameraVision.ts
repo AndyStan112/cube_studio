@@ -386,6 +386,7 @@ function edgeGridCandidates(image: PixelImage, size: CubeSize): Point[][] {
 export function detectFace(
   image: PixelImage,
   size: CubeSize,
+  accept?: (face: FaceDetection) => boolean,
 ): FaceDetection | null {
   const scale = Math.min(1, 240 / Math.max(image.width, image.height));
   const width = Math.round(image.width * scale),
@@ -449,7 +450,7 @@ export function detectFace(
       (0.65 + 0.35 * boundary);
     if (quality < 0.45) return;
     const weight = quality ** 2 * Math.sqrt(area);
-    if (weight > bestWeight) {
+    if (weight > bestWeight && (!accept || accept({corners, colors, quality}))) {
       bestWeight = weight;
       best = { corners, colors, quality };
     }

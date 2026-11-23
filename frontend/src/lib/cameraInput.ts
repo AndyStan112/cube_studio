@@ -1,6 +1,7 @@
 import type { CubeSize } from "./cube";
 import { FACE_ORDER, faceletsToCubies, validateFacelets } from "./facelets";
 import { stickerColor } from "./cameraVision";
+import { assembleEvenScan } from "./scanAssembly";
 
 export type RGB = [number, number, number];
 export type Calibration = { id: string; name: string; colors: RGB[] };
@@ -86,6 +87,7 @@ export function matchScan(
   faces: (RGB[] | null)[],
   size: CubeSize,
   calibrations: Calibration[],
+  unorderedEvenFaces = false,
 ): ScanMatch[] {
   if (faces.length !== 6 || faces.some((f) => !f || f.length !== size * size))
     return [];
@@ -147,7 +149,7 @@ export function matchScan(
             candidate.distance - ranked[0].distance < 3,
         );
       });
-      const resolved = resolveColorReadings(readings, size);
+      const resolved = resolveColorReadings(readings, size, unorderedEvenFaces);
       if (!resolved) return [];
       // Preserve profile ranking when two standard palettes learn the same scan.
       const profileFit = adaptive
@@ -199,6 +201,7 @@ type ColorChoice = { i: number; distance: number };
 function resolveColorReadings(
   readings: ColorChoice[][],
   size: CubeSize,
+  unorderedEvenFaces = false,
 ): { value: string; score: number } | null {
   const area = size * size;
   const choices = readings.map((reading, index) =>
@@ -250,7 +253,7 @@ function resolveColorReadings(
         exhausted = true;
         return;
       }
-      const value = orientScan(letters.join(""), size);
+      const value = unorderedEvenFaces && size % 2 === 0 ? assembleEvenScan(letters.join(""), size) : orientScan(letters.join(""), size);
       if (!value) return;
       try {
         faceletsToCubies(value, size);

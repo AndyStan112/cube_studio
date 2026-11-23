@@ -412,12 +412,12 @@ export default function SolverPage({ size = 3, training, updateTraining }: Train
       <div className="solver-layout solver-workspace">
       {flow === 'input' && <section className="card solver-input">
         <h2>Your {size}×{size} cube</h2>
-        <p className="solver-hint">Yellow up · Red front{size !== 3 && " · Online reduction solver"}</p>
+        <p className="solver-hint">{representation === 'camera' ? cameraReady ? 'Match your cube to the preview' : 'Show all six faces in the video' : <>Yellow up · Red front{size !== 3 && " · Online reduction solver"}</>}</p>
         <div className="representation-toggle" role="group" aria-label="Cube representation">
           {(["camera", "2d", "text", "3d"] as const).map((view) => (
             <button key={view} className="button" aria-pressed={representation === view}
               onClick={() => setRepresentation(view)}>
-              {view === "camera" ? "Camera" : view === "text" ? "Text" : view.toUpperCase()}
+              {view === "camera" ? "Video" : view === "text" ? "Text" : view.toUpperCase()}
             </button>
           ))}
         </div>

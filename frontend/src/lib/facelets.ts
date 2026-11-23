@@ -21,6 +21,13 @@ const corners = [
   [33, 53, 42],
   [35, 17, 51],
 ];
+// Row-major corner indices shared by validation and unordered face assembly.
+export function cornerFaceletIndices(size: CubeSize) {
+  const area = size * size;
+  return corners.map(slot => slot.map(index => Math.floor(index / 9) * area
+    + Math.floor((index % 9) / 3) / 2 * (size - 1) * size
+    + (index % 3) / 2 * (size - 1)));
+}
 const edges = [
   [5, 10],
   [7, 19],
@@ -193,5 +200,25 @@ export function faceletsToCubies(value: string, size: CubeSize = 3): Cubie[] {
         }
     }
     throw Error("Cannot orient cube piece");
+  });
+}
+
+const wholeCubePermutations = new Map<CubeSize, number[][]>();
+/** The 24 spatial orientations; sticker colors themselves are unchanged. */
+export function rotatedFaceletStates(value: string, size: CubeSize): string[] {
+  let permutations = wholeCubePermutations.get(size);
+  if (!permutations) {
+    const geometry = geometryFor(size);
+    permutations = rotations.map(rotation => geometry.map(sticker => {
+      const position = sticker.position.clone().applyQuaternion(rotation);
+      const normal = sticker.normal.clone().applyQuaternion(rotation);
+      return geometry.findIndex(target => near(target.position, position) && near(target.normal, normal));
+    }));
+    wholeCubePermutations.set(size, permutations);
+  }
+  return permutations.map(permutation => {
+    const result = Array<string>(value.length);
+    permutation.forEach((target, source) => { result[target] = value[source]; });
+    return result.join('');
   });
 }

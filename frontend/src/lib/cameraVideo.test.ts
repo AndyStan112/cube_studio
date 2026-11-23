@@ -9,6 +9,8 @@ import {
 } from "./cameraVision";
 import { matchScan, suggestedCalibration } from "./cameraInput";
 import recordings from "./__fixtures__/camera-scans";
+import { VideoScanSession } from "./videoScan";
+import { cubeOrientationKey } from "./scanAssembly";
 
 // Personal videos stay in ignored local/. Opt in with:
 // CUBE_CAMERA_VIDEO_DIR=../local npm test -- src/lib/cameraVideo.test.ts
@@ -25,8 +27,9 @@ describe.skipIf(!directory)(
     for (const [index, filename] of filenames.entries()) {
       it(`extracts the expected state from ${filename}`, () => {
         const size = index === 0 ? 4 : 3;
-        const width = 240,
-          height = 426,
+        // Match the browser sampler: max 800px, not a lower-resolution proxy.
+        const width = 450,
+          height = 800,
           frameBytes = width * height * 4;
         const decoded = execFileSync(
           "ffmpeg",
@@ -43,9 +46,10 @@ describe.skipIf(!directory)(
             "rawvideo",
             "pipe:1",
           ],
-          { maxBuffer: 40 * 1024 * 1024 },
+          { maxBuffer: 128 * 1024 * 1024 },
         );
         const frames: VideoFace[] = [];
+        const session = new VideoScanSession(size);
         for (
           let offset = 0;
           offset + frameBytes <= decoded.length;
@@ -56,7 +60,10 @@ describe.skipIf(!directory)(
             decoded.byteOffset + offset,
             frameBytes,
           );
-          const detection = detectFace({ width, height, data }, size);
+          const detection = detectFace({ width, height, data }, size, (face) =>
+            session.accepts(face),
+          );
+          session.observe(detection, offset / frameBytes / 6);
           if (detection)
             frames.push({
               ...detection,
@@ -68,6 +75,16 @@ describe.skipIf(!directory)(
         expect(faces.every(Boolean)).toBe(true);
         const matches = matchScan(faces, size, [suggestedCalibration]);
         expect(matches[0]?.value).toBe(recordings[index].expected);
+        expect(session.snapshot().faces).toHaveLength(6);
+        const tracked = session.match();
+        expect(tracked).not.toBeNull();
+        expect(
+          size % 2 ? tracked!.value : cubeOrientationKey(tracked!.value, size),
+        ).toBe(
+          size % 2
+            ? recordings[index].expected
+            : cubeOrientationKey(recordings[index].expected, size),
+        );
       }, 30000);
     }
   },
