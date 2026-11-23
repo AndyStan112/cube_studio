@@ -25,7 +25,6 @@ describe("recorded cube colors", () => {
           faces,
           recording.size as CubeSize,
           [suggestedCalibration],
-          true,
         );
         expect(result[0]?.value).toBe(recording.expected);
       });
@@ -35,7 +34,7 @@ describe("recorded cube colors", () => {
     const recording = recordings[2];
     const faces = structuredClone(recording.faces) as RGB[][];
     [faces[0][7], faces[2][1]] = [faces[2][1], faces[0][7]];
-    expect(matchScan(faces, 3, [suggestedCalibration], true)).toEqual([]);
+    expect(matchScan(faces, 3, [suggestedCalibration])).toEqual([]);
   });
 });
 

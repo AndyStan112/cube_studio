@@ -51,3 +51,44 @@ describe('camera cube extraction', () => {
     for (const bad of [null, {}, { ...suggestedCalibration, colors: [] }, { ...suggestedCalibration, colors: Array(6).fill([NaN, 4, 5]) }]) expect(isCalibration(bad)).toBe(false);
   });
 });
+
+// Transcribed row by row from the user's failed camera review on 2026-11-23.
+// All 54 stickers are correct; the six independently rotated pictures must work
+// through the same extraction entry point used by live and timed captures.
+const screenshotFaces = ['BBLBUFBBU', 'UUURRRRRR', 'RURUFDBBF', 'FFUUDLFFL', 'LLFLLFLLB', 'DDDDBDDRD'];
+const screenshotState = 'BBBBUBUFLURRURRURRRDFUFBRUBULLFDFFUFLLFLLFLLBDDDDBDDRD';
+function rotateSamples(face: RGB[], size: CubeSize, turns: number): RGB[] {
+  for (let turn = 0; turn < turns; turn++) {
+    face = face.map((_, i) => face[(size - 1 - i % size) * size + Math.floor(i / size)]);
+  }
+  return face;
+}
+describe('independent face rotations for every capture method', () => {
+  it('extracts the exact failed screenshot without a video-only option', () => {
+    const faces = samples(screenshotFaces.join(''), 3);
+    expect(matchScan(faces, 3, [suggestedCalibration])[0]?.value).toBe(screenshotState);
+  });
+  for (let face = 0; face < 6; face++) for (let turns = 1; turns <= 3; turns++) {
+    it(`recovers the screenshot with face ${FACE_ORDER[face]} rotated ${turns * 90} degrees`, () => {
+      const faces = samples(screenshotFaces.join(''), 3);
+      faces[face] = rotateSamples(faces[face], 3, turns);
+      expect(matchScan(faces, 3, [suggestedCalibration])[0]?.value).toBe(screenshotState);
+    });
+  }
+  for (const size of [3, 5] as const) {
+    const state = ['R', 'U', "F'", 'L2', 'B', ...(size === 5 ? ['Rw', 'Uw2'] : [])]
+      .reduce((cube, move) => applyMove(cube, move), solved(size));
+    const value = cubiesToFacelets(state);
+    for (let seed = 0; seed < 8; seed++) {
+      it(`recovers simultaneous independent rotations on a scrambled ${size}x${size} (case ${seed})`, () => {
+        const faces = samples(value, size).map((face, i) => rotateSamples(face, size, (seed * (i + 1) + i * i) % 4));
+        expect(matchScan(faces, size, [suggestedCalibration])[0]?.value).toBe(value);
+      });
+    }
+  }
+  it('does not repair an actually misread sticker by changing the cube', () => {
+    const faces = samples(screenshotFaces.join(''), 3);
+    faces[0][0] = suggestedCalibration.colors[FACE_ORDER.indexOf('F')];
+    expect(matchScan(faces, 3, [suggestedCalibration])).toEqual([]);
+  });
+});

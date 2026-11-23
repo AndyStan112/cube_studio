@@ -66,7 +66,7 @@ describe.skipIf(!directory)(
         }
         const { faces } = selectVideoFaces(frames, size);
         expect(faces.every(Boolean)).toBe(true);
-        const matches = matchScan(faces, size, [suggestedCalibration], true);
+        const matches = matchScan(faces, size, [suggestedCalibration]);
         expect(matches[0]?.value).toBe(recordings[index].expected);
       }, 30000);
     }

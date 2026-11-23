@@ -9,8 +9,7 @@ import './CameraInput.css';
 
 const labels = ['Up · yellow', 'Right · green', 'Front · red', 'Down · white', 'Left · blue', 'Back · orange'];
 const faceColors = ['#f5d54f', '#65b99a', '#e9574e', '#f5f5eb', '#6297ed', '#ff9c39'];
-const topColors = [5, 0, 0, 2, 0, 0];
-const guidance = ['Show yellow, with orange along its top edge.', 'Show green, with yellow along its top edge.', 'Show red, with yellow along its top edge.', 'Show white, with red along its top edge.', 'Show blue, with yellow along its top edge.', 'Show orange, with yellow along its top edge.'];
+const guidance = ['Show the yellow-center face.', 'Show the green-center face.', 'Show the red-center face.', 'Show the white-center face.', 'Show the blue-center face.', 'Show the orange-center face.'];
 export default function CameraInput({ size, disabled, onChange, onReady, defaultCalibration = 'auto' }: {
   defaultCalibration?: string; size: CubeSize; disabled: boolean; onChange: (value: string) => void; onReady: (ready: boolean) => void;
 }) {
@@ -228,7 +227,7 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
   function extract() {
     setError('');
     const candidates = [suggestedCalibration, ...profiles];
-    const matches = matchScan(faces, size, selected === 'auto' ? candidates : candidates.filter(p => p.id === selected), !!source);
+    const matches = matchScan(faces, size, selected === 'auto' ? candidates : candidates.filter(p => p.id === selected));
     if (!matches.length) {
       onReady(false);
       setError('These colors do not form a confident, valid cube. Retake unclear faces or recalibrate in the same lighting.');
@@ -272,7 +271,7 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
       <div className="capture-shell">
         <header className="capture-header"><div><span>{calibrating ? 'CAMERA CALIBRATION' : 'CUBE SCAN'} · {size}×{size}</span><h2 id="capture-title">{reviewing ? 'Review all six faces' : calibrating ? 'Capture your cube’s colors' : 'Capture your cube'}</h2></div><button className="icon-button" aria-label="Close camera" onClick={closeCapture}><X size={23}/></button></header>
         <section className="capture-instruction" aria-live="polite">
-          {reviewing ? <><span className="capture-face-chip"><Check size={22}/></span><div><strong>All six faces captured</strong><p>{calibrating ? 'Check the colors, name this calibration, then save.' : 'Check your faces, then extract the cube state.'} Tap a face to retake it.</p></div></> : <><span className="capture-face-chip" style={{background:faceColors[active]}}>{FACE_ORDER[active]}</span><div><strong>{active+1} / 6 · {labels[active]}</strong><p>{guidance[active]}</p><small>{calibrating ? size % 2 ? 'Center sticker supplies the color. Keep the lighting steady.' : 'Use a solved cube. Capture each solid-color face.' : 'Rotate the whole cube; keep the layers still.'}</small></div><span className="capture-top-edge"><i style={{background:faceColors[topColors[active]]}}/>This color<br/>along the top</span></>}
+          {reviewing ? <><span className="capture-face-chip"><Check size={22}/></span><div><strong>All six faces captured</strong><p>{calibrating ? 'Check the colors, name this calibration, then save.' : 'Check your faces, then extract the cube state.'} Tap a face to retake it.</p></div></> : <><span className="capture-face-chip" style={{background:faceColors[active]}}>{FACE_ORDER[active]}</span><div><strong>{active+1} / 6 · {labels[active]}</strong><p>{size % 2 ? guidance[active] : `Show the ${labels[active].split(' · ')[0].toLowerCase()} face.`} Any rotation is fine.</p><small>{calibrating ? size % 2 ? 'Center sticker supplies the color. Keep the lighting steady.' : 'Use a solved cube. Capture each solid-color face.' : 'Rotate the whole cube; keep the layers still.'}</small></div></>}
         </section>
         <div className="capture-stage" ref={stage}>
           <div className="camera-view" style={{width:videoWidth || '100%',height:videoWidth ? videoWidth/aspect : '100%'}} hidden={reviewing || (!source && !live && !opening)}>

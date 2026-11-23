@@ -37,7 +37,7 @@ export function calibrationFromFaces(id: string, name: string, faces: (RGB[] | n
     throw Error('Two calibration colors look too similar. Check face order and lighting, then recapture.');
   return { id, name: name.trim() || 'My cube', colors };
 }
-export function matchScan(faces: (RGB[] | null)[], size: CubeSize, calibrations: Calibration[], allowFaceRotation = false): ScanMatch[] {
+export function matchScan(faces: (RGB[] | null)[], size: CubeSize, calibrations: Calibration[]): ScanMatch[] {
   if (faces.length !== 6 || faces.some(f => !f || f.length !== size * size)) return [];
   return calibrations.flatMap(calibration => {
     let palette = calibration.colors;
@@ -65,12 +65,8 @@ export function matchScan(faces: (RGB[] | null)[], size: CubeSize, calibrations:
       score += ranked[0].distance;
       return FACE_ORDER[ranked[0].i];
     });
-    let value = letters.join('');
-    if (allowFaceRotation) {
-      const oriented = orientScan(value, size);
-      if (!oriented) return [];
-      value = oriented;
-    }
+    const value = orientScan(letters.join(''), size);
+    if (!value) return [];
     try { faceletsToCubies(value, size); } catch { return []; }
     return [{ calibration, value, score: score / value.length }];
   }).sort((a, b) => a.score - b.score);
