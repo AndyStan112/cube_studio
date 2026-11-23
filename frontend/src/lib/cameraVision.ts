@@ -90,6 +90,35 @@ function imagePixel(image: PixelImage, point: Point): RGB {
   return [image.data[offset], image.data[offset + 1], image.data[offset + 2]];
 }
 const brightness = (rgb: RGB) => (rgb[0] + rgb[1] + rgb[2]) / 3;
+function patchStability(
+  image: PixelImage,
+  corners: Point[],
+  size: CubeSize,
+  colors: RGB[],
+) {
+  let score = 0;
+  for (let i = 0; i < colors.length; i++) {
+    const distances: number[] = [];
+    for (const v of [-0.32, -0.24, 0.24, 0.32])
+      for (const u of [-0.32, -0.24, 0.24, 0.32]) {
+        const sample = imagePixel(
+          image,
+          facePoint(
+            corners,
+            ((i % size) + 0.5 + u) / size,
+            (Math.floor(i / size) + 0.5 + v) / size,
+          ),
+        );
+        distances.push(
+          Math.hypot(...sample.map((channel, c) => channel - colors[i][c])) /
+            Math.max(40, Math.hypot(...colors[i])),
+        );
+      }
+    distances.sort((a, b) => a - b);
+    score += 1 - Math.min(1, distances[8] / 0.25);
+  }
+  return score / colors.length;
+}
 function seamEvidence(
   image: PixelImage,
   corners: Point[],
@@ -121,6 +150,27 @@ function seamEvidence(
     Math.min(1, contrast / 0.25),
     Math.min(1, (base - darkest) / base / 0.22),
   );
+}
+function boundaryEvidence(image: PixelImage, corners: Point[], size: CubeSize) {
+  let total = 0,
+    count = 0;
+  for (const vertical of [true, false])
+    for (const side of [0, 1]) {
+      for (let cell = 0; cell < size; cell++)
+        for (const offset of [0.3, 0.5, 0.7]) {
+          const along = (cell + offset) / size;
+          total += seamEvidence(
+            image,
+            corners,
+            vertical ? side : along,
+            vertical ? along : side,
+            vertical,
+            size,
+          );
+          count++;
+        }
+    }
+  return total / count;
 }
 function gridEvidence(image: PixelImage, corners: Point[], size: CubeSize) {
   const axes = [true, false].map((vertical) => {
@@ -235,13 +285,20 @@ function edgeGridCandidates(image: PixelImage, size: CubeSize): Point[][] {
           strength = magnitude;
         }
       }
-      if (strength < 20 * 20) continue;
-      const weight = Math.sqrt(strength);
+      if (strength < 8 * 8) continue;
+      const magnitude = Math.sqrt(strength);
+      // The guide asks the user to present the cube near the frame center.
+      // Soft spatial weighting stops distant packaging/text from consuming all
+      // grid proposals while retaining off-center faces.
+      const distance =
+        ((x - width / 2) ** 2 + (y - height / 2) ** 2) /
+        (Math.min(width, height) * 0.55) ** 2;
+      const weight = magnitude * Math.exp(-distance);
       let angle = (Math.atan2(gy, gx) * 180) / Math.PI;
       angle = ((Math.round(angle) % 90) + 90) % 90;
       for (let delta = -3; delta <= 3; delta++)
         directions[(angle + delta + 90) % 90] += weight;
-      edges.push({ x, y, gx: gx / weight, gy: gy / weight, weight });
+      edges.push({ x, y, gx: gx / magnitude, gy: gy / magnitude, weight });
     }
   const angles: number[] = [];
   for (const { i } of Array.from(directions, (value, i) => ({ value, i })).sort(
@@ -359,7 +416,14 @@ export function detectFace(
     const colors = sampleQuad(image, size, corners);
     const coverage =
       colors.filter((color) => cubePixel(...color)).length / colors.length;
-    if (coverage < 0.88) return;
+    // Palette masks propose regions, but must not veto a geometric grid: phone
+    // camera processing can mute every orange sticker into the desk's RGB range.
+    if (occupiedPixels !== undefined && coverage < 0.88) return;
+    if (
+      occupiedPixels === undefined &&
+      patchStability(image, corners, size, colors) < 0.65
+    )
+      return;
     const grid = gridEvidence(image, corners, size);
     if (grid < (occupiedPixels === undefined ? 0.45 : 0.35)) return;
     const area =
@@ -376,7 +440,13 @@ export function detectFace(
       Math.min(horizontal, vertical) / Math.max(horizontal, vertical);
     const occupancy =
       occupiedPixels === undefined ? 1 : Math.min(1, occupiedPixels / area);
-    const quality = coverage * aspect * (0.5 + 0.5 * grid) * occupancy;
+    const boundary = boundaryEvidence(image, corners, size);
+    const quality =
+      (occupiedPixels === undefined ? 1 : coverage) *
+      aspect *
+      (0.5 + 0.5 * grid) *
+      occupancy *
+      (0.65 + 0.35 * boundary);
     if (quality < 0.45) return;
     const weight = quality ** 2 * Math.sqrt(area);
     if (weight > bestWeight) {
