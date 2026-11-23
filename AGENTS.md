@@ -62,6 +62,24 @@ If a skill is unavailable, report that and follow the concrete rules below.
   competing with cube recognition, timer legibility, or error states.
 - Support text scaling, readable contrast, focus visibility, and reduced motion.
 
+## Established mobile preferences
+
+- Use the skill map's clean, open composition as the visual reference. Do not
+  put the timer, scramble, or every small group inside bordered cards.
+- Prefer familiar icon actions for sessions, cube previews, bookmarks, saved
+  lists, and playback. Give every icon an accessible name and at least a 44px
+  touch target; show selected/saved states clearly.
+- Avoid disclosure triangles, chevrons, clickable text rows, and expandable
+  instructions on core mobile screens. Open focused sheets from icons instead.
+- Keep saved-item lists in a dedicated sheet, not inline in the task. Use a
+  bookmark/star to save the current item and a distinct library icon to browse.
+- Use compact visual metadata: a number and a turn icon rather than "25 moves".
+  Teach cube orientation in first-use guidance rather than repeating it as text.
+- Make the info action a replayable visual tutorial: one action per step,
+  short captions, meaningful icons or cube diagrams, and a tryout where useful.
+  Do not substitute a long information dump. First-use guidance must be
+  dismissible, remembered on the device, and available again from the info icon.
+
 ## UI copy: every sentence must earn its place
 
 - Do not add unsolicited static text: asides, "by the way" notes, motivational

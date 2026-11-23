@@ -41,8 +41,6 @@ main {padding:12px 16px calc(92px + env(safe-area-inset-bottom));}
 .card-top {padding:8px 16px;}
 .section-label {color:var(--text-dim);font-size:.8125rem;font-weight:500;letter-spacing:.04em;}
 .status-dot {display:none;}
-.timer-session-bar {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
-.session-switcher {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;min-width:0;flex:1;font-size:.9375rem;text-align:left;}.session-switcher > span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .scramble {font-size:1rem;line-height:1.7;min-height:0;padding:12px 16px;word-spacing:2px;}
 .scramble-note {color:var(--text-dim);font-size:.8125rem;padding-bottom:12px;}
 .scramble-preview {margin:0;}.scramble-preview summary,.scramble-library summary {font-size:.875rem;min-height:44px;padding:12px 16px;color:var(--text-dim);}
