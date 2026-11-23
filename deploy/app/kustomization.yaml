@@ -13,10 +13,10 @@ resources:
 images:
   - name: cube-frontend
     newName: ghcr.io/andystan112/cube_studio-frontend
-    newTag: 04e0311c173a11b01ae3b9f11672310c4207db5c
+    newTag: 26dcbff57add57ccaf382ad881f2353247bd2394
   - name: cube-backend
     newName: ghcr.io/andystan112/cube_studio-backend
-    newTag: 04e0311c173a11b01ae3b9f11672310c4207db5c
+    newTag: 26dcbff57add57ccaf382ad881f2353247bd2394
   - name: cube-solver
     newName: ghcr.io/andystan112/cube_studio-solver
-    newTag: 04e0311c173a11b01ae3b9f11672310c4207db5c
+    newTag: 26dcbff57add57ccaf382ad881f2353247bd2394
