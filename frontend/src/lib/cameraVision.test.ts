@@ -96,6 +96,18 @@ describe("face localization and sampling", () => {
       image.data.set([145, 112, 86, 255], i);
     expect(detectFace(image, 3)).toBeNull();
   });
+  it('rejects a featureless patch of plastic instead of inventing a grid', () => {
+    const { image } = scene(3);
+    for (let i = 0; i < image.data.length; i += 4) image.data.set([10, 170, 80, 255], i);
+    expect(detectFace(image, 3)).toBeNull();
+  });
+  it('does not stretch two rows into a complete three-row face', () => {
+    const { image } = scene(3);
+    for (let y = 193; y < image.height; y++) for (let x = 0; x < image.width; x++) {
+      image.data.set([145, 112, 86, 255], (y * image.width + x) * 4);
+    }
+    expect(detectFace(image, 3)).toBeNull();
+  });
   it("samples around a printed center logo", () => {
     const { image, corners } = scene(3);
     // White center with a blue printed logo over the central third.
