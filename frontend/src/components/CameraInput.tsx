@@ -3,7 +3,8 @@ import { Camera, Check, RotateCcw, Upload, X } from 'lucide-react';
 import type { CubeSize } from '../lib/cube';
 import { FACE_ORDER } from '../lib/facelets';
 import { readStored, writeStored } from '../lib/offline';
-import { calibrationFromFaces, calibrationKey, isCalibration, matchScan, sampleFace, suggestedCalibration, type Calibration, type RGB } from '../lib/cameraInput';
+import { calibrationFromFaces, calibrationKey, isCalibration, matchScan, suggestedCalibration, type Calibration, type RGB } from '../lib/cameraInput';
+import { detectFace, facePoint, identifyVideoFace, selectVideoFaces, type Point, type VideoFace } from '../lib/cameraVision';
 import './CameraInput.css';
 
 const labels = ['Up · yellow', 'Right · green', 'Front · red', 'Down · white', 'Left · blue', 'Back · orange'];
@@ -43,6 +44,16 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
   const [analyzing, setAnalyzing] = useState(false);
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
+  const faceTimes = useRef<(number | null)[]>(Array(6).fill(null));
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [detectedCorners, setDetectedCorners] = useState<Point[] | null>(null);
+  useEffect(() => {
+    setDetectedCorners(null);
+    if ((!live && !source) || reviewing || analyzing || !fullscreen) return;
+    const update = () => { try { readFrame(); } catch { setDetectedCorners(null); } };
+    const interval = setInterval(update, 300);
+    return () => clearInterval(interval);
+  }, [live, source, reviewing, analyzing, fullscreen, size]);
 
   function stopRecording() {
     if (timer.current) clearInterval(timer.current);
@@ -94,12 +105,13 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
     const file = e.target.files?.[0]; e.target.value = '';
     if (!file) return;
     if (file.size > 200 * 1024 * 1024) { setError('Choose a video smaller than 200 MB.'); return; }
+    faceTimes.current = Array(6).fill(null);
     stopCamera(); if (video.current) video.current.srcObject = null;
     setFaces(Array(6).fill(null)); setActive(0); setReviewing(false); setError(''); setDuration(0); setPosition(0); setSource(URL.createObjectURL(file));
   }
   function retake(index: number) {
     setActive(index); setReviewing(false); setError('');
-    if (source && duration > 0 && video.current) { video.current.pause(); video.current.currentTime = duration * (index + .5) / 6; }
+    if (source && duration > 0 && video.current) { video.current.pause(); video.current.currentTime = faceTimes.current[index] ?? 0; }
     else if (!source && !live) void openCamera();
   }
   async function openCamera() {
@@ -132,18 +144,21 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) throw Error('This browser cannot read video frames.');
     context.drawImage(player, 0, 0, canvas.width, canvas.height);
-    return sampleFace(context.getImageData(0, 0, canvas.width, canvas.height), size);
+    const detection = detectFace(context.getImageData(0, 0, canvas.width, canvas.height), size);
+    setDetectedCorners(detection?.corners.map(p => ({x:p.x/canvas.width*100, y:p.y/canvas.height*100})) ?? null);
+    return detection;
   }
   async function sampleUploadedVideo() {
     const player = video.current;
     if (!player || !Number.isFinite(player.duration) || player.duration <= 0) return;
     const ticket = request.current;
-    setAnalyzing(true); setError(''); player.pause();
+    setAnalyzing(true); setAnalysisProgress(0); setError(''); player.pause();
     try {
-      const captured: RGB[][] = [];
-      for (let i = 0; i < 6; i++) {
+      const frames: VideoFace[] = [];
+      const steps = Math.min(480, Math.max(1, Math.ceil(player.duration * 6)));
+      for (let i = 0; i < steps; i++) {
         if (request.current !== ticket) return;
-        const time = player.duration * (i + .5) / 6;
+        const time = Math.min(player.duration - .01, (i + .5) * player.duration / steps);
         if (Math.abs(player.currentTime - time) > .01 || player.readyState < 2) {
           await new Promise<void>((resolve, reject) => {
             const finish = (error?: Error) => {
@@ -161,9 +176,19 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
           });
         }
         if (request.current !== ticket) return;
-        captured.push(readFrame());
+        const detection = readFrame();
+        if (detection) {
+          const index = identifyVideoFace(detection, size);
+          if(index >= 0) frames.push({...detection, time, index});
+        }
+        setAnalysisProgress(Math.round((i+1)/steps*100));
       }
-      setFaces(captured); setActive(0); setReviewing(true);
+      const captured = selectVideoFaces(frames, size);
+      faceTimes.current = captured.times;
+      setFaces(captured.faces);
+      const missing = captured.faces.findIndex(face=>!face);
+      setActive(missing < 0 ? 0 : missing); setReviewing(missing < 0);
+      if(missing >= 0) setError(`Could not find clear ${captured.faces.flatMap((face,i)=>face ? [] : [labels[i]]).join(', ')} faces. Select a clear frame and capture each missing face.${size%2===0 ? ' Automatic video recognition of even cubes requires solid-color faces; capture scrambled faces individually in the guided order.' : ''}`);
     } catch (e) {
       if (request.current === ticket) setError((e as Error).message);
     } finally { if (request.current === ticket) setAnalyzing(false); }
@@ -171,7 +196,10 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
   function capture() {
     try {
       if (!live) video.current?.pause();
-      const samples = readFrame();
+      const detection = readFrame();
+      if(!detection) throw Error('No clear cube face found. Show the whole face straight on and keep fingers off the stickers.');
+      const samples = detection.colors;
+      if(source) faceTimes.current[active] = video.current?.currentTime ?? null;
       setFaces(previous => previous.map((face, i) => i === active ? samples : face));
       const next = faces.findIndex((face, i) => i !== active && !face);
       if (next === -1) setReviewing(true); else setActive(next);
@@ -186,7 +214,9 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
       setCountdown(remaining);
       if (remaining > 0) return;
       try {
-        const samples = readFrame();
+        const detection = readFrame();
+        if(!detection) throw Error('No clear cube face found. Keep the whole face visible and try again.');
+        const samples = detection.colors;
         const captured = index;
         setFaces(previous => previous.map((face, i) => i === captured ? samples : face));
         index++; remaining = 4; setCountdown(4);
@@ -198,7 +228,7 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
   function extract() {
     setError('');
     const candidates = [suggestedCalibration, ...profiles];
-    const matches = matchScan(faces, size, selected === 'auto' ? candidates : candidates.filter(p => p.id === selected));
+    const matches = matchScan(faces, size, selected === 'auto' ? candidates : candidates.filter(p => p.id === selected), !!source);
     if (!matches.length) {
       onReady(false);
       setError('These colors do not form a confident, valid cube. Retake unclear faces or recalibrate in the same lighting.');
@@ -227,7 +257,7 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
     </div>
     <label className="camera-profile-label" htmlFor="camera-calibration">Camera calibration</label>
     <select id="camera-calibration" disabled={disabled} value={selected} onChange={e => setSelected(e.target.value)}>
-      <option value="auto">Automatic · suggested + saved cubes</option>
+      <option value="auto">Automatic · learn colors from scan + saved cubes</option>
       {[suggestedCalibration, ...profiles].map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
     </select>
     <div className="solver-actions">
@@ -253,12 +283,17 @@ export default function CameraInput({ size, disabled, onChange, onReady, default
                 setDuration(player.duration); void sampleUploadedVideo();
               }
             }} onTimeUpdate={() => setPosition(video.current?.currentTime ?? 0)} onError={() => { if (source) setError('This video could not be decoded. Try MP4 or WebM.'); }}/>
-            <div className="camera-grid" style={{width:aspect >= 1 ? `${72/aspect}%` : '72%',height:aspect >= 1 ? '72%' : `${72*aspect}%`,gridTemplateColumns:`repeat(${size},1fr)`}} aria-hidden="true">{Array.from({length:size*size},(_,i) => <span key={i}/>)}</div>
+            {detectedCorners ? <svg className="camera-detection" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected cube face">{Array.from({length:size*size},(_,i)=>{
+              const x=i%size,y=Math.floor(i/size);
+              const points=[[x,y],[x+1,y],[x+1,y+1],[x,y+1]].map(([u,v])=>facePoint(detectedCorners,u/size,v/size));
+              return <polygon key={i} points={points.map(p=>`${p.x},${p.y}`).join(' ')}/>;
+            })}</svg> : <div className="camera-grid" style={{width:aspect >= 1 ? `${72/aspect}%` : '72%',height:aspect >= 1 ? '72%' : `${72*aspect}%`,gridTemplateColumns:`repeat(${size},1fr)`}} aria-hidden="true">{Array.from({length:size*size},(_,i) => <span key={i}/>)}</div>}
+            {!analyzing && <span className="camera-detection-status" role="status">{detectedCorners ? 'Face detected' : 'Show one whole face, with fingers off the stickers'}</span>}
             {recording && <span className="capture-countdown" role="status">{countdown}</span>}
           </div>
-          {reviewing ? <div className="capture-review" aria-label="Review captured colors">{faces.map((face,i) => <button key={i} onClick={() => retake(i)}><span>{labels[i]}</span><span className="camera-samples" style={{gridTemplateColumns:`repeat(${size},1fr)`}}>{face?.map((rgb,j) => <i key={j} style={{background:`rgb(${rgb.join(',')})`}}/>)}</span><small><RotateCcw size={12}/> Retake</small></button>)}</div> : !source && !live && !opening && <div className="capture-placeholder"><Camera size={38}/><h3>{error ? 'Camera unavailable' : 'Ready when you are'}</h3><button className="button" disabled={opening || disabled} onClick={() => void openCamera()}>Use camera</button>{upload}<p>Video: hold each face equally in U → R → F → D → L → B order. Up to two minutes.</p></div>}
+          {reviewing ? <div className="capture-review" aria-label="Review captured colors">{faces.map((face,i) => <button key={i} onClick={() => retake(i)}><span>{labels[i]}</span><span className="camera-samples" style={{gridTemplateColumns:`repeat(${size},1fr)`}}>{face?.map((rgb,j) => <i key={j} style={{background:`rgb(${rgb.join(',')})`}}/>)}</span><small><RotateCcw size={12}/> Retake</small></button>)}</div> : !source && !live && !opening && <div className="capture-placeholder"><Camera size={38}/><h3>{error ? 'Camera unavailable' : 'Ready when you are'}</h3><button className="button" disabled={opening || disabled} onClick={() => void openCamera()}>Use camera</button>{upload}<p>Video: show each face clearly and keep layers still. Face order and timing can vary for standard 3×3 and 5×5 cubes. Up to two minutes.</p></div>}
           {opening && <span className="capture-loading" role="status">Opening camera…</span>}
-          {analyzing && <span className="capture-loading" role="status">Reading six faces…</span>}
+          {analyzing && <span className="capture-loading" role="status">Finding clear faces… {analysisProgress}%</span>}
         </div>
         {error && <div className="capture-error" role="alert"><p>{error}</p>{!calibrating && <button className="text-button" onClick={() => beginCapture(true)}>Recalibrate</button>}<button className="icon-button" aria-label="Dismiss camera error" onClick={() => setError('')}><X size={17}/></button></div>}
         {!reviewing && source && duration > 0 && <label className="camera-seek">Video frame · {position.toFixed(1)}s<input aria-label="Choose video frame" type="range" min="0" max={duration} step="0.05" value={position} disabled={recording || analyzing} onChange={e => { const player=video.current!; player.pause(); player.currentTime=Number(e.target.value); setPosition(Number(e.target.value)); }}/></label>}

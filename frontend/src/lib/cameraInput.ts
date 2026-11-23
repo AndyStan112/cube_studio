@@ -1,5 +1,6 @@
 import type { CubeSize } from './cube';
-import { FACE_ORDER, faceletsToCubies } from './facelets';
+import { FACE_ORDER, faceletsToCubies, validateFacelets } from './facelets';
+import { stickerColor } from './cameraVision';
 
 export type RGB = [number, number, number];
 export type Calibration = { id: string; name: string; colors: RGB[] };
@@ -36,35 +37,74 @@ export function calibrationFromFaces(id: string, name: string, faces: (RGB[] | n
     throw Error('Two calibration colors look too similar. Check face order and lighting, then recapture.');
   return { id, name: name.trim() || 'My cube', colors };
 }
-export function matchScan(faces: (RGB[] | null)[], size: CubeSize, calibrations: Calibration[]): ScanMatch[] {
+export function matchScan(faces: (RGB[] | null)[], size: CubeSize, calibrations: Calibration[], allowFaceRotation = false): ScanMatch[] {
   if (faces.length !== 6 || faces.some(f => !f || f.length !== size * size)) return [];
   return calibrations.flatMap(calibration => {
+    let palette = calibration.colors;
+    let adaptive = false;
+    if (calibration.id === 'suggested') {
+      const groups: RGB[][] = Array.from({ length: 6 }, () => []);
+      for (const rgb of (faces as RGB[][]).flat()) {
+        const index = stickerColor(rgb);
+        if (index >= 0) groups[index].push(rgb);
+      }
+      const area = size * size;
+      const centersAgree = size % 2 === 0 || faces.every((face, i) => stickerColor(face![Math.floor(area / 2)]) === i);
+      // Learn the observed palette only when every color has enough evidence.
+      // Counts and physical constraints are still checked after classification.
+      if (centersAgree && groups.every(group => group.length >= area * .7 && group.length <= area * 1.3)) {
+        palette = groups.map(group => [0, 1, 2].map(channel =>
+          group.map(rgb => rgb[channel]).sort((a, b) => a - b)[Math.floor(group.length / 2)]) as RGB);
+        adaptive = true;
+      }
+    }
     let score = 0;
     const letters = (faces as RGB[][]).flat().map(rgb => {
-      const ranked = calibration.colors.map((c, i) => ({ i, distance: colorDistance(rgb, c) })).sort((a, b) => a.distance - b.distance);
+      const ranked = palette.map((c, i) => ({ i, distance: adaptive ? chromaticDistance(rgb, c) : colorDistance(rgb, c) })).sort((a, b) => a.distance - b.distance);
       if (ranked[0].distance > 42 || ranked[1].distance - ranked[0].distance < 3) return '?';
       score += ranked[0].distance;
       return FACE_ORDER[ranked[0].i];
     });
-    const value = letters.join('');
+    let value = letters.join('');
+    if (allowFaceRotation) {
+      const oriented = orientScan(value, size);
+      if (!oriented) return [];
+      value = oriented;
+    }
     try { faceletsToCubies(value, size); } catch { return []; }
     return [{ calibration, value, score: score / value.length }];
   }).sort((a, b) => a.score - b.score);
 }
-// The overlay uses the same centered square as this sampler. Median patches avoid sticker seams and small glare spots.
-export function sampleFace(image: ImageData, size: CubeSize): RGB[] {
-  const { width, height, data } = image;
-  const side = Math.min(width, height) * .72;
-  const left = (width - side) / 2, top = (height - side) / 2;
-  const radius = Math.max(1, Math.floor(side / size * .12));
-  return Array.from({ length: size * size }, (_, i) => {
-    const x = Math.floor(left + (i % size + .5) * side / size);
-    const y = Math.floor(top + (Math.floor(i / size) + .5) * side / size);
-    const channels: number[][] = [[], [], []];
-    for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) {
-      const offset = ((y + dy) * width + x + dx) * 4;
-      channels.forEach((values, c) => values.push(data[offset + c]));
+// Normalize exposure before comparing chroma; a shaded orange remains orange.
+function chromaticDistance(a: RGB, b: RGB) {
+  const normalize = (rgb: RGB) => rgb.map(v => v / Math.max(...rgb, 1) * 220) as RGB;
+  return colorDistance(normalize(a), normalize(b));
+}
+function rotateFace(face: string, size: CubeSize) {
+  return [...face].map((_, i) => face[(size - 1 - i % size) * size + Math.floor(i / size)]).join('');
+}
+/** Keep a valid recorded orientation; otherwise recover only an unambiguous roll. */
+export function orientScan(value: string, size: CubeSize): string | null {
+  if (value.includes('?') || value.length !== 6 * size * size) return null;
+  try { validateFacelets(value, size); return value; } catch { /* Try face rotations. */ }
+  const variants = Array.from({ length: 6 }, (_, i) => {
+    let face = value.slice(i * size * size, (i + 1) * size * size);
+    const turns = new Set<string>();
+    for (let j = 0; j < 4; j++) {
+      turns.add(face);
+      face = rotateFace(face, size);
     }
-    return channels.map(values => values.sort((a, b) => a - b)[Math.floor(values.length / 2)]) as RGB;
+    return [...turns];
   });
+  const valid = new Set<string>();
+  function visit(index: number, prefix: string) {
+    if (valid.size > 1) return;
+    if (index === 6) {
+      try { validateFacelets(prefix, size); valid.add(prefix); } catch { /* Invalid physical orientation. */ }
+      return;
+    }
+    for (const face of variants[index]) visit(index + 1, prefix + face);
+  }
+  visit(0, '');
+  return valid.size === 1 ? [...valid][0] : null;
 }

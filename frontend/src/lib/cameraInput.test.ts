@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, solved, type CubeSize } from './cube';
 import { cubiesToFacelets, FACE_ORDER, solvedFacelets } from './facelets';
-import { calibrationFromFaces, isCalibration, matchScan, sampleFace, suggestedCalibration, type Calibration, type RGB } from './cameraInput';
+import { calibrationFromFaces, isCalibration, matchScan, suggestedCalibration, type Calibration, type RGB } from './cameraInput';
 
 function samples(value: string, size: CubeSize, profile = suggestedCalibration): RGB[][] {
   return Array.from({ length: 6 }, (_, f) => [...value.slice(f * size * size, (f + 1) * size * size)].map(letter => [...profile.colors[FACE_ORDER.indexOf(letter)]] as RGB));
@@ -49,13 +49,5 @@ describe('camera cube extraction', () => {
   it('ignores malformed stored calibrations', () => {
     expect(isCalibration(suggestedCalibration)).toBe(true);
     for (const bad of [null, {}, { ...suggestedCalibration, colors: [] }, { ...suggestedCalibration, colors: Array(6).fill([NaN, 4, 5]) }]) expect(isCalibration(bad)).toBe(false);
-  });
-  it('samples portrait and landscape video and tolerates a glare pixel', () => {
-    for (const [width, height] of [[240, 400], [400, 240]]) {
-      const data = new Uint8ClampedArray(width * height * 4);
-      for (let i = 0; i < data.length; i += 4) data.set([30, 150, 70, 255], i);
-      data.set([255, 255, 255, 255], (height / 2 * width + width / 2) * 4);
-      expect(sampleFace({ width, height, data } as ImageData, 3)).toEqual(Array(9).fill([30, 150, 70]));
-    }
   });
 });

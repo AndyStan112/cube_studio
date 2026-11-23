@@ -12,3 +12,5 @@ __pycache__/
 
 # Local source register for the final project bibliography.
 /docs/BIBLIOGRAPHY.local.md
+# contains lcoal files for testing stuf in development only
+local
