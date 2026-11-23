@@ -6,6 +6,8 @@ export type FaceDetection = {
   corners: Point[];
   colors: RGB[];
   quality: number;
+  // Middle stickers on the neighboring sides, in top/right/bottom/left order.
+  neighbors?: (RGB | null)[];
 };
 export type PixelImage = Pick<ImageData, "width" | "height" | "data">;
 
@@ -88,6 +90,27 @@ function imagePixel(image: PixelImage, point: Point): RGB {
   const y = Math.max(0, Math.min(image.height - 1, Math.round(point.y)));
   const offset = (y * image.width + x) * 4;
   return [image.data[offset], image.data[offset + 1], image.data[offset + 2]];
+}
+function neighboringStickers(image: PixelImage, corners: Point[], size: CubeSize) {
+  return [0, 1, 2, 3].map((side): RGB | null => {
+    const samples: RGB[] = [];
+    for (const along of [-0.12, 0, 0.12])
+      for (const depth of [0.1, 0.16, 0.22]) {
+        const middle = 0.5 + along / size, outside = depth / size;
+        const point = facePoint(corners,
+          side === 1 ? 1 + outside : side === 3 ? -outside : middle,
+          side === 0 ? -outside : side === 2 ? 1 + outside : middle);
+        if (point.x < 0 || point.y < 0 || point.x >= image.width || point.y >= image.height) return null;
+        samples.push(imagePixel(image, point));
+      }
+    // Wood, hands and shadows are not orientation evidence. Require a uniform
+    // patch of cube plastic, rather than assigning every outside pixel a color.
+    if (samples.filter(rgb => cubePixel(...rgb) ||
+      (Math.max(...rgb) > 60 && (Math.max(...rgb) - Math.min(...rgb)) / Math.max(...rgb) > 0.68)).length < 8) return null;
+    const labels = samples.map(stickerColor);
+    if (labels[0] < 0 || labels.some(label => label !== labels[0])) return null;
+    return [0, 1, 2].map(c => samples.map(rgb => rgb[c]).sort((a,b) => a-b)[4]) as RGB;
+  });
 }
 const brightness = (rgb: RGB) => (rgb[0] + rgb[1] + rgb[2]) / 3;
 function patchStability(
@@ -544,6 +567,10 @@ export function detectFace(
     }
   }
   for (const corners of edgeGridCandidates(image, size)) consider(corners);
+  if (best) {
+    const face = best as FaceDetection;
+    face.neighbors = neighboringStickers(image, face.corners, size);
+  }
   return best;
 }
 

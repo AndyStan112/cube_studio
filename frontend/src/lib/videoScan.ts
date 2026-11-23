@@ -18,6 +18,7 @@ export type TrackedFace = {
   quality: number;
   time: number;
   identity: number | null;
+  neighbors?: (RGB | null)[];
 };
 export type VideoScanSnapshot = {
   faces: TrackedFace[];
@@ -67,6 +68,8 @@ export class VideoScanSession {
     last: number;
     frames: number;
   } | null = null;
+  private evidence = new Map<string, {face: TrackedFace; time: number}[]>();
+  private lastTime = -Infinity;
   private revision = 0;
   private resultRevision = -1;
   private result: ScanMatch | null = null;
@@ -94,6 +97,33 @@ export class VideoScanSession {
     return this.size % 2
       ? a.identity === b.identity
       : a.pattern === b.pattern || closeColors(a.colors, b.colors, this.size);
+  }
+  private withContext(best: TrackedFace, observations: TrackedFace[], existing?: TrackedFace): TrackedFace {
+    if (this.size % 2 === 0) return best;
+    const target = best.colors.map(rgb => this.classify(rgb)).join(",");
+    const votes: RGB[][] = Array.from({length: 4}, () => []);
+    for (const source of [...observations, ...(existing?.pattern === best.pattern ? [existing] : [])]) {
+      let turned = source.colors;
+      const turns: number[] = [];
+      for (let turn = 0; turn < 4; turn++) {
+        if (turned.map(rgb => this.classify(rgb)).join(",") === target) turns.push(turn);
+        turned = rotateColors(turned, this.size);
+      }
+      // A symmetric pattern cannot transfer its side evidence between images
+      // without tracking camera pose. Its own selected view is still usable.
+      const turn = source === best ? 0 : turns.length === 1 ? turns[0] : null;
+      if (turn === null) continue;
+      source.neighbors?.forEach((rgb, side) => {
+        if (rgb) votes[(side + turn) % 4].push(rgb);
+      });
+    }
+    const neighbors = votes.map(samples => {
+      const groups = Array.from({length: 6}, (_, label) => samples.filter(rgb => this.classify(rgb) === label))
+        .sort((a,b) => b.length - a.length);
+      if (!groups[0].length || groups[0].length === groups[1].length) return null;
+      return [0,1,2].map(channel => groups[0].map(rgb => rgb[channel]).sort((a,b) => a-b)[Math.floor(groups[0].length / 2)]) as RGB;
+    });
+    return {...best, neighbors};
   }
   accepts(detection: FaceDetection): boolean {
     if (this.size % 2) return true;
@@ -149,25 +179,22 @@ export class VideoScanSession {
       quality: detection.quality,
       time,
       identity,
+      neighbors: detection.neighbors,
     };
     const existing = this.faces.find((face) => this.same(face, frame));
-    if (
-      !this.candidate ||
-      !(
-        this.same(this.candidate.face, frame) &&
-        (this.candidate.face.pattern === frame.pattern ||
-          closeColors(this.candidate.face.colors, frame.colors, this.size))
-      ) ||
-      time - this.candidate.last > 0.6 ||
-      time < this.candidate.last
-    ) {
-      this.candidate = { face: frame, first: time, last: time, frames: 1 };
-    } else if (time > this.candidate.last + 0.04) {
-      this.candidate.frames++;
-      this.candidate.last = time;
-      if (frame.quality > this.candidate.face.quality)
-        this.candidate.face = frame;
+    if (time < this.lastTime) this.evidence.clear();
+    this.lastTime = time;
+    for (const [key, observations] of this.evidence) {
+      const recent = observations.filter(observation => time - observation.time <= 1.3);
+      if (recent.length) this.evidence.set(key, recent);
+      else this.evidence.delete(key);
     }
+    const key = `${frame.identity}:${frame.pattern}`;
+    const observations = this.evidence.get(key) ?? [];
+    if (!observations.length || time > observations.at(-1)!.time + 0.04) observations.push({face: frame, time});
+    this.evidence.set(key, observations);
+    const best = observations.reduce((a,b) => a.face.quality > b.face.quality ? a : b).face;
+    this.candidate = {face: this.withContext(best, observations.map(observation => observation.face), existing), first: observations[0].time, last: time, frames: observations.length};
     const progress = Math.min(
       1,
       (time - this.candidate.first) / 0.3,
@@ -175,12 +202,16 @@ export class VideoScanSession {
     );
     if (progress < 1)
       return snapshot(
-        existing ? "known" : "holding",
+        existing && existing.pattern === frame.pattern ? "known" : "holding",
         existing?.id ?? null,
         progress,
       );
     if (existing) {
-      if (this.candidate.face.quality > existing.quality + 0.015) {
+      const moreContext = this.size % 2 && this.candidate.face.quality >= 0.65 &&
+        this.candidate.face.neighbors?.some((rgb, side) => rgb &&
+          (!existing.neighbors?.[side] || this.classify(rgb) !== this.classify(existing.neighbors[side]!)));
+      if (this.candidate.face.quality > existing.quality + 0.015 ||
+          moreContext || (this.size % 2 && this.candidate.face.pattern !== existing.pattern && this.candidate.face.quality >= 0.65)) {
         Object.assign(existing, this.candidate.face, { id: existing.id });
         this.revision++;
       }
@@ -221,6 +252,7 @@ export class VideoScanSession {
           this.size,
           this.calibrations,
           true,
+          this.faces.map(face => face.neighbors ?? []),
         )[0] ?? null;
       this.resultRevision = this.revision;
     }

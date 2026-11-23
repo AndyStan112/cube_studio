@@ -58,6 +58,8 @@ After six faces form a valid state, the video freezes and **Use cube** updates t
 
 Detection checks grid boundaries and sticker consistency independently of camera saturation. Colors are learned from the scan; existing color profiles linked in Settings remain supported. Close color alternatives are resolved against sticker counts and physical cube constraints. All processing stays on the device; recordings are not sent to the server.
 
+For odd cubes, visible neighboring sticker rows help resolve face rotations when the six face patterns admit multiple legal states. Several supporting strips are required; one outside patch cannot choose an orientation. The tracker collects repeated readings within a short rolling window, tolerates brief bad crops, and permits stable recaptures to replace an earlier mistaken pattern.
+
 Frontend tests cover real photo pixels, live-camera color ranges, continuous stability and duplicate counting, unordered scrambled 4×4 reconstruction, and invalid cube states. Replay the original local video fixtures through the full tracker with:
 
 ```sh

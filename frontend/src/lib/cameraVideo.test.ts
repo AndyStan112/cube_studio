@@ -20,6 +20,7 @@ const filenames = [
   "WhatsApp Video 2026-11-23 at 14.55.31.mp4",
   "WhatsApp Video 2026-11-23 at 14.55.36 (1).mp4",
   "WhatsApp Video 2026-11-23 at 14.55.36.mp4",
+  "WhatsApp Video 2026-11-24 at 00.10.39.mp4",
 ];
 describe.skipIf(!directory)(
   "handheld video recognition (requires local videos and ffmpeg)",
@@ -50,6 +51,9 @@ describe.skipIf(!directory)(
         );
         const frames: VideoFace[] = [];
         const session = new VideoScanSession(size);
+        const expected = index === 4
+          ? "LLFUUFLLFUUURRRUUUFFRFFDFFRRRBDDBRRBDLDDLDDLDLBBUBBLBB"
+          : recordings[index].expected;
         for (
           let offset = 0;
           offset + frameBytes <= decoded.length;
@@ -64,6 +68,9 @@ describe.skipIf(!directory)(
             session.accepts(face),
           );
           session.observe(detection, offset / frameBytes / 6);
+          const interim = session.match();
+          if (interim) expect(size % 2 ? interim.value : cubeOrientationKey(interim.value, size))
+            .toBe(size % 2 ? expected : cubeOrientationKey(expected, size));
           if (detection)
             frames.push({
               ...detection,
@@ -71,10 +78,12 @@ describe.skipIf(!directory)(
               time: offset / frameBytes / 6,
             });
         }
-        const { faces } = selectVideoFaces(frames, size);
-        expect(faces.every(Boolean)).toBe(true);
-        const matches = matchScan(faces, size, [suggestedCalibration]);
-        expect(matches[0]?.value).toBe(recordings[index].expected);
+        if (index < 4) {
+          const { faces } = selectVideoFaces(frames, size);
+          expect(faces.every(Boolean)).toBe(true);
+          const matches = matchScan(faces, size, [suggestedCalibration]);
+          expect(matches[0]?.value).toBe(expected);
+        }
         expect(session.snapshot().faces).toHaveLength(6);
         const tracked = session.match();
         expect(tracked).not.toBeNull();
@@ -82,8 +91,8 @@ describe.skipIf(!directory)(
           size % 2 ? tracked!.value : cubeOrientationKey(tracked!.value, size),
         ).toBe(
           size % 2
-            ? recordings[index].expected
-            : cubeOrientationKey(recordings[index].expected, size),
+            ? expected
+            : cubeOrientationKey(expected, size),
         );
       }, 30000);
     }

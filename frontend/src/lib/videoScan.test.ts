@@ -42,6 +42,36 @@ describe("continuous video scan", () => {
       );
     expect(session.snapshot().faces).toHaveLength(0);
   });
+  it("requires fresh evidence rather than accumulating isolated sightings indefinitely", () => {
+    const session = new VideoScanSession(3);
+    for (const time of [0, 1.4, 2.8]) session.observe({corners: [], colors: colors("U".repeat(9)), quality: 0.9}, time);
+    expect(session.snapshot().faces).toHaveLength(0);
+  });
+  it("shows holding for a changed crop of an already scanned center, then allows a clearer stable recapture", () => {
+    const session = new VideoScanSession(3);
+    present(session, "FUUUUUUUU", 0);
+    const detection = {corners: [], colors: colors("U".repeat(9)), quality: 0.75};
+    expect(session.observe(detection, 1).status).toBe("holding");
+    session.observe(detection, 1.17); session.observe(detection, 1.34);
+    expect(session.snapshot().faces[0].pattern).toBe("U".repeat(9));
+  });
+  it("retains a stable view with more neighboring-side evidence even when its geometry score is lower", () => {
+    const session = new VideoScanSession(3);
+    present(session, "U".repeat(9), 0);
+    const detection = {corners: [], colors: colors("U".repeat(9)), quality: 0.75,
+      neighbors: [null, null, suggestedCalibration.colors[2], null]};
+    for (const time of [2, 2.17, 2.34]) session.observe(detection, time);
+    expect(session.snapshot().faces[0].neighbors?.[2]).toEqual(suggestedCalibration.colors[2]);
+  });
+  it("combines neighboring evidence from different frames instead of discarding it with the best grid score", () => {
+    const session = new VideoScanSession(3);
+    const pattern = "FLLFUUFLL";
+    session.observe({corners: [], colors: colors(pattern), quality: 0.95}, 0);
+    for (const time of [0.17, 0.34]) session.observe({corners: [], colors: colors(pattern), quality: 0.8,
+      neighbors: [null, null, suggestedCalibration.colors[5], null]}, time);
+    expect(session.snapshot().faces[0].quality).toBe(0.95);
+    expect(session.snapshot().faces[0].neighbors?.[2]).toEqual(suggestedCalibration.colors[5]);
+  });
   it("identifies odd faces in any order and reports the six fixed identities", () => {
     const session = new VideoScanSession(3);
     [..."BDFURL"].forEach((c, i) => present(session, c.repeat(9), i));

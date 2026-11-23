@@ -250,6 +250,7 @@ export default function CameraInput({
       revision: state.revision,
       size,
       faces: state.faces.map((face) => face.colors),
+      neighbors: state.faces.map((face) => face.neighbors ?? []),
       calibrations: session.current.calibrations,
     });
   }

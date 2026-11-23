@@ -8,11 +8,12 @@ self.onmessage = (
     size: CubeSize;
     faces: RGB[][];
     calibrations: Calibration[];
+    neighbors?: (RGB | null)[][];
   }>,
 ) => {
-  const { generation, revision, size, faces, calibrations } = event.data;
+  const { generation, revision, size, faces, calibrations, neighbors } = event.data;
   try {
-    const match = matchScan(faces, size, calibrations, true)[0] ?? null;
+    const match = matchScan(faces, size, calibrations, true, neighbors)[0] ?? null;
     self.postMessage({ generation, revision, match });
   } catch {
     self.postMessage({ generation, revision, match: null });

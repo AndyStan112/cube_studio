@@ -1,5 +1,5 @@
 import type { CubeSize } from "./cube";
-import { FACE_ORDER, faceletsToCubies, validateFacelets } from "./facelets";
+import { FACE_ORDER, faceletsToCubies, validateFacelets, geometryFor } from "./facelets";
 import { stickerColor } from "./cameraVision";
 import { assembleEvenScan } from "./scanAssembly";
 
@@ -88,6 +88,7 @@ export function matchScan(
   size: CubeSize,
   calibrations: Calibration[],
   unorderedEvenFaces = false,
+  neighbors: (RGB | null)[][] = [],
 ): ScanMatch[] {
   if (faces.length !== 6 || faces.some((f) => !f || f.length !== size * size))
     return [];
@@ -149,7 +150,8 @@ export function matchScan(
             candidate.distance - ranked[0].distance < 3,
         );
       });
-      const resolved = resolveColorReadings(readings, size, unorderedEvenFaces);
+      const orderedNeighbors = scanFaces.map(face => neighbors[faces.indexOf(face)] ?? []);
+      const resolved = resolveColorReadings(readings, size, unorderedEvenFaces, orderedNeighbors);
       if (!resolved) return [];
       // Preserve profile ranking when two standard palettes learn the same scan.
       const profileFit = adaptive
@@ -202,6 +204,7 @@ function resolveColorReadings(
   readings: ColorChoice[][],
   size: CubeSize,
   unorderedEvenFaces = false,
+  neighbors: (RGB | null)[][] = [],
 ): { value: string; score: number } | null {
   const area = size * size;
   const choices = readings.map((reading, index) =>
@@ -253,7 +256,7 @@ function resolveColorReadings(
         exhausted = true;
         return;
       }
-      const value = unorderedEvenFaces && size % 2 === 0 ? assembleEvenScan(letters.join(""), size) : orientScan(letters.join(""), size);
+      const value = unorderedEvenFaces && size % 2 === 0 ? assembleEvenScan(letters.join(""), size) : orientScan(letters.join(""), size, neighbors);
       if (!value) return;
       try {
         faceletsToCubies(value, size);
@@ -288,37 +291,66 @@ function rotateFace(face: string, size: CubeSize) {
     .join("");
 }
 /** Keep a valid recorded orientation; otherwise recover only an unambiguous roll. */
-export function orientScan(value: string, size: CubeSize): string | null {
+export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null)[][] = []): string | null {
   if (value.includes("?") || value.length !== 6 * size * size) return null;
+  const hasNeighbors = size % 2 && neighbors.some(row => row.some(Boolean));
   try {
     validateFacelets(value, size);
-    return value;
+    if (!hasNeighbors) return value;
   } catch {
     /* Try face rotations. */
   }
   const variants = Array.from({ length: 6 }, (_, i) => {
     let face = value.slice(i * size * size, (i + 1) * size * size);
-    const turns = new Set<string>();
+    const turns = new Map<string, number[]>();
     for (let j = 0; j < 4; j++) {
-      turns.add(face);
+      turns.set(face, [...(turns.get(face) ?? []), j]);
       face = rotateFace(face, size);
     }
     return [...turns];
   });
   const valid = new Set<string>();
+  const scores = new Map<string, number>();
+  const geometry = hasNeighbors ? geometryFor(size) : [];
+  const area = size * size, middle = Math.floor(size / 2);
+  const boundaryCells = [middle, middle * size + size - 1, (size - 1) * size + middle, middle * size];
+  const mates = hasNeighbors ? [...FACE_ORDER].map((_, face) => boundaryCells.map(cell => {
+    const sticker = geometry[face * area + cell];
+    return geometry.findIndex((other, index) => Math.floor(index / area) !== face && other.position.distanceToSquared(sticker.position) < 0.001);
+  })) : [];
+  const rolls: number[][] = [];
   function visit(index: number, prefix: string) {
-    if (valid.size > 1) return;
+    if (!hasNeighbors && valid.size > 1) return;
     if (index === 6) {
       try {
         validateFacelets(prefix, size);
         valid.add(prefix);
+        if (hasNeighbors) {
+          let score = 0;
+          for (let face = 0; face < 6; face++) {
+            score += Math.max(...rolls[face].map(turn => (neighbors[face] ?? []).reduce((sum, rgb, side) => {
+              if (!rgb) return sum;
+              const label = stickerColor(rgb);
+              if (label < 0) return sum;
+              return sum + (prefix[mates[face][(side + turn) % 4]] === FACE_ORDER[label] ? 1 : -1);
+            }, 0)));
+          }
+          scores.set(prefix, score);
+        }
       } catch {
         /* Invalid physical orientation. */
       }
       return;
     }
-    for (const face of variants[index]) visit(index + 1, prefix + face);
+    for (const [face, turns] of variants[index]) {
+      rolls[index] = turns;
+      visit(index + 1, prefix + face);
+    }
   }
   visit(0, "");
-  return valid.size === 1 ? [...valid][0] : null;
+  if (valid.size === 1) return [...valid][0];
+  const ranked = [...scores].sort((a,b) => b[1] - a[1]);
+  // Require multiple supporting strips and a clear winner. A single outside
+  // patch must never decide between otherwise legal cube states.
+  return ranked.length > 1 && ranked[0][1] >= 2 && ranked[0][1] - ranked[1][1] >= 2 ? ranked[0][0] : null;
 }
