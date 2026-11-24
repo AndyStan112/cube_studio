@@ -4,6 +4,8 @@ import {
   Check,
   LoaderCircle,
   RotateCcw,
+  Rotate3D,
+  Box,
   Upload,
   VideoOff,
   X,
@@ -17,6 +19,7 @@ import {
   suggestedCalibration,
   type Calibration,
   type ScanMatch,
+  type ScanIssue,
 } from "../lib/cameraInput";
 import { detectFace, facePoint, type Point } from "../lib/cameraVision";
 import { VideoScanSession, type VideoScanSnapshot } from "../lib/videoScan";
@@ -129,6 +132,8 @@ export default function CameraInput({
   const [match, setMatch] = useState<ScanMatch | null>(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState("");
+  const [issue, setIssue] = useState<ScanIssue | null>(null);
+  const [sideHints, setSideHints] = useState<number[]>([]);
   const [aspect, setAspect] = useState(4 / 3),
     [viewport, setViewport] = useState({ width: 0, height: 0 }),
     [progress, setProgress] = useState(0);
@@ -194,6 +199,8 @@ export default function CameraInput({
     setSnapshot(session.current.snapshot());
     setCorners(null);
     setMatch(null);
+    setIssue(null);
+    setSideHints([]);
     setPreview("");
     setError("");
     setMessage("");
@@ -224,6 +231,7 @@ export default function CameraInput({
           generation: number;
           revision: number;
           match: ScanMatch | null;
+          issue?: ScanIssue;
         };
         if (
           result.generation !== generation.current ||
@@ -233,13 +241,12 @@ export default function CameraInput({
         pending.current = false;
         if (result.match) {
           setMatch(result.match);
+          setIssue(null);
           setError("");
           transition("ready");
           freeze();
         } else {
-          setError(
-            "The six readings do not yet give a unique valid cube. Keep layers still and show clear faces, or start over.",
-          );
+          setIssue(result.issue ?? {kind: "colors", faces: [0, 1, 2, 3, 4, 5]});
           if (source.current === "file" && ended.current)
             transition("incomplete");
         }
@@ -297,6 +304,7 @@ export default function CameraInput({
         y: (p.y / height) * 100,
       })) ?? null,
     );
+    setSideHints(detection?.neighbors?.flatMap((rgb, side) => rgb ? [side] : []) ?? []);
     const previous = session.current.snapshot().revision;
     const observed = session.current.observe(detection, time);
     diagnostics.current?.frame(frame, time, {actualTime:player.currentTime,width,height,detection,snapshot:observed.revision !== previous ? observed : {current:observed.current,revision:observed.revision,status:observed.status,progress:observed.progress},phase:phaseRef.current}, observed.revision !== previous);
@@ -477,6 +485,8 @@ export default function CameraInput({
     );
     setSnapshot(session.current.snapshot());
     setMatch(null);
+    setIssue(null);
+    setSideHints([]);
     setCorners(null);
     setPreview("");
     setMessage("");
@@ -492,6 +502,8 @@ export default function CameraInput({
   );
   const recognized =
     snapshot.status === "recognized" || snapshot.status === "known";
+  const targetFace = issue?.faces[0];
+  const targetName = targetFace === undefined ? "this" : size % 2 ? names[targetFace].toLowerCase() : `number ${targetFace + 1}`;
   const status =
     phase === "ready"
       ? "Cube checked"
@@ -499,6 +511,8 @@ export default function CameraInput({
         ? "Checking cube…"
         : phase === "opening"
           ? "Opening camera…"
+          : issue && complete
+            ? issue.kind === "orientation" ? `Tilt the ${targetName} face slightly` : "Rescan the marked faces away from glare"
           : snapshot.status === "holding"
             ? "Hold steady"
             : recognized
@@ -513,8 +527,16 @@ export default function CameraInput({
   const remaining =
     phase === "error"
       ? "Choose a video or retry the camera"
+      : issue && complete && phase !== "ready"
+        ? issue.kind === "orientation"
+          ? "Keep all four corners and an adjoining side visible"
+          : "Keep all four corners visible"
       : complete
         ? "All six faces scanned"
+        : recognized && sideHints.length
+          ? "Adjoining side seen · turn to another face"
+        : recognized
+          ? "Tilt slightly to show an adjoining side"
         : size % 2 && missing.length <= 2
           ? `Still needed: ${missing.join(" and ").toLowerCase()}`
           : `${6 - count} faces left · turn the whole cube`;
@@ -628,9 +650,16 @@ export default function CameraInput({
                       />
                     );
                   })}
+                  {sideHints.map(side => {
+                    const start = [[0.2, -0.05], [1.05, 0.2], [0.8, 1.05], [-0.05, 0.8]][side];
+                    const end = [[0.8, -0.05], [1.05, 0.8], [0.2, 1.05], [-0.05, 0.2]][side];
+                    const a = facePoint(corners, ...start as [number, number]);
+                    const b = facePoint(corners, ...end as [number, number]);
+                    return <line key={side} className="video-side-evidence" x1={a.x} y1={a.y} x2={b.x} y2={b.y} />;
+                  })}
                 </svg>
               )}
-              {recognized && center && (
+              {recognized && center && !issue && (
                 <span
                   className="video-face-check"
                   style={{ left: `${center.x}%`, top: `${center.y}%` }}
@@ -640,10 +669,12 @@ export default function CameraInput({
               )}
               {phase !== "opening" && phase !== "error" && (
                 <div
-                  className={`video-scan-status ${recognized || phase === "ready" ? "is-recognized" : ""}`}
+                  className={`video-scan-status ${issue && complete ? "needs-attention" : recognized || phase === "ready" ? "is-recognized" : ""}`}
                   role="status"
                 >
-                  {phase === "checking" ? (
+                  {issue && complete ? (
+                    <Rotate3D size={17} />
+                  ) : phase === "checking" ? (
                     <LoaderCircle size={17} className="scan-spinner" />
                   ) : recognized || phase === "ready" ? (
                     <Check size={17} />
@@ -687,11 +718,15 @@ export default function CameraInput({
                   size % 2
                     ? snapshot.faces.find((face) => face.identity === i)
                     : snapshot.faces[i];
+                const needsAttention = phase !== "ready" && issue &&
+                  (issue.kind === "orientation" ? targetFace === i : issue.faces.includes(i));
+                const hasSide = face?.neighbors?.some(Boolean);
                 return (
                   <li
                     key={i}
                     aria-label={`${size % 2 ? names[i] : `Face ${i + 1}`}: ${face ? "scanned" : "not scanned"}`}
-                    className={face ? "is-scanned" : ""}
+                    aria-description={needsAttention ? issue.kind === "orientation" ? "Tilt this face to show an adjoining side" : "Rescan this face away from glare" : hasSide ? "Adjoining side captured" : undefined}
+                    className={`${face ? "is-scanned" : ""}${needsAttention ? " needs-attention" : ""}`}
                   >
                     <span
                       className="video-face-thumb"
@@ -713,8 +748,9 @@ export default function CameraInput({
                         </span>
                       )}
                       {face && (
-                        <Check className="video-thumb-check" size={15} />
+                        needsAttention ? <Rotate3D className="video-thumb-check" size={15} /> : <Check className="video-thumb-check" size={15} />
                       )}
+                      {hasSide && <Box className="video-thumb-side" size={13} aria-label="Adjoining side captured" />}
                     </span>
                     <small>{size % 2 ? names[i] : `Face ${i + 1}`}</small>
                   </li>

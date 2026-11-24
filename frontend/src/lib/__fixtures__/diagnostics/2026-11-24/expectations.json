@@ -1,0 +1,28 @@
+{
+  "sourceReport": "6b05c5850b824d69d7fbb199",
+  "patterns": [
+    "FRFUUUFRF",
+    "DDDFRFDDD",
+    "LLLFFFLLL",
+    "BDBLDLBDB",
+    "UUUBLBUUU",
+    "RRRBBBRRR"
+  ],
+  "pixels": {
+    "db87c419-frame-003.rgb.gz": "FRFUUUFRF",
+    "db87c419-frame-006.rgb.gz": "RRRBBBRRR",
+    "db87c419-frame-009.rgb.gz": "BDBLDLBDB",
+    "db87c419-frame-012.rgb.gz": "LLLFFFLLL",
+    "db87c419-frame-023.rgb.gz": "UUUBLBUUU",
+    "db87c419-frame-027.rgb.gz": "DDDFRFDDD"
+  },
+  "scans": {
+    "db87c419-98c7-4908-8b6e-b86154bb5b66": "needs-orientation",
+    "fde91ff7-fb35-4248-abfa-ba15093e44e2": "needs-orientation"
+  },
+  "uncertainCells": {
+    "db87c419-frame-009.rgb.gz": [
+      2
+    ]
+  }
+}

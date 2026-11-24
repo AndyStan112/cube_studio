@@ -7,7 +7,7 @@ import {
   selectVideoFaces,
   type VideoFace,
 } from "./cameraVision";
-import { matchScan, suggestedCalibration } from "./cameraInput";
+import { matchScan, scanIssue, suggestedCalibration } from "./cameraInput";
 import recordings from "./__fixtures__/camera-scans";
 import { VideoScanSession } from "./videoScan";
 import { cubeOrientationKey } from "./scanAssembly";
@@ -86,6 +86,17 @@ describe.skipIf(!directory)(
         }
         expect(session.snapshot().faces).toHaveLength(6);
         const tracked = session.match();
+        if (index === 3) {
+          // This partial pattern admits multiple legal rolls. Previously the
+          // wood/neutral background supplied spurious white orientation votes.
+          // The known-order selector above still reads its colors correctly;
+          // unordered tracking must ask for an angled view instead of guessing.
+          expect(tracked).toBeNull();
+          const faces = session.snapshot().faces;
+          expect(scanIssue(faces.map(face => face.colors), size, [suggestedCalibration],
+            faces.map(face => face.neighbors ?? [])).kind).toBe("orientation");
+          return;
+        }
         expect(tracked).not.toBeNull();
         expect(
           size % 2 ? tracked!.value : cubeOrientationKey(tracked!.value, size),

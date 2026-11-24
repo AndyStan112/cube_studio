@@ -10,6 +10,7 @@ export type ScanMatch = {
   value: string;
   score: number;
 };
+export type ScanIssue = { kind: "orientation" | "colors"; faces: number[] };
 export const calibrationKey = "cube-studio-camera-calibrations-v1";
 export const suggestedCalibration: Calibration = {
   id: "suggested",
@@ -256,7 +257,7 @@ function resolveColorReadings(
         exhausted = true;
         return;
       }
-      const value = unorderedEvenFaces && size % 2 === 0 ? assembleEvenScan(letters.join(""), size) : orientScan(letters.join(""), size, neighbors);
+      const value = unorderedEvenFaces && size % 2 === 0 ? assembleEvenScan(letters.join(""), size) : orientScan(letters.join(""), size, neighbors, unorderedEvenFaces);
       if (!value) return;
       try {
         faceletsToCubies(value, size);
@@ -283,7 +284,16 @@ function resolveColorReadings(
 function chromaticDistance(a: RGB, b: RGB) {
   const normalize = (rgb: RGB) =>
     rgb.map((v) => (v / Math.max(...rgb, 1)) * 220) as RGB;
-  return colorDistance(normalize(a), normalize(b));
+  const distance = colorDistance(normalize(a), normalize(b));
+  const saturation = (rgb: RGB) => (Math.max(...rgb) - Math.min(...rgb)) / Math.max(1, ...rgb);
+  // Recover neutral glare only when both readings still agree on a chromatic
+  // color. Do not erase saturation globally: warm white/red/orange need it.
+  if (distance > 35 && stickerColor(a) !== 3 && stickerColor(a) === stickerColor(b) &&
+      saturation(b) - saturation(a) > 0.25) {
+    const withoutGlare = (rgb: RGB) => normalize(rgb.map(v => v - Math.min(...rgb)) as RGB);
+    return Math.min(distance, colorDistance(withoutGlare(a), withoutGlare(b)) + 8);
+  }
+  return distance;
 }
 function rotateFace(face: string, size: CubeSize) {
   return [...face]
@@ -291,12 +301,12 @@ function rotateFace(face: string, size: CubeSize) {
     .join("");
 }
 /** Keep a valid recorded orientation; otherwise recover only an unambiguous roll. */
-export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null)[][] = []): string | null {
+export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null)[][] = [], requireUnique = false, unresolvedFaces?: number[]): string | null {
   if (value.includes("?") || value.length !== 6 * size * size) return null;
   const hasNeighbors = size % 2 && neighbors.some(row => row.some(Boolean));
   try {
     validateFacelets(value, size);
-    if (!hasNeighbors) return value;
+    if (!hasNeighbors && !requireUnique) return value;
   } catch {
     /* Try face rotations. */
   }
@@ -320,7 +330,7 @@ export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null
   })) : [];
   const rolls: number[][] = [];
   function visit(index: number, prefix: string) {
-    if (!hasNeighbors && valid.size > 1) return;
+    if (!hasNeighbors && valid.size > 1 && !unresolvedFaces) return;
     if (index === 6) {
       try {
         validateFacelets(prefix, size);
@@ -354,5 +364,41 @@ export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null
   const ranked = [...scores].sort((a,b) => b[1] - a[1]);
   // Require multiple supporting strips and a clear winner. A single outside
   // patch must never decide between otherwise legal cube states.
-  return ranked.length > 1 && ranked[0][1] >= 2 && ranked[0][1] - ranked[1][1] >= 2 ? ranked[0][0] : null;
+  if (ranked.length > 1 && ranked[0][1] >= 2 && ranked[0][1] - ranked[1][1] >= 2) return ranked[0][0];
+  if (unresolvedFaces && valid.size > 1) {
+    const alternatives = [...valid];
+    unresolvedFaces.push(...Array.from({length: 6}, (_, face) => ({face,
+      variants: new Set(alternatives.map(state => state.slice(face * area, (face + 1) * area))).size,
+      evidence: (neighbors[face] ?? []).filter(Boolean).length,
+    })).filter(face => face.variants > 1)
+      .sort((a, b) => b.variants - a.variants || a.evidence - b.evidence || a.face - b.face)
+      .map(face => face.face));
+  }
+  return null;
+}
+
+/** Recovery advice only; it must never make an ambiguous scan usable. */
+export function scanIssue(faces: RGB[][], size: CubeSize, calibrations: Calibration[], neighbors: (RGB | null)[][] = []): ScanIssue {
+  for (const calibration of calibrations) {
+    const ordered = orderFacesByCenter(faces, size, calibration);
+    if (!ordered) continue;
+    const labels = ordered.map(face => face.map(rgb => {
+      if (calibration.id === "suggested" || calibration.colors.every((color, i) => stickerColor(color) === i)) return stickerColor(rgb);
+      return calibration.colors.map((color, i) => ({i, distance: colorDistance(rgb, color)}))
+        .sort((a, b) => a.distance - b.distance)[0].i;
+    }));
+    if (size % 2) {
+      const uncertain: number[] = [];
+      orientScan(labels.flat().map(label => FACE_ORDER[label] ?? "?").join(""), size,
+        ordered.map(face => neighbors[faces.indexOf(face)] ?? []), true, uncertain);
+      if (uncertain.length) return {kind: "orientation", faces: uncertain};
+    }
+    const counts = Array<number>(6).fill(0);
+    labels.flat().forEach(label => {if (label >= 0) counts[label]++;});
+    const affected = labels.map((face, i) => ({face: i,
+      conflicts: face.filter(label => label < 0 || counts[label] > size * size).length,
+    })).filter(face => face.conflicts > 0).sort((a, b) => b.conflicts - a.conflicts).map(face => face.face);
+    return {kind: "colors", faces: affected.length ? affected : [0, 1, 2, 3, 4, 5]};
+  }
+  return {kind: "colors", faces: [0, 1, 2, 3, 4, 5]};
 }

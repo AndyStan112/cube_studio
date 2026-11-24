@@ -98,6 +98,12 @@ export class VideoScanSession {
       ? a.identity === b.identity
       : a.pattern === b.pattern || closeColors(a.colors, b.colors, this.size);
   }
+  private overflow(faces: TrackedFace[]) {
+    const counts = Array<number>(6).fill(0);
+    for (const face of faces)
+      for (const color of face.pattern) counts[FACE_ORDER.indexOf(color)]++;
+    return counts.reduce((sum, count) => sum + Math.max(0, count - this.size * this.size), 0);
+  }
   private withContext(best: TrackedFace, observations: TrackedFace[], existing?: TrackedFace): TrackedFace {
     if (this.size % 2 === 0) return best;
     const target = best.colors.map(rgb => this.classify(rgb)).join(",");
@@ -114,7 +120,7 @@ export class VideoScanSession {
       const turn = source === best ? 0 : turns.length === 1 ? turns[0] : null;
       if (turn === null) continue;
       source.neighbors?.forEach((rgb, side) => {
-        if (rgb) votes[(side + turn) % 4].push(rgb);
+        if (rgb && this.classify(rgb) !== 3) votes[(side + turn) % 4].push(rgb);
       });
     }
     const neighbors = votes.map(samples => {
@@ -207,6 +213,12 @@ export class VideoScanSession {
         progress,
       );
     if (existing) {
+      // A background grid can share a white center with a captured cube face.
+      // A lower-quality recapture must not worsen the inventory. A clearer
+      // view can still repair one of two bad faces before the other is retaken.
+      if (this.candidate.face.quality <= existing.quality + 0.015 &&
+          this.overflow(this.faces.map(face => face === existing ? this.candidate!.face : face)) > this.overflow(this.faces))
+        return snapshot("unclear", existing.id);
       const moreContext = this.size % 2 && this.candidate.face.quality >= 0.65 &&
         this.candidate.face.neighbors?.some((rgb, side) => rgb &&
           (!existing.neighbors?.[side] || this.classify(rgb) !== this.classify(existing.neighbors[side]!)));

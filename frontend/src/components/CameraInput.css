@@ -138,6 +138,12 @@
 .video-face-outline.is-recognized polygon {
   stroke: var(--scan-ok);
 }
+.video-side-evidence {
+  stroke: var(--scan-ok);
+  stroke-width: 4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
 .video-face-check {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -169,6 +175,9 @@
 }
 .video-scan-status.is-recognized {
   color: var(--scan-ok);
+}
+.video-scan-status.needs-attention {
+  color: var(--scan-hold);
 }
 .video-stability {
   position: absolute;
@@ -235,6 +244,23 @@
 }
 .is-scanned .video-face-thumb {
   border-color: var(--scan-ok);
+}
+.needs-attention .video-face-thumb {
+  border-color: var(--scan-hold);
+  outline: 2px solid var(--scan-hold);
+  outline-offset: 2px;
+}
+.needs-attention .video-thumb-check {
+  background: var(--scan-hold);
+}
+.video-thumb-side {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  padding: 2px;
+  background: #102a20;
+  color: var(--scan-ok);
+  border-radius: 3px;
 }
 .video-face-thumb > i {
   border-radius: 1px;

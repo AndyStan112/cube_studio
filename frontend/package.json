@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:recognition": "vitest run src/lib/camera*.test.ts src/lib/videoScan.test.ts src/lib/scanAssembly.test.ts src/lib/diagnosticRecognition.test.ts src/lib/diagnosticVideo.test.ts",
+    "diagnostics:replay": "node scripts/replay-diagnostics.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.0",

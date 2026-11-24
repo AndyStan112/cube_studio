@@ -111,6 +111,9 @@ function neighboringStickers(image: PixelImage, corners: Point[], size: CubeSize
       (Math.max(...rgb) > 60 && (Math.max(...rgb) - Math.min(...rgb)) / Math.max(...rgb) > 0.68)).length < 8) return null;
     const labels = samples.map(stickerColor);
     if (labels[0] < 0 || labels.some(label => label !== labels[0])) return null;
+    // A neutral patch outside the grid may simply be the desk. Color alone
+    // cannot establish a white neighboring side, so do not use it as pose data.
+    if (labels[0] === 3) return null;
     const inside = stickerColor(colors[boundaryCells[side]]);
     // At an odd cube's middle edge, repeated/opposite colors cannot share a
     // piece. Such samples are still on the main face or on the background.
@@ -586,8 +589,6 @@ export function stickerColor([r, g, b]: RGB): number {
     lo = Math.min(r, g, b),
     delta = hi - lo;
   if (hi < 20) return -1;
-  if (delta / hi < 0.36 || (b > r * 0.95 && g > r * 0.95 && lo / hi > 0.55))
-    return 3;
   let hue =
     hi === r
       ? ((g - b) / delta + 6) % 6
@@ -595,7 +596,12 @@ export function stickerColor([r, g, b]: RGB): number {
         ? (b - r) / delta + 2
         : (r - g) / delta + 4;
   hue *= 60;
-  if (hue < 12 || hue >= 345) return 2;
+  // Phone processing washes yellow toward white and green toward cyan. Keep
+  // chromatic yellow, and do not classify a still-saturated green as white.
+  if ((delta / hi < 0.36 && !(hue >= 45 && hue < 85 && delta / hi >= 0.22)) ||
+      (b > g && g > r * 0.95 && lo / hi > 0.55))
+    return 3;
+  if (hue < 10 || hue >= 345) return 2;
   if (hue < 45) return 5;
   if (hue < 85) return 0;
   if (hue < 175) return 1;

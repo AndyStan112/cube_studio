@@ -56,6 +56,13 @@ For standard 3×3 and 5×5 cubes, fixed center colors identify the faces and the
 
 After six faces form a valid state, the video freezes and **Use cube** updates the solver preview. Align the physical cube with that preview before following moves. If a video ends early, the collected faces stay visible and **Continue with camera** can finish the same scan. Closing the scanner, leaving the tab, or starting a new scan stops camera tracks and cancels outstanding video decoding. Validation runs in a worker, so full-cube checking does not block the capture UI.
 
+Captured faces can still need orientation evidence. The scanner marks a target
+thumbnail and asks for a slight tilt with all four corners and an adjoining side
+visible; a green side marker and a small cube icon show captured side evidence.
+Conflicting color readings ask for a clear recapture of the marked faces. Good
+captures stay saved during these retries. Neutral desk pixels are not treated as
+white side hints, and several legal arrangements are never resolved by guessing.
+
 Detection checks grid boundaries and sticker consistency independently of camera saturation. Colors are learned from the scan; existing color profiles linked in Settings remain supported. Close color alternatives are resolved against sticker counts and physical cube constraints. All processing stays on the device; recordings are not sent to the server.
 
 For odd cubes, visible neighboring sticker rows help resolve face rotations when the six face patterns admit multiple legal states. Several supporting strips are required; one outside patch cannot choose an orientation. The tracker collects repeated readings within a short rolling window, tolerates brief bad crops, and permits stable recaptures to replace an earlier mistaken pattern.
@@ -166,3 +173,9 @@ Pass a report ID to that same script and redirect stdout to a local `.zip` file.
 cd frontend
 node scripts/replay-diagnostics.mjs /path/to/extracted/report.json
 ```
+
+The [recognition regression corpus](frontend/src/lib/__fixtures__/diagnostics/README.md)
+contains exact readings and selected pixels from user reports, alongside the
+older photo and video fixtures. Run `npm run test:recognition` from `frontend`.
+The corpus guide covers importing later diagnostic ZIPs, reviewed expectations,
+and optional full-video tests using private recordings in `local/`.
