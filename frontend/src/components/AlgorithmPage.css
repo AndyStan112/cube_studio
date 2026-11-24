@@ -1,0 +1,43 @@
+/* This page owns its controls without changing the shared solver or camera UI. */
+.algorithm-page .trainer-heading {display:flex;flex-wrap:nowrap;align-items:center;gap:8px;padding:8px 0 16px;}
+.algorithm-title {flex:1;min-width:0;}
+.algorithm-title-row {display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.algorithm-title-row h2 {font-size:1.25rem;line-height:1.35;overflow-wrap:anywhere;}
+.algorithm-turn-count {display:inline-flex;align-items:center;gap:5px;color:var(--text-dim);font-size:.875rem;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.algorithm-header-actions {display:flex;align-items:center;gap:2px;flex-shrink:0;}
+.algorithm-header-actions .icon-button {min-width:44px;min-height:44px;}
+.algorithm-selected-variation {display:block;margin-top:5px;color:var(--text-dim);font-size:.8125rem;}
+.algorithm-page .cube-stage {height:clamp(250px,42dvh,440px);}
+.algorithm-page .cube-tools {inset:8px 8px auto auto;gap:4px;}
+.algorithm-page .tool-button {display:grid;place-items:center;min-width:44px;min-height:44px;padding:8px;}
+.algorithm-page .notation {gap:8px;padding:16px 0 8px;}
+.algorithm-page .algorithm-playback {display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:10px;padding:16px 0;border:0;}
+.algorithm-page .algorithm-playback .icon-button {min-width:44px;min-height:44px;padding:8px;}
+.algorithm-page .algorithm-playback .play-button {min-width:56px;min-height:48px;margin:0;}
+.algorithm-entry > .algorithm-option {width:100%;}
+.algorithm-variant-choices {display:flex;gap:8px;flex-wrap:wrap;padding:12px 0 16px;}
+.algorithm-variant-choices button {min-height:48px;padding:10px 12px;font-size:.875rem;border:1px solid var(--border);border-radius:10px;color:var(--text-dim);}
+.algorithm-variant-choices button[aria-pressed=true] {border-color:var(--green);color:var(--green);background:var(--bg-mid);}
+.algorithm-variant-choices small {display:block;margin-top:4px;}
+.algorithm-speed-choices {padding:12px 0;}
+.algorithm-speed-choices button {display:flex;align-items:center;gap:18px;width:100%;min-height:72px;padding:16px 0;border-bottom:1px solid var(--border);text-align:left;color:var(--text-dim);}
+.algorithm-speed-choices strong {min-width:56px;font-size:1.25rem;font-variant-numeric:tabular-nums;font-weight:500;}
+.algorithm-speed-choices span {flex:1;font-size:1rem;}
+.algorithm-speed-choices button[aria-pressed=true] {color:var(--green);}
+.algorithm-guide {padding-top:8px;text-align:center;}
+.algorithm-guide-progress {display:flex;gap:6px;}
+.algorithm-guide-progress i {flex:1;height:4px;border-radius:4px;background:var(--border-bright);}
+.algorithm-guide-progress .is-done {background:var(--green);}
+.algorithm-guide h3 {font-size:1.375rem;line-height:1.35;margin:24px 0 16px;}
+.algorithm-guide p {font-size:1rem;line-height:1.65;margin:16px 0;color:var(--text-dim);overflow-wrap:anywhere;}
+.algorithm-guide-tokens {display:flex;align-items:center;justify-content:center;gap:10px;padding:30px 0;flex-wrap:wrap;}
+.algorithm-guide-tokens span {min-width:48px;padding:12px 6px;font:1.5rem ui-monospace,monospace;color:var(--green);}
+.algorithm-guide-move {padding:28px 0 12px;font:3rem ui-monospace,monospace;color:var(--green);}
+.algorithm-guide-symbols,.algorithm-guide-gestures {display:flex;align-items:flex-start;justify-content:space-around;gap:16px;padding:24px 0;}
+.algorithm-guide-symbols > span,.algorithm-guide-gestures > span {display:grid;justify-items:center;gap:12px;flex:1;color:var(--green);}
+.algorithm-guide-symbols strong {font:2rem ui-monospace,monospace;}
+.algorithm-guide-symbols small,.algorithm-guide-gestures small {font-size:.875rem;color:var(--text-dim);}
+.algorithm-guide-navigation {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;}
+.algorithm-guide-navigation > span {font-size:.8125rem;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+.algorithm-guide-navigation > button {min-width:90px;}
+@media(max-height:650px) {.algorithm-guide-tokens,.algorithm-guide-gestures {padding:16px 0;}.algorithm-guide h3 {margin-top:16px;}}
