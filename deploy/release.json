@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "source": "1b5fa0fa262e1ff4ac1494d853113485079f7942",
+  "images": {
+    "frontend": "ghcr.io/andystan112/cube_studio-frontend@sha256:9d6858bf7fd966f827f80b781abf2015e2ae9f6adf958250c5f83a8f92d97d6b",
+    "backend": "ghcr.io/andystan112/cube_studio-backend@sha256:25a4c89f95abbc278c4741a8a1860101802a8e2401daf8248aa275d514eecb3d",
+    "solver": "ghcr.io/andystan112/cube_studio-solver@sha256:a09c81fe08aa035b37efac6bc2ab052dd6046f94a1a3286884a45e72b6592f69"
+  },
+  "tables": {
+    "key": "7c03e4af4672abbdc901f4dcc506a2cb824235eadc4380b3952156f17e570f15",
+    "image": "ghcr.io/andystan112/cube_studio-solver@sha256:8a930574c1af6945b6ee356f49ee946ff1c196765bc910030782216d0287bb5b"
+  }
+}
