@@ -8,6 +8,8 @@ import type { Representation } from '../lib/solverInput';
 import Sheet from './Sheet';
 import { Info } from 'lucide-react';
 import type { TrainingProps } from './ScrambleLibrary';
+import DiagnosticsSettings from './DiagnosticsSettings';
+import { clearDiagnostics } from '../lib/diagnostics';
 export default function SettingsPage({ training, updateTraining, user, notify, onSignIn, onSignOut }: TrainingProps & { user: User | null; notify: (e: unknown) => void; onSignIn: () => void; onSignOut: () => void }) {
   const [profiles, setProfiles] = useState<Calibration[]>(() => readStored<unknown[]>(calibrationKey, []).filter(isCalibration));
   const [cubeName, setCubeName] = useState('');
@@ -24,7 +26,7 @@ export default function SettingsPage({ training, updateTraining, user, notify, o
     setBusy(true);
     try {
       if (user) await api('/data/reset', { method: 'POST', body: JSON.stringify({ confirmation }), signal: AbortSignal.timeout(10000) });
-      clearLocalData(); window.location.reload();
+      await clearDiagnostics(); clearLocalData(); window.location.reload();
     } catch (e) { notify(e); setBusy(false); }
   }
   return <div className="settings-layout">
@@ -52,6 +54,7 @@ export default function SettingsPage({ training, updateTraining, user, notify, o
     <section className="card settings-card"><h2>Camera calibrations</h2>{!profiles.length && <p className="small-muted">No saved color profiles.</p>}
       {profiles.map(p => <div className="settings-item" key={p.id}><label>Calibration name<input value={p.name} maxLength={60} onChange={e => saveProfiles(profiles.map(x => x.id === p.id ? { ...x, name: e.target.value } : x))} /></label><div className="calibration-swatches">{p.colors.map((rgb, i) => <span key={i} style={{ background: `rgb(${rgb.join(',')})` }} />)}</div><button className="text-button delete" onClick={() => { saveProfiles(profiles.filter(x => x.id !== p.id)); updateTraining({ ...training, cubes: training.cubes.map(c => c.calibrationId === p.id ? { ...c, calibrationId: '' } : c) }); }}>Delete calibration</button></div>)}
     </section>
+    <DiagnosticsSettings />
     <section className="card settings-card danger-zone"><h2>Clear all data</h2><p>Delete all Cube Studio data on this device: times for all local profiles, sessions, saved scrambles, cubes, calibrations and preferences.{user && ' Also permanently delete all online solve history for the signed-in account.'} This cannot be undone.</p>
       {!confirm ? <button className="button danger-button" onClick={() => setConfirm(true)}>Clear all data…</button> : <Sheet title="Clear all data" onClose={() => { if (!busy) { setConfirm(false); setConfirmation(''); } }}><p className="small-muted">Delete local times, learning progress, sessions, saved scrambles, cubes, calibrations and preferences.{user && ' Also permanently delete online solve history for this account.'} This cannot be undone.</p><p className="delete">Type DELETE ALL DATA to confirm permanent deletion.</p><input autoFocus aria-label="Deletion confirmation" value={confirmation} onChange={e => setConfirmation(e.target.value)} /><div className="settings-row"><button className="button danger-button" disabled={busy || confirmation !== 'DELETE ALL DATA'} onClick={() => void reset()}>{busy ? 'Deleting…' : 'Permanently delete all data'}</button><button className="button" disabled={busy} onClick={() => { setConfirm(false); setConfirmation(''); }}>Cancel</button></div></Sheet>}
     </section>

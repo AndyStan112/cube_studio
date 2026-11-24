@@ -6,4 +6,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev --no-install-project --no-cache
 COPY app ./app
+COPY scripts ./scripts
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,3 +1,4 @@
+import { logDiagnostic } from './lib/diagnostics';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Box, Layers3, Timer, X, ChartNoAxesCombined, Settings, GraduationCap } from "lucide-react";
 import {
@@ -62,8 +63,10 @@ export default function App() {
   useEffect(() => { setTraining(readTraining(user?.id)); }, [user?.id]);
   const updateTraining = (data: TrainingData) => { storeTraining(data, user?.id); setTraining(data); };
   const notify = useCallback(
-    (e: unknown) =>
-      setError(e instanceof Error ? e.message : "Something went wrong"),
+    (e: unknown) => {
+      logDiagnostic('app.error',e);
+      setError(e instanceof Error ? e.message : "Something went wrong");
+    },
     [],
   );
   const loadScramble = useCallback(async () => {

@@ -21,6 +21,7 @@ import {
 import { detectFace, facePoint, type Point } from "../lib/cameraVision";
 import { VideoScanSession, type VideoScanSnapshot } from "../lib/videoScan";
 import "./CameraInput.css";
+import { beginScanDiagnostics, stopDiagnosticRecording, type ScanDiagnostics } from "../lib/diagnostics";
 
 const names = ["Yellow", "Green", "Red", "White", "Blue", "Orange"];
 const swatches = [
@@ -107,6 +108,7 @@ export default function CameraInput({
     () => new VideoScanSession(size, profilesFor(defaultCalibration)),
   );
   const session = useRef(initialSession);
+  const diagnostics = useRef<ScanDiagnostics | null>(null);
   const generation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abort = useRef<AbortController | null>(null),
@@ -132,10 +134,12 @@ export default function CameraInput({
     [progress, setProgress] = useState(0);
   const scanReady = () => phaseRef.current === "ready";
   function transition(next: Phase) {
+    diagnostics.current?.phase(next);
     phaseRef.current = next;
     setPhase(next);
   }
   function releaseMedia() {
+    stopDiagnosticRecording();
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     abort.current?.abort();
@@ -180,6 +184,7 @@ export default function CameraInput({
         size,
         profilesFor(defaultCalibration),
       );
+    diagnostics.current = beginScanDiagnostics(mode, size, {preserve, calibrations: session.current.calibrations});
     if (mode === "camera") selectedFile.current = null;
     if (canvas.current) canvas.current.width = 0;
     source.current = mode;
@@ -207,11 +212,14 @@ export default function CameraInput({
     validatedRevision.current = state.revision;
     pending.current = true;
     if (!worker.current) {
+      diagnostics.current?.log('scan.worker.created',{source:'videoScan.worker.ts'});
       worker.current = new Worker(
         new URL("../lib/videoScan.worker.ts", import.meta.url),
         { type: "module" },
       );
+      const workerDiagnostics = diagnostics.current;
       worker.current.onmessage = (event) => {
+        workerDiagnostics?.log('scan.worker.result',event.data);
         const result = event.data as {
           generation: number;
           revision: number;
@@ -236,7 +244,8 @@ export default function CameraInput({
             transition("incomplete");
         }
       };
-      worker.current.onerror = () => {
+      worker.current.onerror = (event) => {
+        workerDiagnostics?.log('scan.worker.error',{message:event.message,filename:event.filename,line:event.lineno,column:event.colno,error:event.error});
         worker.current?.terminate();
         worker.current = null;
         pending.current = false;
@@ -245,14 +254,16 @@ export default function CameraInput({
         releaseMedia();
       };
     }
-    worker.current.postMessage({
+    const payload = {
       generation: generation.current,
       revision: state.revision,
       size,
       faces: state.faces.map((face) => face.colors),
       neighbors: state.faces.map((face) => face.neighbors ?? []),
       calibrations: session.current.calibrations,
-    });
+    };
+    diagnostics.current?.log('scan.worker.input',payload);
+    worker.current.postMessage(payload);
   }
   function readFrame(time: number) {
     const player = video.current;
@@ -286,7 +297,10 @@ export default function CameraInput({
         y: (p.y / height) * 100,
       })) ?? null,
     );
-    setSnapshot(session.current.observe(detection, time));
+    const previous = session.current.snapshot().revision;
+    const observed = session.current.observe(detection, time);
+    diagnostics.current?.frame(frame, time, {actualTime:player.currentTime,width,height,detection,snapshot:observed.revision !== previous ? observed : {current:observed.current,revision:observed.revision,status:observed.status,progress:observed.progress},phase:phaseRef.current}, observed.revision !== previous);
+    setSnapshot(observed);
     validate();
   }
   async function startCamera(preserve = false) {
@@ -304,6 +318,8 @@ export default function CameraInput({
         return;
       }
       stream.current = media;
+      diagnostics.current?.log('scan.camera.settings',media.getVideoTracks().map(track => track.getSettings()));
+      diagnostics.current?.record(media);
       video.current!.srcObject = media;
       await video.current!.play();
       if (ticket !== generation.current) return;
@@ -314,6 +330,7 @@ export default function CameraInput({
         try {
           readFrame(video.current?.currentTime ?? 0);
         } catch (reason) {
+          diagnostics.current?.log('scan.frame.error',reason);
           setError((reason as Error).message);
         }
         if (phaseRef.current === "scanning")
@@ -321,6 +338,7 @@ export default function CameraInput({
       };
       step();
     } catch (reason) {
+      diagnostics.current?.log('scan.camera.error',reason);
       if (ticket !== generation.current) return;
       releaseMedia();
       transition("error");
@@ -345,6 +363,7 @@ export default function CameraInput({
       transition("error");
       return;
     }
+    diagnostics.current?.log('scan.video.metadata',{duration:player.duration,width:player.videoWidth,height:player.videoHeight});
     const ticket = generation.current,
       controller = new AbortController();
     abort.current = controller;
@@ -368,6 +387,7 @@ export default function CameraInput({
         freeze();
       }
     } catch (reason) {
+      diagnostics.current?.log('scan.video.error',reason);
       if (ticket === generation.current && !controller.signal.aborted) {
         setError((reason as Error).message);
         transition("error");
@@ -380,6 +400,7 @@ export default function CameraInput({
       return;
     }
     initialize("file");
+    void diagnostics.current?.sourceFile(file);
     selectedFile.current = file;
     transition("processing");
     objectUrl.current = URL.createObjectURL(file);

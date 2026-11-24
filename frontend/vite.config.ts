@@ -1,6 +1,7 @@
 import { env } from "node:process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -11,8 +12,19 @@ const iconHash = createHash("sha256");
 for (const file of iconFiles) iconHash.update(readFileSync(new URL(`./public/icons/${file}`, import.meta.url)));
 const iconRevision = iconHash.digest("hex").slice(0, 16);
 const iconUrl = (file: string) => `/icons/${file}?v=${iconRevision}`;
+const sourceHash = createHash("sha256");
+function hashSources(directory: string) {
+  for (const entry of readdirSync(directory, {withFileTypes: true}).sort((a,b) => a.name.localeCompare(b.name))) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory() && entry.name !== '__fixtures__' && entry.name !== 'fixtures') hashSources(path);
+    else if (entry.isFile() && !entry.name.includes('.test.') && /\.(tsx?|css)$/.test(entry.name)) sourceHash.update(path).update(readFileSync(path));
+  }
+}
+hashSources('src');
+sourceHash.update(readFileSync('package-lock.json'));
 
 export default defineConfig({
+  define: {__APP_VERSION__: JSON.stringify(sourceHash.digest('hex').slice(0,16)), __APP_BUILT_AT__: JSON.stringify(new Date().toISOString())},
   plugins: [
     react(),
     {

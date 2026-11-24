@@ -1,0 +1,12 @@
+.diagnostics-settings > .button { display:inline-flex;align-items:center;justify-content:center;gap:8px; }
+.diagnostics-form {display:grid;gap:16px;}
+.diagnostics-form > p {margin:0;}
+.diagnostics-form label {display:block;}
+.diagnostics-form textarea {display:block;box-sizing:border-box;width:100%;margin-top:8px;resize:vertical;font:inherit;padding:12px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);}
+.diagnostics-form .check-setting {display:flex;align-items:flex-start;gap:12px;min-height:44px;}
+.diagnostics-form input[type=checkbox] {flex-shrink:0;}
+.diagnostics-actions {display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.diagnostics-actions button {min-height:44px;display:inline-flex;gap:8px;align-items:center;justify-content:center;}
+.diagnostics-form progress {display:block;width:100%;margin-top:8px;}
+.diagnostic-receipt code {overflow-wrap:anywhere;user-select:all;}
+.diagnostics-clear {justify-self:start;display:inline-flex;align-items:center;gap:8px;min-height:44px;}

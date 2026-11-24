@@ -145,3 +145,24 @@ The current picker is explicitly a mock: its `mock:demo-*` tokens are public pro
 To integrate Clerk, replace the frontend auth adapter with Clerk session APIs (`getToken`, current user, sign-out) and replace the picker with Clerk’s sign-in UI. Keep API token retrieval asynchronous so token refresh works. On the backend, implement `AuthProvider.authenticate` to verify Clerk JWT signatures, issuer, audience, and expiry, then return an `Identity`. Configure `get_auth_provider` to use it and remove the mock-only `/api/auth/users` catalog. Map Clerk subjects to stable application user IDs; solve handlers use only `Identity.id`, so providers stay out of solve logic. Preserve that mapping if migrating demo solves or old ObjectId-owned solves; they are not automatically assigned to external accounts.
 
 The prototype uses system fonts. Real account security and recovery belong to the future provider integration.
+
+## Diagnostics
+
+**Settings → Send diagnostics** sends an explicit, user-initiated diagnostic ZIP to the app server. Nothing is uploaded automatically. The two latest scans and a bounded client error log are retained locally in IndexedDB, including across reloads. Live scans record video without audio for up to two minutes, with periodic partial checkpoints; recording stops when the scanner closes or loses visibility. Original uploaded clips up to 32 MiB are retained without transcoding. Larger originals are omitted with an explicit event; analyzed-frame images and exact readings remain available. The send sheet can exclude full videos, add a note, retry failed uploads, cancel, or clear local diagnostics. Clearing all app data also clears these buffers.
+
+Reports identify the exact frontend source fingerprint, capture-time build, loaded script URLs, active/waiting service worker, browser, viewport, camera track settings (device IDs redacted), original video metadata, sample timestamps, detected corners and RGB values, neighboring-side evidence, accepted face revisions, worker request/response payloads and timings, exceptions and failed network requests. Credentials, headers, request bodies, arbitrary browser storage and solve history are not copied. JPEG frame images are visual references; the logged detector readings and worker payloads preserve the actual numerical inputs for deterministic replay. A checkpoint recovered after an interrupted recording is marked `recordingFinalized: false`.
+
+The API streams archives to temporary files with a 64 MiB limit, validates the ZIP and stores it in the `diagnostic_archives` GridFS bucket on the existing persistent MongoDB volume. Reports have a 30-day retention period (startup and hourly cleanup), a 1 GiB global quota and a ten-per-installation daily allowance. Guest users can send reports. There is deliberately no public listing or download API, and shared demo identities do not grant access to reports.
+
+Retrieve reports using server access. List recent IDs with:
+
+```sh
+ssh andy@ssh.windogs.win 'KUBECONFIG=$HOME/.kube/cube-studio.yaml /usr/local/bin/kubectl -n cube-studio exec deployment/backend -- python scripts/diagnostics.py'
+```
+
+Pass a report ID to that same script and redirect stdout to a local `.zip` file. Extract it locally, then replay the recorded worker inputs against the checked-out recognition code:
+
+```sh
+cd frontend
+node scripts/replay-diagnostics.mjs /path/to/extracted/report.json
+```
