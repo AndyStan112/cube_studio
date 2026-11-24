@@ -2,11 +2,16 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const publish = require("./publish-deployment.cjs");
 const sourceSha = "a".repeat(40);
+const {SERVICES, imageName, readImages} = require("./release-images.cjs");
+const fs = require("node:fs"), path = require("node:path");
+const template = fs.readFileSync(path.join(__dirname, "../../deploy/app/kustomization.yaml"), "utf8");
+const images = Object.fromEntries(SERVICES.map((service, i) => [service, `${imageName(service)}@sha256:${String(i + 1).repeat(64)}`]));
 function fixture({
   exists = true,
   same = false,
   truncated = false,
-  manifest = "    newTag: old\n    newTag: old\n    newTag: old\n",
+  manifest = template,
+  changed = false,
 } = {}) {
   const writes = [];
   const context = {
@@ -48,7 +53,7 @@ function fixture({
         getRef: async () => {
           if (!exists)
             throw Object.assign(new Error("missing"), { status: 404 });
-          return { data: { object: { sha: "previous-release" } } };
+          return { data: { object: { sha: changed ? "concurrent-release" : "previous-release" } } };
         },
         getCommit: async () => ({
           data: { tree: { sha: same ? "new-tree" : "old-tree" } },
@@ -70,7 +75,7 @@ function fixture({
       },
     },
   };
-  return { github, context, core: { notice() {} }, writes };
+  return { github, context, core: { notice() {} }, writes, tested: {schema: 1, source: sourceSha, baseline: exists ? "previous-release" : null, images} };
 }
 test("publishes the tested manifest snapshot only to deployments", async () => {
   const f = fixture();
@@ -79,13 +84,13 @@ test("publishes the tested manifest snapshot only to deployments", async () => {
   assert.equal(tree.base_tree, undefined); // Old/deleted manifests cannot linger.
   assert.deepEqual(
     tree.tree.map((entry) => entry.path),
-    ["deploy/app/kustomization.yaml", "deploy/app/nested/service.yaml"],
+    ["deploy/app/kustomization.yaml", "deploy/app/nested/service.yaml", "deploy/release.json"],
   );
   assert.equal(tree.tree[0].sha, undefined);
-  assert.equal(
-    tree.tree[0].content,
-    `    newTag: ${sourceSha}\n    newTag: ${sourceSha}\n    newTag: ${sourceSha}\n`,
-  );
+  assert.deepEqual(readImages(tree.tree[0].content), images);
+  const record = JSON.parse(tree.tree[2].content);
+  assert.equal(record.source, sourceSha);
+  assert.deepEqual(record.images, images);
   assert.equal(tree.tree[1].sha, "source-blob");
   const commit = f.writes.find(([type]) => type === "commit")[1];
   assert.deepEqual(commit.parents, ["previous-release"]);
@@ -124,4 +129,22 @@ test("rejects incomplete source or malformed image references before publishing"
   f.context.ref = "refs/heads/deployments";
   await assert.rejects(publish(f), /master/);
   assert.equal(f.writes.length, 0);
+});
+
+test("refuses a stale baseline or a release that did not test these images", async () => {
+  const stale = fixture({changed: true});
+  await assert.rejects(publish(stale), /changed after image selection/);
+  assert.equal(stale.writes.length, 0);
+  const untested = fixture();
+  untested.tested.source = 'wrong-source';
+  await assert.rejects(publish(untested), /tested image selection/);
+  assert.equal(untested.writes.length, 0);
+  const mutable = fixture();
+  mutable.tested.images = {...images, frontend: imageName('frontend') + ':master'};
+  await assert.rejects(publish(mutable), /Invalid pinned/);
+  assert.equal(mutable.writes.length, 0);
+  const badTables = fixture();
+  badTables.tested.tables = {key: 'a'.repeat(64), image: 'untrusted/base:latest'};
+  await assert.rejects(publish(badTables), /Invalid pinned table/);
+  assert.equal(badTables.writes.length, 0);
 });

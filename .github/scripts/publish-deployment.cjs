@@ -1,9 +1,14 @@
 // Generated manifests live on their own branch. Never update the source branch.
-module.exports = async function publishDeployment({ github, context, core }) {
+const { validateImages, validateTables, renderImages } = require("./release-images.cjs");
+module.exports = async function publishDeployment({ github, context, core, tested }) {
   if (context.ref !== "refs/heads/master") {
     throw new Error("Releases must come from master");
   }
   const { owner, repo } = context.repo;
+  if (tested?.schema !== 1 || tested.source !== context.sha)
+    throw new Error("Missing tested image selection for this source commit");
+  validateImages(tested.images);
+  validateTables(tested.tables);
   const branch = "deployments";
   const path = "deploy/app/kustomization.yaml";
   const { data: source } = await github.rest.git.getTree({
@@ -28,26 +33,15 @@ module.exports = async function publishDeployment({ github, context, core }) {
     ref: context.sha,
   });
   const previous = Buffer.from(manifest.content, "base64").toString("utf8");
-  const tags = /^[ \t]*newTag: [^\r\n]+/gm;
-  if ((previous.match(tags) || []).length !== 3) {
-    throw new Error("Expected three image references");
-  }
-  const content = previous.replace(
-    /^([ \t]*newTag: )[^\r\n]+/gm,
-    "$1" + context.sha,
-  );
+  const content = renderImages(previous, tested.images);
   const tree = entries.map((entry) =>
     entry.path === path
       ? { path, mode: entry.mode, type: "blob", content }
       : entry,
   );
-  // No base_tree: every release is a complete manifest snapshot. Deleted source
-  // manifests disappear too. Workflows and application code are never copied.
-  const { data: snapshot } = await github.rest.git.createTree({
-    owner,
-    repo,
-    tree,
-  });
+  tree.push({path: "deploy/release.json", mode: "100644", type: "blob",
+    content: JSON.stringify({schema: 1, source: context.sha, images: tested.images,
+      tables: tested.tables ?? null}, null, 2) + "\n"});
   let parent;
   try {
     const { data: ref } = await github.rest.git.getRef({
@@ -56,17 +50,20 @@ module.exports = async function publishDeployment({ github, context, core }) {
       ref: `heads/${branch}`,
     });
     parent = ref.object.sha;
-    const { data: head } = await github.rest.git.getCommit({
-      owner,
-      repo,
-      commit_sha: parent,
-    });
+  } catch (error) {
+    if (error.status !== 404) throw error;
+  }
+  if ((parent ?? null) !== tested.baseline)
+    throw new Error("Deployment changed after image selection; rerun against the new baseline");
+  // No base_tree: deleted source manifests disappear too. Only deployment
+  // manifests and their exact tested image record are published.
+  const { data: snapshot } = await github.rest.git.createTree({ owner, repo, tree });
+  if (parent) {
+    const { data: head } = await github.rest.git.getCommit({owner, repo, commit_sha: parent});
     if (head.tree.sha === snapshot.sha) {
       core.notice("Deployment already published");
       return parent;
     }
-  } catch (error) {
-    if (error.status !== 404) throw error;
   }
   const { data: commit } = await github.rest.git.createCommit({
     owner,

@@ -1,11 +1,11 @@
-# Use the exact images built by this workflow when running integration tests.
+# Test exactly the selected combination, including unchanged pinned images.
 services:
   frontend:
-    image: ghcr.io/andystan112/cube_studio-frontend:${RELEASE_SHA:?Set RELEASE_SHA}
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE}
   backend:
-    image: ghcr.io/andystan112/cube_studio-backend:${RELEASE_SHA:?Set RELEASE_SHA}
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
   solver:
-    image: ghcr.io/andystan112/cube_studio-solver:${RELEASE_SHA:?Set RELEASE_SHA}
+    image: ${SOLVER_IMAGE:?Set SOLVER_IMAGE}
   mongo:
     # Let glibc own rseq so TCMalloc uses thread caches on affected CI kernels.
     # https://github.com/docker-library/mongo/issues/765 (SERVER-121912)

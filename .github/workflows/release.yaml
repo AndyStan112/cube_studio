@@ -5,13 +5,39 @@ on:
     paths-ignore:
       - "**/*.md"
   workflow_dispatch:
+    inputs:
+      rebuild_all:
+        description: Rebuild every service instead of reusing unchanged images
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
   group: release-master
   cancel-in-progress: false
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      plan: ${{ steps.select.outputs.plan }}
+      frontend: ${{ steps.select.outputs.frontend }}
+      backend: ${{ steps.select.outputs.backend }}
+      solver: ${{ steps.select.outputs.solver }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/github-script@v7
+        id: select
+        with:
+          script: |
+            await require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/release-plan.cjs`).planRelease({github, context, core});
   test:
+    needs: plan
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -20,38 +46,59 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+      - run: node --test .github/scripts/*.test.cjs
+      - uses: dtolnay/rust-toolchain@stable
+        if: needs.plan.outputs.solver == 'true'
+        with:
+          toolchain: 1.94.1
+          components: rustfmt, clippy
+      - uses: actions/cache@v4
+        if: needs.plan.outputs.solver == 'true'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            solver/target
+          key: ${{ runner.os }}-rust-1.94.1-${{ hashFiles('solver/Cargo.lock', 'solver/src/**', 'solver/vendor/**') }}
+          restore-keys: ${{ runner.os }}-rust-1.94.1-
+      - if: needs.plan.outputs.solver == 'true'
+        run: |
+          cargo fmt --manifest-path solver/Cargo.toml --check
+          cargo clippy --manifest-path solver/Cargo.toml --workspace --all-targets --locked -- -D warnings
+          cargo test --manifest-path solver/Cargo.toml --workspace --locked
+          cargo build --manifest-path solver/Cargo.toml --release --locked
+      - uses: actions/cache@v4
+        if: needs.plan.outputs.frontend == 'true'
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+      - if: needs.plan.outputs.frontend == 'true'
+        run: npm ci && npm test
+        working-directory: frontend
       - uses: astral-sh/setup-uv@v7
+        if: needs.plan.outputs.backend == 'true' || needs.plan.outputs.solver == 'true'
         with:
           version: "0.10.12"
           python-version: "3.13"
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.94.1
-          components: rustfmt, clippy
-      - run: cargo fmt --manifest-path solver/Cargo.toml --check
-      - run: cargo clippy --manifest-path solver/Cargo.toml --workspace --all-targets --locked -- -D warnings
-      - run: cargo test --manifest-path solver/Cargo.toml --workspace --locked
-      - run: cargo build --manifest-path solver/Cargo.toml --release --locked
-      - run: npm ci
-        working-directory: frontend
-      - run: node --test .github/scripts/*.test.cjs
-      - run: npm test
-        working-directory: frontend
-      - run: uv sync --project backend --locked
-      - run: uv run --project backend --locked pytest backend/tests
-  build:
-    needs: test
+      - if: needs.plan.outputs.backend == 'true' || needs.plan.outputs.solver == 'true'
+        run: |
+          uv sync --project backend --locked
+          uv run --project backend --locked pytest backend/tests
+  tables:
+    needs: [plan, test]
+    if: needs.plan.outputs.solver == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        service: [frontend, backend, solver]
+    outputs:
+      image: ${{ steps.resolve.outputs.image }}
+    env:
+      TABLES_TAG: ${{ fromJSON(needs.plan.outputs.plan).tables.tag }}
+      TABLES_SEED: ${{ fromJSON(needs.plan.outputs.plan).tables.seed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,30 +109,91 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Reuse or seed the versioned table base
+        id: lookup
+        run: bash .github/scripts/lookup-table-base.sh
       - uses: docker/build-push-action@v6
+        if: steps.lookup.outputs.exists != 'true'
         with:
-          context: ./${{ matrix.service }}
+          context: ./solver
+          target: nxn-tables
           push: true
-          tags: |
-            ghcr.io/andystan112/cube_studio-${{ matrix.service }}:${{ github.sha }}
-            ghcr.io/andystan112/cube_studio-${{ matrix.service }}:master
+          tags: ${{ env.TABLES_TAG }}
           labels: |
             org.opencontainers.image.source=https://github.com/AndyStan112/cube_studio
-            org.opencontainers.image.revision=${{ github.sha }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          cache-from: type=registry,ref=ghcr.io/andystan112/cube_studio-solver:tables-cache
+          cache-to: type=registry,ref=ghcr.io/andystan112/cube_studio-solver:tables-cache,mode=max
+      - name: Pin table base digest
+        id: resolve
+        run: |
+          digest=$(docker buildx imagetools inspect "$TABLES_TAG" --format '{{json .Manifest}}' | jq -er '.digest | select(test("^sha256:[a-f0-9]{64}$"))')
+          echo "image=ghcr.io/andystan112/cube_studio-solver@$digest" >> "$GITHUB_OUTPUT"
+  build-frontend:
+    needs: [plan, test]
+    if: needs.plan.outputs.frontend == 'true'
+    uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service: frontend
+  build-backend:
+    needs: [plan, test]
+    if: needs.plan.outputs.backend == 'true'
+    uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service: backend
+  build-solver:
+    needs: [plan, test, tables]
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.test.result == 'success' && needs.tables.result == 'success' && needs.plan.outputs.solver == 'true' }}
+    uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service: solver
+      tables_image: ${{ needs.tables.outputs.image }}
   integration:
-    needs: build
+    needs: [plan, test, tables, build-frontend, build-backend, build-solver]
+    # Optional builds are allowed to skip. Failures and cancellations never are.
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.test.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: read
-    env:
-      RELEASE_SHA: ${{ github.sha }}
+    outputs:
+      tested: ${{ steps.images.outputs.record }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Select exact images for integration and deployment
+        id: images
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+          FRONTEND: ${{ needs.build-frontend.outputs.image }}
+          BACKEND: ${{ needs.build-backend.outputs.image }}
+          SOLVER: ${{ needs.build-solver.outputs.image }}
+          TABLES: ${{ needs.tables.outputs.image }}
+        run: |
+          node - <<'JS'
+          const fs = require('node:fs');
+          const plan = JSON.parse(process.env.PLAN);
+          const images = require('./.github/scripts/release-plan.cjs').selectImages(plan, {
+            frontend: process.env.FRONTEND, backend: process.env.BACKEND, solver: process.env.SOLVER,
+          });
+          for (const [service, image] of Object.entries(images)) fs.appendFileSync(process.env.GITHUB_ENV, `${service.toUpperCase()}_IMAGE=${image}\n`);
+          const tableImage = process.env.TABLES || plan.tables.image;
+          const record = {schema: 1, source: plan.source, baseline: plan.baseline, images,
+            tables: tableImage ? {key: plan.tables.key, image: tableImage} : null};
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `record=${JSON.stringify(record)}\n`);
+          JS
       - uses: astral-sh/setup-uv@v7
         with:
           version: "0.10.12"
@@ -125,12 +233,14 @@ jobs:
                   categories = [value for value in ('Permission denied', 'Operation not permitted', 'No space left on device', 'Invalid argument', 'Read-only file system', 'UnsupportedFormat', 'DBPathInUse') if value in text]
                   print('::error::' + json.dumps({'mongo_error_ids': error_ids, 'known_error_categories': categories}))
           PYTHON
-      - name: Test API with MongoDB
+      - name: Test exact image combination with MongoDB
         run: |
+          ready=false
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://localhost:5173/api/health; then break; fi
+            if curl --fail --silent http://localhost:5173/api/health; then ready=true; break; fi
             sleep 2
           done
+          $ready
           CUBE_API_URL=http://localhost:5173/api uv run --project backend --locked pytest backend/tests
       - run: docker compose -f compose.yaml -f compose.ci.yaml logs --tail 100
         if: failure()
@@ -146,9 +256,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Publish deployment snapshot
+      - name: Publish tested image selection
         uses: actions/github-script@v7
+        env:
+          TESTED_RELEASE: ${{ needs.integration.outputs.tested }}
         with:
           script: |
             const publish = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/publish-deployment.cjs`);
-            await publish({github, context, core});
+            await publish({github, context, core, tested: JSON.parse(process.env.TESTED_RELEASE)});

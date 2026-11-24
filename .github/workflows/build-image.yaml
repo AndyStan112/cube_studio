@@ -1,0 +1,53 @@
+name: Build selected image
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+      tables_image:
+        default: ''
+        type: string
+    outputs:
+      image:
+        description: Published image pinned by digest
+        value: ${{ jobs.build.outputs.image }}
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      image: ghcr.io/andystan112/cube_studio-${{ inputs.service }}@${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate selected service and base
+        env:
+          SERVICE: ${{ inputs.service }}
+          TABLES_IMAGE: ${{ inputs.tables_image }}
+        run: |
+          node - <<'JS'
+          if (!['frontend', 'backend', 'solver'].includes(process.env.SERVICE)) throw Error('Unknown service');
+          if (process.env.SERVICE === 'solver' && !/^ghcr\.io\/andystan112\/cube_studio-solver@sha256:[a-f0-9]{64}$/.test(process.env.TABLES_IMAGE)) throw Error('Missing pinned table base');
+          JS
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: ./${{ inputs.service }}
+          push: true
+          tags: ghcr.io/andystan112/cube_studio-${{ inputs.service }}:${{ github.sha }}
+          build-args: ${{ inputs.service == 'solver' && format('SOLVER_TABLES_IMAGE={0}', inputs.tables_image) || '' }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/AndyStan112/cube_studio
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/andystan112/cube_studio-${{ inputs.service }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/andystan112/cube_studio-${{ inputs.service }}:buildcache,mode=max

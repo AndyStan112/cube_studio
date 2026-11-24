@@ -18,12 +18,57 @@ The script creates a separate kubeconfig at `/home/andy/.kube/cube-studio.yaml`.
 
 1. Add the public key printed by the bootstrap (also in the staged `setup/git-read.pub`) at repository **Settings → Deploy keys**. Keep **Allow write access** unchecked. Flux reads `deployments` over SSH; no personal SSH keys go into the cluster.
 2. The `release` workflow tests the app with MongoDB and publishes `cube_studio-frontend`, `cube_studio-backend`, and `cube_studio-solver` to GHCR. Make these three packages public once at their package settings pages. The source repository is already public; GHCR packages initially default to private. No package token is stored on the server.
-3. After the image builds and integration tests pass, the workflow publishes a complete snapshot of `deploy/app/` from the tested source commit to the generated **`deployments` branch**, pinning all three images to that source SHA. Commit messages use `chore(deploy): release <sha>`. The workflow creates the branch automatically if needed. Git remotes and Flux use SSH; the workflow uses GitHub’s API with its repository-scoped `GITHUB_TOKEN` and no long-lived write key.
+3. The release planner compares the current source with the last successful release recorded on **`deployments`**. It builds only affected services and keeps the exact pinned images of unchanged services. Integration tests run against that selected combination. On success, the workflow publishes a complete snapshot of `deploy/app/` and `deploy/release.json`, recording the tested source and image references. New images are pinned by registry digest. Commit messages use `chore(deploy): release <sha>`. Git remotes and Flux use SSH; publication uses the repository-scoped `GITHUB_TOKEN` without a long-lived write key.
 4. Flux checks `deployments` every minute and applies the snapshot. A failed test or build leaves that branch and the running release unchanged. Deployment branch updates do not trigger builds.
 
 Keep working on **`master`** and push normally. Do not merge `deployments` back into `master`; it contains generated manifests only, with its own release history. Every successful release copies added, changed, and deleted deployment manifests automatically. `deploy/app/kustomization.yaml` on `master` is a source template; the workflow supplies the release image tags on `deployments`. Documentation-only commits do not trigger releases; use the workflow’s Run workflow button on `master` if needed.
 
 For an existing installation, initialize `deployments` with the currently deployed manifests, then apply `deploy/flux/sync.yaml` using the owner kubeconfig to switch Flux. This migration is one-time; regular releases need no SSH or manual branch maintenance.
+
+## Incremental releases and table bases
+
+Changes under `frontend/`, `backend/` and `solver/` build their corresponding
+service. Changes to the shared `.github/workflows/build-image.yaml` build all
+three because that file controls how images are assembled. Deployment and
+pipeline-only changes reuse existing images and still run integration tests.
+Unit checks run for affected services; solver changes also run backend unit
+checks because the method tests exercise solver code. Release-planner and
+publisher tests always run.
+
+The baseline is the last successfully published source, not the previous push.
+Changes from a failed intervening release therefore remain included. Missing
+history or a first release safely rebuilds every service. The planner can migrate
+the old same-commit image tags without manual branch edits. A concurrent edit to
+`deployments` during testing stops publication; rerun against that new baseline.
+Use **Run workflow → rebuild_all** to force service builds when needed. Optional
+build jobs may skip; failed or cancelled jobs cannot publish a release.
+
+The solver table stage is versioned by a SHA-256 of its Docker instructions,
+engine revision, downloader and table manifest. The base is published under
+`cube_studio-solver:tables-<hash>` in the existing public solver package; runtime
+builds use its immutable digest. An existing published solver with identical
+table inputs can seed the initial version by copying its registry manifest,
+without downloading or rebuilding the tables. Otherwise that table stage builds
+once. Registry authentication/network failures fail the job rather than being
+mistaken for a cache miss.
+
+Runtime code is copied into `/opt/cube-solver/nxn` in separate linked layers,
+allowing BuildKit to reuse the remote table layers. Registry build caches avoid
+repeatedly exporting the large base into GitHub's repository cache quota. Local
+`docker build ./solver` remains self-contained and prepares the tables when no
+`SOLVER_TABLES_IMAGE` override is supplied. To refresh an unchanged OS/Python base,
+change its pinned `FROM` version or add/bump a `TABLE_BASE_REVISION` ARG inside the
+`nxn-tables` stage; that produces a new table-base version.
+
+Validate release selection and publication locally with:
+
+```sh
+node --test .github/scripts/*.test.cjs
+```
+
+`compose.ci.yaml` accepts `FRONTEND_IMAGE`, `BACKEND_IMAGE` and `SOLVER_IMAGE` as
+complete pinned references. The integration job and publisher consume the same
+selection; deployment never substitutes an untested tag for a reused service.
 
 ## CI database compatibility
 
@@ -57,4 +102,4 @@ A single node restarts failed pods, but does not provide host-level high availab
 
 ### Larger-cube solving
 
-The solver image now bundles the pinned NxN engine and predownloaded 4×4/5×5 lookup tables. Its build downloads about 1.9 GiB compressed, so allow extra build time and image storage. Solver pods keep the existing private service on port 8081, use a 4 GiB memory limit, and mount a 512 MiB temporary volume for isolated reduction jobs. No lookup tables are downloaded from the running pod; readiness requires all bundled tables and the native 3×3 engine.
+The versioned solver base bundles the pinned NxN engine and predownloaded 4×4/5×5 lookup tables. A new table version downloads about 1.9 GiB compressed; normal runtime-code builds reuse the published base. Solver pods keep the existing private service on port 8081, use a 4 GiB memory limit, and mount a 512 MiB temporary volume for isolated reduction jobs. No lookup tables are downloaded from the running pod; readiness requires all bundled tables and the native 3×3 engine.

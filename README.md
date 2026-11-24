@@ -76,7 +76,7 @@ CUBE_CAMERA_VIDEO_DIR=../local npm test -- src/lib/cameraVideo.test.ts
 
 ## Deployment
 
-See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` run tests and publish images; only successful builds publish manifests to the generated `deployments` branch, which Flux watches. Automated commits stay off `master`.
+See [deploy/README.md](deploy/README.md) for the K3s + Flux release pipeline and existing Caddy integration. Pushes to `master` build affected services, reuse unchanged pinned images, and test that exact combination before publishing manifests to the generated `deployments` branch, which Flux watches. The solver’s large table base is versioned separately. Automated commits stay off `master`.
 
 ## Bigger-cube solver
 
