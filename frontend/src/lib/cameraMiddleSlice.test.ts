@@ -7,6 +7,7 @@ import { detectFace, stickerColor, type FaceDetection, type PixelImage } from ".
 import { matchScan, orientScan, suggestedCalibration, type RGB } from "./cameraInput";
 import { VideoScanSession } from "./videoScan";
 import observations from "./__fixtures__/camera-middle-slice/detections.json";
+import liveWorker from "./__fixtures__/camera-middle-slice/live-worker.json";
 
 // Green front, yellow up, then M' U. Restore the fixed color reference after
 // moving the centers, independently of the camera's order or roll.
@@ -56,6 +57,10 @@ describe("the actual M' U recording", () => {
     }
     expect(session.snapshot().faces).toHaveLength(6);
     expect(checked).toBeGreaterThan(0);
+  });
+  it("rejects impossible neighboring edge colors from the intermittent live failure", () => {
+    expect(matchScan(liveWorker.faces as RGB[][], 3, [suggestedCalibration], true,
+      liveWorker.neighbors as (RGB | null)[][])[0]?.value).toBe(expected);
   });
   for (const exposure of [0.7, 1, 1.15]) for (const offset of [0, 1, 2, 3]) {
     it(`reads the real pixels and neighboring sides at exposure ${exposure}, independent rolls ${offset}`, () => {

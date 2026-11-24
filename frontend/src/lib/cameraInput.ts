@@ -332,6 +332,8 @@ export function orientScan(value: string, size: CubeSize, neighbors: (RGB | null
               if (!rgb) return sum;
               const label = stickerColor(rgb);
               if (label < 0) return sum;
+              const inside = FACE_ORDER.indexOf(value[face * area + boundaryCells[side]]);
+              if (label === inside || label === (inside + 3) % 6) return sum;
               return sum + (prefix[mates[face][(side + turn) % 4]] === FACE_ORDER[label] ? 1 : -1);
             }, 0)));
           }

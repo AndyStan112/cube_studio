@@ -91,7 +91,9 @@ function imagePixel(image: PixelImage, point: Point): RGB {
   const offset = (y * image.width + x) * 4;
   return [image.data[offset], image.data[offset + 1], image.data[offset + 2]];
 }
-function neighboringStickers(image: PixelImage, corners: Point[], size: CubeSize) {
+function neighboringStickers(image: PixelImage, corners: Point[], size: CubeSize, colors: RGB[]) {
+  const middle = Math.floor(size / 2);
+  const boundaryCells = [middle, middle * size + size - 1, (size - 1) * size + middle, middle * size];
   return [0, 1, 2, 3].map((side): RGB | null => {
     const samples: RGB[] = [];
     for (const along of [-0.12, 0, 0.12])
@@ -109,6 +111,10 @@ function neighboringStickers(image: PixelImage, corners: Point[], size: CubeSize
       (Math.max(...rgb) > 60 && (Math.max(...rgb) - Math.min(...rgb)) / Math.max(...rgb) > 0.68)).length < 8) return null;
     const labels = samples.map(stickerColor);
     if (labels[0] < 0 || labels.some(label => label !== labels[0])) return null;
+    const inside = stickerColor(colors[boundaryCells[side]]);
+    // At an odd cube's middle edge, repeated/opposite colors cannot share a
+    // piece. Such samples are still on the main face or on the background.
+    if (size % 2 && (labels[0] === inside || labels[0] === (inside + 3) % 6)) return null;
     return [0, 1, 2].map(c => samples.map(rgb => rgb[c]).sort((a,b) => a-b)[4]) as RGB;
   });
 }
@@ -569,7 +575,7 @@ export function detectFace(
   for (const corners of edgeGridCandidates(image, size)) consider(corners);
   if (best) {
     const face = best as FaceDetection;
-    face.neighbors = neighboringStickers(image, face.corners, size);
+    face.neighbors = neighboringStickers(image, face.corners, size, face.colors);
   }
   return best;
 }
