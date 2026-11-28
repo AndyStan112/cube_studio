@@ -1,19 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, Box, Check, ChevronRight, Info, Layers3, LockKeyhole, RotateCcw, Sparkles, Trophy, Zap } from 'lucide-react';
 import { applyMove, inverse, type Cubie } from '../lib/cube';
-import { skills, trees, type MethodId, type SkillNode } from '../lib/curriculum';
+import { availableSkill, skills, trees, type MethodId, type SkillNode } from '../lib/curriculum';
 import { blankSkill, drillReward, levelInfo, type LearningAction, type LearningProgress } from '../lib/learning';
 import { caseState, goalMet, parseLearningMoves } from '../lib/learningGoals';
 import { notationQuestions } from '../lib/learningQuiz';
 import { moveDescription } from '../lib/teaching';
 import LearningCube from './LearningCube';
 import Sheet from './Sheet';
-import { graphAvailable, skillEdges, skillGraph, skillMethod, skillMethods } from '../lib/skillGraph';
+import { readStored, writeStored } from '../lib/offline';
+import { methodGraph } from '../lib/skillGraph';
 import './LearningPage.css';
 type Props = { progress: LearningProgress; award: (action: LearningAction) => number };
 type Phase = 'lesson' | 'drill' | 'test';
 const noMoves: string[] = [];
+const mapRowHeight = 184;
 export default function LearningPage({ progress, award }: Props) {
+  const [method, setMethod] = useState<MethodId>(() => { const saved=readStored<string>('cube-studio-learning-path-v1','beginner'); return saved in trees ? saved as MethodId : 'beginner'; });
+  const {nodes: skillGraph, edges: skillEdges} = useMemo(() => methodGraph(method), [method]);
+  const graphAvailable = (id: string, p: LearningProgress) => availableSkill(method, id, p);
+  const mapHeight = (Math.max(...skillGraph.map(n=>n.rank))+1)*mapRowHeight;
   const [selected, setSelected] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
   const [activity, setActivity] = useState(false);
@@ -32,26 +38,27 @@ export default function LearningPage({ progress, award }: Props) {
     return () => document.body.classList.remove('learning-in-session');
   }, [selected, mapScroll]);
   const openSkill = (id: string) => { mapScroll.top = window.scrollY; history.pushState({ ...history.state, cubeLearning: { skill: id, session: historySession.current } }, ''); setFocused(null); setSelected(id); };
-  if (selected) return <SkillFlow key={selected} skill={skills[selected]} method={skillMethod(selected, progress)} progress={progress} award={award} onBack={closeSkill} />;
-  const point = (id: string) => { const node = skillGraph.find(n => n.id === id)!; return { x: 50 + node.lane * 100, y: 38 + node.rank * 148 }; };
+  if (selected) return <SkillFlow key={selected} skill={skills[selected]} method={method} progress={progress} award={award} onBack={closeSkill} />;
+  const point = (id: string) => { const node = skillGraph.find(n => n.id === id)!; return { x: 50 + node.lane * 100, y: 38 + node.rank * mapRowHeight }; };
   return <div className="learning-shell">
     <div className="learning-map-toolbar"><div><strong>{mastered} / {skillGraph.length} skills</strong><small>Level {level.level} · {progress.xp} XP</small></div>{next && <button className="text-button" onClick={() => openSkill(next.id)}>Continue</button>}<button className="icon-button" aria-label="About the skill tree" onClick={() => setHelp(true)}><Info size={21}/></button></div>
-    <div className="learning-route-labels"><span>Layers</span><span>Blocks · Roux</span></div>
-    <div className="skill-map" aria-label="Cube skills: branching prerequisite map" style={{ height: 11 * 148 }}>
-      <svg className="skill-connections" viewBox={`0 0 300 ${11 * 148}`} preserveAspectRatio="none" aria-hidden="true">
+    <label className="learning-method"><span>Learning path</span><select aria-label="Learning path" value={method} onChange={event => {setMethod(event.target.value as MethodId);writeStored('cube-studio-learning-path-v1',event.target.value);setFocused(null);window.scrollTo({top:0,behavior:'instant'});}}>{(Object.keys(trees) as MethodId[]).map(id=><option key={id} value={id}>{trees[id].title}</option>)}</select></label>
+    <div className="skill-map" aria-label="Cube skills: branching prerequisite map" style={{ height: mapHeight }}>
+      <svg className="skill-connections" viewBox={`0 0 300 ${mapHeight}`} preserveAspectRatio="none" aria-hidden="true">
         {skillEdges.map(({ from, to }) => {
           const a = point(from), b = point(to);
-          const longSide = a.x === b.x && b.y - a.y > 160;
-          const d = longSide ? `M ${a.x+34} ${a.y} C 298 ${a.y},298 ${b.y},${b.x+34} ${b.y}` : `M ${a.x} ${a.y+40} C ${a.x} ${(a.y+b.y)/2},${b.x} ${(a.y+b.y)/2},${b.x} ${b.y-40}`;
+          // Families share a trunk instead of looping through adjacent lanes.
+          const branchY = a.y + 74;
+          const d = a.x === b.x ? `M ${a.x} ${a.y+40} V ${b.y-40}` : `M ${a.x} ${a.y+40} C ${a.x} ${branchY},${b.x} ${branchY},${b.x} ${branchY+34} V ${b.y-40}`;
           return <path key={`${from}:${to}`} d={d} className={progress.skills[from]?.passed ? 'is-complete' : ''} vectorEffect="non-scaling-stroke"/>;
         })}
       </svg>
       {skillGraph.map(node => {
         const status = progress.skills[node.id] ?? blankSkill(), available = graphAvailable(node.id, progress);
-        const speed = node.id === 'cross-planning' || node.id === 'flexible-loading';
+        const speed = trees[method].nodes.find(n=>n.id===node.id)?.kind === 'speed';
         const NodeIcon = status.passed ? Check : !available ? LockKeyhole : speed ? Zap : node.id === 'notation' ? BookOpen : node.id.includes('finish') ? Trophy : node.lane === 2 ? Box : Layers3;
         const completed = Number(status.lesson) + Number(status.drills > 0) + Number(status.passed);
-        return <div className={`map-node ${status.passed ? 'is-mastered' : available ? 'is-available' : 'is-locked'} ${speed ? 'is-speed' : ''}`} key={node.id} style={{ left: `${(node.lane+.5)/3*100}%`, top: node.rank * 148 }}>
+        return <div className={`map-node ${status.passed ? 'is-mastered' : available ? 'is-available' : 'is-locked'} ${speed ? 'is-speed' : ''}`} key={node.id} style={{ left: `${(node.lane+.5)/3*100}%`, top: node.rank * mapRowHeight }}>
           <button className="map-node-button" aria-label={`${skills[node.id].title}, ${status.passed ? 'mastered' : available ? `${completed} of 3 steps complete` : 'locked'}`} aria-haspopup="dialog" onClick={() => setFocused(node.id)}><NodeIcon size={26}/></button>
           <span className="map-node-steps" aria-hidden="true">{[status.lesson, status.drills > 0, status.passed].map((done,i) => <i key={i} className={done ? 'is-done' : ''}/>)}</span><span className="map-node-label">{node.label}</span>
         </div>;
@@ -61,10 +68,10 @@ export default function LearningPage({ progress, award }: Props) {
     {focused && <Sheet title={skills[focused].title} onClose={() => setFocused(null)}>
       <p className="node-summary">{skills[focused].subtitle}</p>
       <div className="node-steps">{[['Lesson',progress.skills[focused]?.lesson],['Practice',!!progress.skills[focused]?.drills],['Test',progress.skills[focused]?.passed]].map(([label,done]) => <span key={String(label)}>{done ? <Check size={17}/> : <span className="step-empty"/>}{label}</span>)}</div>
-      {!graphAvailable(focused, progress) && <div className="node-prerequisites"><h3>Unlock this skill</h3>{skillMethods(focused).map(method => <div key={method}><strong>{trees[method].title}</strong>{trees[method].nodes.find(n => n.id === focused)!.requires.map((group,i) => <p key={i}>{group.map(id => skills[id].title).join(' or ')}</p>)}</div>)}</div>}
+      {!graphAvailable(focused, progress) && <div className="node-prerequisites"><h3>Unlock this skill</h3><div><strong>{trees[method].title}</strong>{trees[method].nodes.find(n => n.id === focused)!.requires.map((group,i) => <p key={i}>{group.map(id => skills[id].title).join(' or ')}</p>)}</div></div>}
       <button className="button" disabled={!graphAvailable(focused, progress)} onClick={() => openSkill(focused)}>{progress.skills[focused]?.passed ? 'Practise again' : progress.skills[focused]?.lesson ? 'Resume skill' : 'Start lesson'} · {skills[focused].minutes} min</button>
     </Sheet>}
-    {help && <Sheet title="Your skill tree" onClose={() => setHelp(false)}><div className="solver-info-copy"><p>Follow the connectors to build skills in layers or blocks. Some skills are shared between both routes.</p><p>Each node has a lesson, practice and a test. Passing the test unlocks connected skills. Either loading spot or two lines unlocks the first block; the second block also needs slice turns.</p><p>Lightning nodes are optional technique upgrades. Learning progress is saved for this profile on this device.</p><button className="text-button" onClick={() => { setHelp(false); setActivity(true); }}>View XP activity</button></div></Sheet>}
+    {help && <Sheet title="Your skill tree" onClose={() => setHelp(false)}><div className="solver-info-copy"><p>Choose Beginner, CFOP, Roux or One-handed. Follow the connectors; shared skills keep their progress when you switch paths.</p><p>Each node has a lesson, practice and a test. Passing the test unlocks connected skills. Open any locked node to see its prerequisites.</p><p>Lightning nodes are optional technique upgrades. Learning progress is saved for this profile on this device.</p><button className="text-button" onClick={() => { setHelp(false); setActivity(true); }}>View XP activity</button></div></Sheet>}
     {activity && <Sheet title="XP activity" onClose={() => setActivity(false)}><XPActivity progress={progress}/></Sheet>}
   </div>;
 }

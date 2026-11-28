@@ -25,6 +25,7 @@ import './AlgorithmPage.css';
 const Cube = lazy(() => import("./Cube"));
 
 export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPuzzle }: AlgorithmCatalog & { puzzleSize: CubeSize }) {
+  const [query, setQuery] = useState('');
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [guideStep, setGuideStep] = useState(0);
@@ -105,7 +106,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
           <select
             aria-label="Algorithm set"
             value={selectedSet}
-            onChange={(event) => changeFilter(event.target.value)}
+            onChange={(event) => { setQuery(''); changeFilter(event.target.value); }}
           >
             <option value="all">All sets</option>
             {puzzleSets.map((item) => (
@@ -134,8 +135,10 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
             </select>
           </label>
         )}
+        <label className="library-set"><span>Find a case</span><input type="search" aria-label="Find algorithm" placeholder="Name or pattern" value={query} onChange={event=>setQuery(event.target.value)}/></label>
+        {activeSet && <p className="algorithm-set-description">{activeSet.description}</p>}
         <div className="algorithm-list">
-          {visibleAlgorithms.map((item, index) => (
+          {visibleAlgorithms.filter(item=>`${item.name} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase())).map((item, index) => (
             <div className="algorithm-entry" key={item.id}><button
               className={`algorithm-option ${item.id === algorithm?.id ? "selected" : ""}`}
               aria-pressed={item.id === algorithm?.id}
@@ -157,8 +160,8 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
             </div>
           ))}
         </div>
-        {sets.length > 0 && !visibleAlgorithms.length && (
-          <p className="empty-state">No algorithms in this section.</p>
+        {sets.length > 0 && !visibleAlgorithms.some(item=>`${item.name} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase())) && (
+          <p className="empty-state">No matching algorithms. Try another name or set.</p>
         )}
       </aside>
 </>;
@@ -170,7 +173,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
       <section className="trainer-card">
         <div className="trainer-heading">
           <div className="algorithm-title">
-            {memberships.length > 0 && <div className="eyebrow">{memberships.map(item => item.name).join(' · ')}</div>}
+            {memberships.length > 0 && <div className="eyebrow">{activeSet?.name ?? memberships[0]?.name}</div>}
             <div className="algorithm-title-row"><h2>{algorithm?.name || (sets.length ? 'Choose an algorithm' : 'Loading algorithms…')}</h2><span className="algorithm-turn-count" aria-label={`${moves.length} moves`}><RotateCw size={17} aria-hidden="true"/>{moves.length}</span></div>
             {algorithm && algorithm.variations.length > 1 && <small className="algorithm-selected-variation">{variation?.name}</small>}
           </div>
@@ -200,7 +203,7 @@ export default function AlgorithmPage({ algorithms, sets, puzzleSize: selectedPu
       {guideOpen && algorithm && <Sheet title="Algorithm guide" onClose={() => setGuideOpen(false)}>
         <div className="algorithm-guide">
           <div className="algorithm-guide-progress" role="progressbar" aria-label="Guide progress" aria-valuemin={0} aria-valuemax={3} aria-valuenow={guideStep+1}>{[0,1,2].map(index => <i key={index} className={index <= guideStep ? 'is-done' : ''}/>)}</div>
-          {guideStep === 0 ? <><h3>{algorithm.name}</h3><div className="algorithm-guide-tokens" aria-hidden="true">{moves.slice(0,4).map((move,index) => <span key={index}>{move}</span>)}</div><p>{algorithm.description}</p></> : guideStep === 1 ? <><h3>Read a turn</h3><div className="algorithm-guide-move">{currentMove || 'R'}</div><p>{describeMove(currentMove || 'R')}</p><div className="algorithm-guide-symbols"><span><strong>′</strong><small>Reverse</small></span><span><strong>2</strong><small>Half turn</small></span></div></> : <><h3>Explore the cube</h3><div className="algorithm-guide-gestures"><span><Hand size={35}/><small>Drag to orbit</small></span><span><ZoomIn size={35}/><small>Pinch to zoom</small></span></div><div className="algorithm-guide-gestures"><span><RotateCcw size={26}/><small>Reset view</small></span><span><Eye size={26}/><small>See-through</small></span><span><Contrast size={26}/><small>Focus stickers</small></span></div><p>Yellow on top. Red facing you.</p></>}
+          {guideStep === 0 ? <><h3>{algorithm.name}</h3><div className="algorithm-guide-tokens" aria-hidden="true">{moves.slice(0,4).map((move,index) => <span key={index}>{move}</span>)}</div><p>{algorithm.description}</p>{algorithm.source && <a className="text-button" href={algorithm.source} target="_blank" rel="noreferrer">Case reference</a>}</> : guideStep === 1 ? <><h3>Read a turn</h3><div className="algorithm-guide-move">{currentMove || 'R'}</div><p>{describeMove(currentMove || 'R')}</p><div className="algorithm-guide-symbols"><span><strong>′</strong><small>Reverse</small></span><span><strong>2</strong><small>Half turn</small></span></div></> : <><h3>Explore the cube</h3><div className="algorithm-guide-gestures"><span><Hand size={35}/><small>Drag to orbit</small></span><span><ZoomIn size={35}/><small>Pinch to zoom</small></span></div><div className="algorithm-guide-gestures"><span><RotateCcw size={26}/><small>Reset view</small></span><span><Eye size={26}/><small>See-through</small></span><span><Contrast size={26}/><small>Focus stickers</small></span></div><p>Yellow on top. Red facing you.</p></>}
           <div className="algorithm-guide-navigation"><button className="text-button" disabled={guideStep === 0} onClick={() => setGuideStep(value => value-1)}>Back</button><span>{guideStep+1}/3</span><button className="button" onClick={() => guideStep === 2 ? setGuideOpen(false) : setGuideStep(value => value+1)}>{guideStep === 2 ? 'Done' : 'Next'}</button></div>
         </div>
       </Sheet>}

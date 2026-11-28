@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import type { AlgorithmCatalog } from "./api";
 import { belongsTo, algorithmFocus } from "./catalog";
 import { isRelevantSticker, type StickerFocus } from "./stickerFocus";
+import { caseState, atHome, goalMet } from './learningGoals';
 import { applyMove, solved } from "./cube";
 const catalog = JSON.parse(
   readFileSync(
@@ -79,5 +80,30 @@ describe("relevant stickers", () => {
     expect(isRelevantSticker(piece.home, 0, "corner-orientation")).toBe(false);
     expect(isRelevantSticker(piece.home, 0, "corner-permutation")).toBe(true);
     expect(isRelevantSticker(piece.home, 2, "corner-permutation")).toBe(false);
+  });
+});
+
+describe('complete method libraries', () => {
+  const inSet = (id: string) => catalog.algorithms.filter(a=>belongsTo(a,id));
+  it('contains all standard CFOP, CMLL and OH cases with stable IDs and references', () => {
+    for (const [set,count] of [['f2l',41],['oll',57],['pll',21],['cmll',42],['oh-oll',57],['oh-pll',21],['2-look-oll',10],['2-look-pll',6]] as const) {
+      expect(inSet(set)).toHaveLength(count);
+      for(const a of inSet(set)) expect(a.source).toMatch(/^https:\/\/(speedcubedb.com|jperm.net)\//);
+    }
+    expect(new Set(catalog.algorithms.map(a=>a.id)).size).toBe(catalog.algorithms.length);
+  });
+  it('has legal moves and preserves each set’s required foundation in the shown setup', () => {
+    for(const a of catalog.algorithms.filter(a=>a.puzzle_size===3)) for(const v of a.variations) {
+      const state=caseState(v.moves.split(' '));
+      const sets=a.memberships.map(m=>m.set_id);
+      expect(state.filter(c=>c.home.filter(n=>n!==0).length===1).every(atHome),`${a.id}: centers`).toBe(true);
+      if(sets.some(s=>['oll','pll','oh-oll','oh-pll'].includes(s))) expect(goalMet(state,'f2l'),`${a.id}: F2L`).toBe(true);
+      if(sets.some(s=>['pll','oh-pll'].includes(s))) expect(goalMet(state,'top-oriented'),`${a.id}: OLL`).toBe(true);
+      if(sets.includes('cmll')) expect(goalMet(state,'two-blocks'),`${a.id}: blocks`).toBe(true);
+      if(sets.includes('f2l')) {
+        expect(goalMet(state,'cross'),`${a.id}: cross`).toBe(true);
+        expect(state.filter(c=>c.home[1]<=0 && !(c.home[0]===1 && c.home[2]===1)).every(atHome),`${a.id}: other slots`).toBe(true);
+      }
+    }
   });
 });

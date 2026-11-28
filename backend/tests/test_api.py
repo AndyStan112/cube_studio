@@ -38,8 +38,8 @@ def test_accounts_and_solve_ownership():
         assert all(item['id'] != solve['id'] for item in client.get('/solves', headers=headers).json())
         assert client.get('/auth/me').status_code == 401
         catalog = client.get('/algorithm-catalog').json()
-        assert len(catalog['sets']) == 5
-        assert len(catalog['algorithms']) == 7
+        assert len(catalog['sets']) == 12
+        assert len(catalog['algorithms']) == 251
         sune = next(item for item in catalog['algorithms'] if item['id'] == 'sune')
         assert '2-look-cmll' in sune['set_ids']  # Earlier installed clients.
         cmll = next(item for item in catalog['sets'] if item['id'] == '2-look-cmll')
@@ -52,5 +52,5 @@ def test_accounts_and_solve_ownership():
         parity = [item for item in catalog['algorithms'] if item['puzzle_size'] > 3]
         assert {item['id'] for item in parity} == {'4x4-oll-parity', '4x4-pll-parity', '5x5-edge-parity'}
         legacy = client.get('/algorithms').json()
-        assert len(legacy) == 4
+        assert len(legacy) == 248
         assert all(item['set'] and item['moves'] for item in legacy)

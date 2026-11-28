@@ -37,6 +37,7 @@ export type AlgorithmVariation = {
   case?: string;
 };
 export type Algorithm = {
+  source?: string;
   puzzle_size?: CubeSize;
   id: string;
   name: string;

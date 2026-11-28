@@ -22,7 +22,8 @@ def test_algorithm_catalog_memberships_and_variations():
         assert len(sections[item["id"]]) == len(item["sections"])
         assert all(section["focus"] in focuses for section in item["sections"])
     assert len(set_ids) == len(ALGORITHM_SETS)
-    assert {item["id"] for item in ALGORITHMS} == {"sune", "reverse-sune", "j-perm", "t-perm", "4x4-oll-parity", "4x4-pll-parity", "5x5-edge-parity"}
+    assert {"sune", "reverse-sune", "j-perm", "t-perm", "4x4-oll-parity", "4x4-pll-parity", "5x5-edge-parity"} <= {item["id"] for item in ALGORITHMS}
+    assert len({item["id"] for item in ALGORITHMS}) == len(ALGORITHMS)
     set_sizes = {item["id"]: item["puzzle_size"] for item in ALGORITHM_SETS}
     for algorithm in ALGORITHMS:
         assert algorithm["puzzle_size"] in {3, 4, 5}
@@ -45,7 +46,7 @@ def test_algorithm_catalog_memberships_and_variations():
             assert variant["moves"].split()
             assert all(re.fullmatch(r"(?:(?:[2-5])?[RLUDFB]w?|[xyz])(?:2|')?", move) for move in variant["moves"].split())
     sune = next(item for item in ALGORITHMS if item["id"] == "sune")
-    assert {item["set_id"] for item in sune["memberships"]} == {"2-look-oll", "2-look-cmll"}
+    assert {item["set_id"] for item in sune["memberships"]} == {"2-look-oll", "2-look-cmll", "oll"}
     assert sum(item["id"] == "sune" for item in ALGORITHMS) == 1
     cmll_sections = {"corner-permutation": set(), "corner-orientation": set()}
     for algorithm in ALGORITHMS:
@@ -65,3 +66,13 @@ def test_lefty_j_perm_is_a_mirrored_case_with_its_own_notation():
     mirrored = [mirror[move[0]] + ("2" if move.endswith("2") else "" if move.endswith("'") else "'")
                 for move in variants["normal"]["moves"].split()]
     assert " ".join(mirrored) == variants["lefty"]["moves"]
+
+
+def test_frontend_lesson_catalog_matches_backend_catalog():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    frontend = json.loads((root / "frontend/src/lib/algorithmCatalog.json").read_text())
+    backend = json.loads((root / "backend/app/algorithm_catalog.json").read_text())
+    assert frontend == backend, "Copy the canonical backend catalog to frontend/src/lib/algorithmCatalog.json after editing it."

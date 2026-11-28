@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { skills } from './curriculum';
+import { skills, trees, type MethodId } from './curriculum';
 import { emptyLearning } from './learning';
-import { graphAvailable, skillEdges, skillGraph } from './skillGraph';
+import { graphAvailable, skillEdges, skillGraph, methodGraph } from './skillGraph';
 
 const passed = (ids: string[]) => {
   const progress = emptyLearning();
@@ -38,4 +38,17 @@ describe('branching skill map', () => {
     expect(graphAvailable('beginner-finish', progress)).toBe(true);
     expect(graphAvailable('roux-arrow', progress)).toBe(false);
   });
+});
+
+it('lays out every method without missing nodes, dangling edges or overlapping positions', () => {
+  for(const method of Object.keys(trees) as MethodId[]) {
+    const {nodes,edges}=methodGraph(method);
+    expect(nodes.map(n=>n.id).sort()).toEqual(trees[method].nodes.map(n=>n.id).sort());
+    expect(new Set(nodes.map(n=>`${n.lane}:${n.rank}`)).size).toBe(nodes.length);
+    for(const edge of edges) expect(nodes.find(n=>n.id===edge.from)!.rank).toBeLessThan(nodes.find(n=>n.id===edge.to)!.rank);
+    for(const n of nodes) {
+      expect(skills[n.id].slides.length).toBeGreaterThan(0);
+      expect(skills[n.id].quiz || skills[n.id].cases.length>0).toBeTruthy();
+    }
+  }
 });

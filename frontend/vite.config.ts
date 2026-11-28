@@ -22,6 +22,7 @@ function hashSources(directory: string) {
 }
 hashSources('src');
 sourceHash.update(readFileSync('package-lock.json'));
+sourceHash.update(readFileSync('src/lib/algorithmCatalog.json'));
 
 export default defineConfig({
   define: {__APP_VERSION__: JSON.stringify(sourceHash.digest('hex').slice(0,16)), __APP_BUILT_AT__: JSON.stringify(new Date().toISOString())},

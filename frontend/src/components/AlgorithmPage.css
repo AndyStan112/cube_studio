@@ -41,3 +41,6 @@
 .algorithm-guide-navigation > span {font-size:.8125rem;color:var(--text-dim);font-variant-numeric:tabular-nums;}
 .algorithm-guide-navigation > button {min-width:90px;}
 @media(max-height:650px) {.algorithm-guide-tokens,.algorithm-guide-gestures {padding:16px 0;}.algorithm-guide h3 {margin-top:16px;}}
+
+.algorithm-set-description {font-size:.875rem;line-height:1.5;color:var(--text-dim);margin:0 0 16px;}
+.algorithm-library input[type=search] {width:100%;min-height:48px;font:inherit;background:var(--surface);color:var(--text);border:1px solid var(--border-bright);border-radius:8px;padding:10px 12px;}

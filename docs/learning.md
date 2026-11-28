@@ -1,11 +1,11 @@
 # Learning progression
 
-The learning page is a connected 3×3 skill map covering layer building and Roux
-block building. The visible edges are derived from the actual method prerequisites.
-Notation opens independent edge, slice and block-building choices. Loading spot
-and two lines are alternative routes into the first block; the second block also
-requires slice turns. The routes meet at shared corner skills and branch again
-for their finishes. Optional cross-planning and flexible-loading nodes do not gate
+The learning page has focused Beginner, CFOP, Roux and One-handed paths. The
+visible connectors come from each path's actual prerequisites; case families
+branch after the introductory method stages. Shared skills retain their IDs and
+progress. The path selector keeps the expanded curriculum manageable on phones.
+Loading spot and two lines remain alternative routes into the first Roux block;
+the second block also requires slice turns. Optional speed skills do not gate
 the main routes.
 
 Skill IDs identify knowledge rather than a route membership. Existing completed
@@ -58,3 +58,37 @@ the blue-white base at DL. The upper corners may be offset by a U turn during
 edge orientation; the goal checks the corner group rather than requiring an
 unnecessary top-layer alignment. UL/UR placement also checks preserved edge
 orientation.
+
+
+## Algorithm catalog and advanced lessons
+
+`backend/app/algorithm_catalog.json` is the canonical library. Case-family lessons
+in `frontend/src/lib/advancedCurriculum.ts` use the synchronized `frontend/src/lib/algorithmCatalog.json` snapshot, so the
+viewer, inverse setup, drill and checked test stay consistent. The catalog has
+41 standard F2L, 57 OLL, 21 PLL, 42 CMLL, 57 OH OLL and 21 OH PLL cases, alongside
+two-look subsets, six LSE tools and the existing big-cube parity examples.
+Memberships share existing Sune/J/T IDs rather than duplicating historical
+progress references. The historical J-perm entry still includes a labelled Ja
+mirror; the PLL set also has its dedicated Ja case.
+
+Move sequences and case classifications were checked on 2026-11-28 against
+[SpeedCubeDB](https://speedcubedb.com/a/3x3) for CFOP/CMLL,
+[J Perm OH OLL](https://jperm.net/algs/oh/oll) and
+[J Perm OH PLL](https://jperm.net/algs/oh/pll), with LSE tools checked against the
+[Roux community tutorial](https://tutorial.rouxers.com/beginners/lse.html).
+Each sourced catalog entry has its reference URL; the algorithm guide exposes
+it. Lesson captions are original. Lowercase wide notation is stored as `Rw` and
+similar explicit wide turns. Middle slices use `2L`/`2D`/`2F` for compatibility.
+Whole-cube frame adjustments restore the viewer's fixed center frame.
+
+Catalog tests check full-set counts, legal moves, center alignment and the
+pieces each method promises to preserve. OLL tests check top edges as well as
+corners. Physical exercises cover inspection, lookahead, grip and recognition;
+a move-entry test cannot verify hand usage, comfort, arbitrary-state mastery or
+speed. OH sequences favor left-hand execution; the grip lesson discusses hand
+choice and mirrored triggers.
+
+The frontend image builds from `frontend/` alone. After changing the canonical
+backend catalog, copy it to `frontend/src/lib/algorithmCatalog.json`; backend
+unit tests require the two copies to match. Vite includes the bundled catalog
+in the app version hash so installed PWAs detect content-only updates.

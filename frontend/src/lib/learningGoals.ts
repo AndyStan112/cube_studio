@@ -7,7 +7,7 @@ export function parseLearningMoves(value: string): string[] {
   if (!moves.length) throw Error('Enter the turns you would make.');
   if (moves.length > 100) throw Error('Try a sequence of 100 moves or fewer.');
   for (const move of moves) {
-    if (!/^[URFDLBMESxyz](2|')?$/.test(move)) throw Error(`Unknown move “${move}”. Use face turns, M/E/S slices, or x/y/z rotations.`);
+    if (!/^(?:[URFDLB]w?|[MESxyz]|2[RLUDFB])(2|')?$/.test(move)) throw Error(`Unknown move “${move}”. Use face turns, M/E/S slices, wide turns (Rw), or x/y/z rotations.`);
     moveInfo(move);
   }
   return moves;
@@ -33,7 +33,7 @@ export function goalMet(state: Cubie[], goal: Goal, target: Home = [0, -1, 1]) {
     case 'bottom-layer': return all(c => c.home[1] === -1);
     case 'f2l': return all(c => c.home[1] <= 0);
     case 'yellow-cross': return all(c => c.home[1] <= 0) && state.filter(c => isEdge(c) && c.home[1] === 1).every(udStickerVertical);
-    case 'top-oriented': return all(c => c.home[1] <= 0) && state.filter(c => isCorner(c) && c.home[1] === 1).every(c => new Vector3(0, 1, 0).applyQuaternion(c.rotation).y > .99);
+    case 'top-oriented': return all(c => c.home[1] <= 0) && state.filter(c => c.home[1] === 1).every(c => new Vector3(0, 1, 0).applyQuaternion(c.rotation).y > .99);
     case 'top-corners': return blocks() && all(c => isCorner(c));
     case 'left-square': return all(c => leftBlock(c) && c.home[2] >= 0);
     case 'left-block': return all(leftBlock);

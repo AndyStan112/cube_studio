@@ -11,6 +11,12 @@
           "name": "Corner orientation",
           "description": "Orient the last-layer corners.",
           "focus": "corner-orientation"
+        },
+        {
+          "id": "edge-orientation",
+          "name": "Edge orientation",
+          "description": "",
+          "focus": "last-layer"
         }
       ],
       "puzzle_size": 3
@@ -38,10 +44,29 @@
     },
     {
       "id": "pll",
-      "name": "PLL",
-      "description": "Last-layer permutation.",
+      "name": "CFOP · PLL",
+      "description": "All 21 permutation cases. Recognize blocks and headlights; finish with AUF.",
       "focus": "last-layer",
-      "sections": [],
+      "sections": [
+        {
+          "id": "corners-only",
+          "name": "Corners only",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "corners-and-edges",
+          "name": "Corners and edges",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "edges-only",
+          "name": "Edges only",
+          "description": "",
+          "focus": "last-layer"
+        }
+      ],
       "puzzle_size": 3
     },
     {
@@ -59,12 +84,381 @@
       "focus": "all",
       "sections": [],
       "puzzle_size": 5
+    },
+    {
+      "id": "oll",
+      "name": "CFOP · OLL",
+      "description": "All 57 orientation cases. Match top stickers and side stickers before choosing a case.",
+      "focus": "last-layer",
+      "sections": [
+        {
+          "id": "dot-case",
+          "name": "Dot Case",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "square-shapes",
+          "name": "Square Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "lightning-shapes",
+          "name": "Lightning Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "fish-shapes",
+          "name": "Fish Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "knight-move-shapes",
+          "name": "Knight Move Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "ocll",
+          "name": "OCLL",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "all-corners-oriented",
+          "name": "All Corners Oriented",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "awkward-shapes",
+          "name": "Awkward Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "p-shapes",
+          "name": "P Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "t-shapes",
+          "name": "T Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "c-shapes",
+          "name": "C Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "w-shapes",
+          "name": "W Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "l-shapes",
+          "name": "L Shapes",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "line-shapes",
+          "name": "Line Shapes",
+          "description": "",
+          "focus": "last-layer"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "f2l",
+      "name": "CFOP · F2L",
+      "description": "All 41 standard front-right pair cases. Learn the pairing idea, then apply it to other slots.",
+      "focus": "all",
+      "sections": [
+        {
+          "id": "free-pairs",
+          "name": "Free Pairs",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "disconnected-pairs",
+          "name": "Disconnected Pairs",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "connected-pairs",
+          "name": "Connected Pairs",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "corner-in-slot",
+          "name": "Corner In Slot",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "edge-in-slot",
+          "name": "Edge In Slot",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "pieces-in-slot",
+          "name": "Pieces In Slot",
+          "description": "",
+          "focus": "all"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "cmll",
+      "name": "Roux · CMLL",
+      "description": "All 42 corner cases. Preserve both blocks; the M-slice edges may change.",
+      "focus": "last-layer-corners",
+      "sections": [
+        {
+          "id": "solved",
+          "name": "Solved",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "h",
+          "name": "H",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "pi",
+          "name": "Pi",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "u",
+          "name": "U",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "t",
+          "name": "T",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "sune",
+          "name": "Sune",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "anti-sune",
+          "name": "Anti Sune",
+          "description": "",
+          "focus": "last-layer-corners"
+        },
+        {
+          "id": "l",
+          "name": "L",
+          "description": "",
+          "focus": "last-layer-corners"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "2-look-pll",
+      "name": "CFOP · 2-look PLL",
+      "description": "Place corners first, then solve the remaining edges.",
+      "focus": "last-layer",
+      "sections": [
+        {
+          "id": "corners",
+          "name": "Corners",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "edges",
+          "name": "Edges",
+          "description": "",
+          "focus": "last-layer"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "oh-oll",
+      "name": "One-handed · OLL",
+      "description": "Complete one-handed case set. Sequences favor left-hand execution; compare grips before building speed.",
+      "focus": "last-layer",
+      "sections": [
+        {
+          "id": "dot",
+          "name": "Dot",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "square-shape",
+          "name": "Square Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "small-lightning-bolt",
+          "name": "Small Lightning Bolt",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "fish-shape",
+          "name": "Fish Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "knight-move-shape",
+          "name": "Knight Move Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "cross",
+          "name": "Cross",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "corners-oriented",
+          "name": "Corners Oriented",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "awkward-shape",
+          "name": "Awkward Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "p-shape",
+          "name": "P Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "t-shape",
+          "name": "T Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "c-shape",
+          "name": "C Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "w-shape",
+          "name": "W Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "big-lightning-bolt",
+          "name": "Big Lightning Bolt",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "small-l-shape",
+          "name": "Small L Shape",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "i-shape",
+          "name": "I Shape",
+          "description": "",
+          "focus": "last-layer"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "oh-pll",
+      "name": "One-handed · PLL",
+      "description": "Complete one-handed case set. Sequences favor left-hand execution; compare grips before building speed.",
+      "focus": "last-layer",
+      "sections": [
+        {
+          "id": "edges-only",
+          "name": "Edges Only",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "adjacent-corner-swap",
+          "name": "Adjacent Corner Swap",
+          "description": "",
+          "focus": "last-layer"
+        },
+        {
+          "id": "diagonal-corner-swap",
+          "name": "Diagonal Corner Swap",
+          "description": "",
+          "focus": "last-layer"
+        }
+      ],
+      "puzzle_size": 3
+    },
+    {
+      "id": "roux-lse",
+      "name": "Roux · Last six edges",
+      "description": "Tools for EO, UL/UR placement and the final four edges. These are building blocks, not a one-algorithm-per-case set.",
+      "focus": "all",
+      "sections": [
+        {
+          "id": "edge-orientation",
+          "name": "Edge orientation",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "ul-and-ur",
+          "name": "UL and UR",
+          "description": "",
+          "focus": "all"
+        },
+        {
+          "id": "last-four-edges",
+          "name": "Last four edges",
+          "description": "",
+          "focus": "all"
+        }
+      ],
+      "puzzle_size": 3
     }
   ],
   "algorithms": [
     {
       "id": "sune",
-      "name": "Sune",
+      "name": "Sune · OLL 27",
       "description": "Orient the last-layer corners.",
       "variations": [
         {
@@ -85,13 +479,20 @@
           "section_ids": [
             "corner-orientation"
           ]
+        },
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
         }
       ],
-      "puzzle_size": 3
+      "puzzle_size": 3,
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_27"
     },
     {
       "id": "reverse-sune",
-      "name": "Reverse Sune",
+      "name": "Anti-Sune · OLL 26",
       "description": "The inverse corner-orientation case of Sune.",
       "variations": [
         {
@@ -112,9 +513,16 @@
           "section_ids": [
             "corner-orientation"
           ]
+        },
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
         }
       ],
-      "puzzle_size": 3
+      "puzzle_size": 3,
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_26"
     },
     {
       "id": "j-perm",
@@ -142,17 +550,20 @@
       ],
       "memberships": [
         {
-          "set_id": "pll",
-          "section_ids": []
-        },
-        {
           "set_id": "2-look-cmll",
           "section_ids": [
             "corner-permutation"
           ]
+        },
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
         }
       ],
-      "puzzle_size": 3
+      "puzzle_size": 3,
+      "source": "https://speedcubedb.com/a/3x3/PLL/Jb"
     },
     {
       "id": "t-perm",
@@ -167,17 +578,20 @@
       ],
       "memberships": [
         {
-          "set_id": "pll",
-          "section_ids": []
-        },
-        {
           "set_id": "2-look-cmll",
           "section_ids": [
             "corner-permutation"
           ]
+        },
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
         }
       ],
-      "puzzle_size": 3
+      "puzzle_size": 3,
+      "source": "https://speedcubedb.com/a/3x3/PLL/T"
     },
     {
       "id": "4x4-oll-parity",
@@ -240,6 +654,5440 @@
           "section_ids": []
         }
       ]
+    },
+    {
+      "id": "oll-1",
+      "name": "OLL 1",
+      "description": "OLL 1: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R2 F R F' U2 R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_1"
+    },
+    {
+      "id": "oll-2",
+      "name": "OLL 2",
+      "description": "OLL 2: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' R U' R2 D' Rw U Rw' D R2 U R' y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_2"
+    },
+    {
+      "id": "oll-3",
+      "name": "OLL 3",
+      "description": "OLL 3: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' Fw R U R' U' Fw' U' F R U R' U' F' y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_3"
+    },
+    {
+      "id": "oll-4",
+      "name": "OLL 4",
+      "description": "OLL 4: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' R' F2 R2 U2 R' F' R U2 R2 F2 R y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_4"
+    },
+    {
+      "id": "oll-5",
+      "name": "OLL 5",
+      "description": "OLL 5: square shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "square-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U2 R U R' U Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_5"
+    },
+    {
+      "id": "oll-6",
+      "name": "OLL 6",
+      "description": "OLL 6: square shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "square-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U2 R' U' R U' Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_6"
+    },
+    {
+      "id": "oll-7",
+      "name": "OLL 7",
+      "description": "OLL 7: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U R U2 Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_7"
+    },
+    {
+      "id": "oll-8",
+      "name": "OLL 8",
+      "description": "OLL 8: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 Rw' U' R U' R' U2 Rw y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_8"
+    },
+    {
+      "id": "oll-9",
+      "name": "OLL 9",
+      "description": "OLL 9: fish shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "fish-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R U R' U' R' F R2 U R' U' F' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_9"
+    },
+    {
+      "id": "oll-10",
+      "name": "OLL 10",
+      "description": "OLL 10: fish shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "fish-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R' F R F' R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_10"
+    },
+    {
+      "id": "oll-11",
+      "name": "OLL 11",
+      "description": "OLL 11: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' R2 U R' U R U2 R' U 2L'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_11"
+    },
+    {
+      "id": "oll-12",
+      "name": "OLL 12",
+      "description": "OLL 12: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' 2L' R' U' R U' R' U2 R U' 2L y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_12"
+    },
+    {
+      "id": "oll-13",
+      "name": "OLL 13",
+      "description": "OLL 13: knight move shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "knight-move-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U2 R' U' R U R' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_13"
+    },
+    {
+      "id": "oll-14",
+      "name": "OLL 14",
+      "description": "OLL 14: knight move shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "knight-move-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F R U R' F' R F U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_14"
+    },
+    {
+      "id": "oll-15",
+      "name": "OLL 15",
+      "description": "OLL 15: knight move shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "knight-move-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U' Rw R' U' R U Rw' U Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_15"
+    },
+    {
+      "id": "oll-16",
+      "name": "OLL 16",
+      "description": "OLL 16: knight move shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "knight-move-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U Rw' R U R' U' Rw U' Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_16"
+    },
+    {
+      "id": "oll-17",
+      "name": "OLL 17",
+      "description": "OLL 17: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R' F R F' U2 R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_17"
+    },
+    {
+      "id": "oll-18",
+      "name": "OLL 18",
+      "description": "OLL 18: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R U2 R2 F R F' U2 2L' U R U' Rw' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_18"
+    },
+    {
+      "id": "oll-19",
+      "name": "OLL 19",
+      "description": "OLL 19: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y 2F' R U R' 2F U' R' F R F' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_19"
+    },
+    {
+      "id": "oll-20",
+      "name": "OLL 20",
+      "description": "OLL 20: dot case. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "dot-case"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' 2L2 U R U' R' U' 2L'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_20"
+    },
+    {
+      "id": "oll-21",
+      "name": "OLL 21",
+      "description": "OLL 21: ocll. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
+        },
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "corner-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U' R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_21"
+    },
+    {
+      "id": "oll-22",
+      "name": "OLL 22",
+      "description": "OLL 22: ocll. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
+        },
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "corner-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R2 U' R2 U' R2 U2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_22"
+    },
+    {
+      "id": "oll-23",
+      "name": "OLL 23",
+      "description": "OLL 23: ocll. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
+        },
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "corner-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 D R' U2 R D' R' U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_23"
+    },
+    {
+      "id": "oll-24",
+      "name": "OLL 24",
+      "description": "OLL 24: ocll. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
+        },
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "corner-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' Rw' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_24"
+    },
+    {
+      "id": "oll-25",
+      "name": "OLL 25",
+      "description": "OLL 25: ocll. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "ocll"
+          ]
+        },
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "corner-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R D R' U2 R D' R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_25"
+    },
+    {
+      "id": "oll-28",
+      "name": "OLL 28",
+      "description": "OLL 28: all corners oriented. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "all-corners-oriented"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' 2L U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_28"
+    },
+    {
+      "id": "oll-29",
+      "name": "OLL 29",
+      "description": "OLL 29: awkward shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "awkward-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw2 D' Rw U Rw' D Rw2 U' Rw' U' Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_29"
+    },
+    {
+      "id": "oll-30",
+      "name": "OLL 30",
+      "description": "OLL 30: awkward shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "awkward-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 F U R U2 R' U' R U2 R' U' F' y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_30"
+    },
+    {
+      "id": "oll-31",
+      "name": "OLL 31",
+      "description": "OLL 31: p shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "p-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' F U R U' R' F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_31"
+    },
+    {
+      "id": "oll-32",
+      "name": "OLL 32",
+      "description": "OLL 32: p shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "p-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2F R U R' U' R' F R Fw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_32"
+    },
+    {
+      "id": "oll-33",
+      "name": "OLL 33",
+      "description": "OLL 33: t shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "t-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_33"
+    },
+    {
+      "id": "oll-34",
+      "name": "OLL 34",
+      "description": "OLL 34: c shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "c-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y Fw R Fw' U' Rw' U' R U 2L' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_34"
+    },
+    {
+      "id": "oll-35",
+      "name": "OLL 35",
+      "description": "OLL 35: fish shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "fish-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R2 F R F' R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_35"
+    },
+    {
+      "id": "oll-36",
+      "name": "OLL 36",
+      "description": "OLL 36: w shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "w-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R U R2 F' U' F U R2 U2 R' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_36"
+    },
+    {
+      "id": "oll-37",
+      "name": "OLL 37",
+      "description": "OLL 37: fish shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "fish-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R' F' R U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_37"
+    },
+    {
+      "id": "oll-38",
+      "name": "OLL 38",
+      "description": "OLL 38: w shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "w-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U' R' U' R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_38"
+    },
+    {
+      "id": "oll-39",
+      "name": "OLL 39",
+      "description": "OLL 39: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' Fw' Rw U Rw' U' Rw' F Rw 2F y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_39"
+    },
+    {
+      "id": "oll-40",
+      "name": "OLL 40",
+      "description": "OLL 40: lightning shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "lightning-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R' F R U R' U' F' U R y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_40"
+    },
+    {
+      "id": "oll-41",
+      "name": "OLL 41",
+      "description": "OLL 41: awkward shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "awkward-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 R U R' U R U2 R' F R U R' U' F' y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_41"
+    },
+    {
+      "id": "oll-42",
+      "name": "OLL 42",
+      "description": "OLL 42: awkward shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "awkward-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R' U2 R F R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_42"
+    },
+    {
+      "id": "oll-43",
+      "name": "OLL 43",
+      "description": "OLL 43: p shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "p-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R' U' F' U F R y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_43"
+    },
+    {
+      "id": "oll-44",
+      "name": "OLL 44",
+      "description": "OLL 44: p shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "p-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Fw R U R' U' Fw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_44"
+    },
+    {
+      "id": "oll-45",
+      "name": "OLL 45",
+      "description": "OLL 45: t shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "t-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_45"
+    },
+    {
+      "id": "oll-46",
+      "name": "OLL 46",
+      "description": "OLL 46: c shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "c-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R' F R F' U R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_46"
+    },
+    {
+      "id": "oll-47",
+      "name": "OLL 47",
+      "description": "OLL 47: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' F R' F' R U2 R U' R' U R U2 R' y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_47"
+    },
+    {
+      "id": "oll-48",
+      "name": "OLL 48",
+      "description": "OLL 48: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_48"
+    },
+    {
+      "id": "oll-49",
+      "name": "OLL 49",
+      "description": "OLL 49: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 Rw U' Rw2 U Rw2 U Rw2 U' Rw y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_49"
+    },
+    {
+      "id": "oll-50",
+      "name": "OLL 50",
+      "description": "OLL 50: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U Rw2 U' Rw2 U' Rw2 U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_50"
+    },
+    {
+      "id": "oll-51",
+      "name": "OLL 51",
+      "description": "OLL 51: line shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "line-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 F U R U' R' U R U' R' F' y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_51"
+    },
+    {
+      "id": "oll-52",
+      "name": "OLL 52",
+      "description": "OLL 52: line shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "line-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 R' F' U' F U' R U R' U R y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_52"
+    },
+    {
+      "id": "oll-53",
+      "name": "OLL 53",
+      "description": "OLL 53: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U' R U' R' U R U' R' U2 Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_53"
+    },
+    {
+      "id": "oll-54",
+      "name": "OLL 54",
+      "description": "OLL 54: l shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "l-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U R U' R' U R U2 Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_54"
+    },
+    {
+      "id": "oll-55",
+      "name": "OLL 55",
+      "description": "OLL 55: line shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "line-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R' F U R U' R2 F' R2 U R' U' R y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_55"
+    },
+    {
+      "id": "oll-56",
+      "name": "OLL 56",
+      "description": "OLL 56: line shapes. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "line-shapes"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U Rw' U R U' R' U R U' R' Rw U' Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_56"
+    },
+    {
+      "id": "oll-57",
+      "name": "OLL 57",
+      "description": "OLL 57: all corners oriented. Orient all top stickers while preserving F2L. Use the inverse setup in the viewer to learn the exact holding angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oll",
+          "section_ids": [
+            "all-corners-oriented"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' 2L' U R U' Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/OLL/OLL_57"
+    },
+    {
+      "id": "pll-aa",
+      "name": "Aa",
+      "description": "Aa permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "corners"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "x R' U R' D2 R U' R' D2 R2 x'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Aa"
+    },
+    {
+      "id": "pll-ab",
+      "name": "Ab",
+      "description": "Ab permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-only"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "x R2 D2 R U R' D2 R U' R x'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ab"
+    },
+    {
+      "id": "pll-e",
+      "name": "E",
+      "description": "E permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "corners"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y x' R U' R' D R U R' D' R U R' D R U' R' D' x y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/E"
+    },
+    {
+      "id": "pll-f",
+      "name": "F",
+      "description": "F permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/F"
+    },
+    {
+      "id": "pll-ga",
+      "name": "Ga",
+      "description": "Ga permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U R' U R' U' R U' R2 D U' R' U R D'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ga"
+    },
+    {
+      "id": "pll-gb",
+      "name": "Gb",
+      "description": "Gb permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "D R' U' R U D' R2 U R' U R U' R U' R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Gb"
+    },
+    {
+      "id": "pll-gc",
+      "name": "Gc",
+      "description": "Gc permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U' R U' R U R' U R2 D' U R U' R' D"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Gc"
+    },
+    {
+      "id": "pll-gd",
+      "name": "Gd",
+      "description": "Gd permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' D R2 U' R U' R' U R' U R2 D'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Gd"
+    },
+    {
+      "id": "pll-h",
+      "name": "H",
+      "description": "H permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L2 U 2L2 U2 2L2 U 2L2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/H"
+    },
+    {
+      "id": "pll-ja",
+      "name": "Ja",
+      "description": "Ja permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 x R2 F R F' R U2 Rw' U Rw U2 x' y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ja"
+    },
+    {
+      "id": "pll-na",
+      "name": "Na",
+      "description": "Na permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Na"
+    },
+    {
+      "id": "pll-nb",
+      "name": "Nb",
+      "description": "Nb permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U R U' R' F' U' F R U R' F R' F' R U' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Nb"
+    },
+    {
+      "id": "pll-ra",
+      "name": "Ra",
+      "description": "Ra permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R U' R' U' R U R D R' U' R D' R' U2 R' y'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ra"
+    },
+    {
+      "id": "pll-rb",
+      "name": "Rb",
+      "description": "Rb permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U2 R U2 R' F R U R' U' R' F' R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Rb"
+    },
+    {
+      "id": "pll-ua",
+      "name": "Ua",
+      "description": "Ua permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 2L2 U 2L U2 2L' U 2L2 y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ua"
+    },
+    {
+      "id": "pll-ub",
+      "name": "Ub",
+      "description": "Ub permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y2 2L2 U' 2L U2 2L' U' 2L2 y2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Ub"
+    },
+    {
+      "id": "pll-v",
+      "name": "V",
+      "description": "V permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U R' U' R D' R' D R' U D' R2 U' R2 D R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/V"
+    },
+    {
+      "id": "pll-y",
+      "name": "Y",
+      "description": "Y permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "corners-and-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U' R' U' R U R' F' R U R' U' R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Y"
+    },
+    {
+      "id": "pll-z",
+      "name": "Z",
+      "description": "Z permutation. Preserve F2L and top orientation. Compare side-color blocks in the viewer, then adjust U before and after execution.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        },
+        {
+          "set_id": "2-look-pll",
+          "section_ids": [
+            "edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L' U' 2L2 U' 2L2 U' 2L' U2 2L2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/PLL/Z"
+    },
+    {
+      "id": "f2l-1",
+      "name": "F2L 1",
+      "description": "F2L 1: free pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "free-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_1"
+    },
+    {
+      "id": "f2l-2",
+      "name": "F2L 2",
+      "description": "F2L 2: free pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "free-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R' F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_2"
+    },
+    {
+      "id": "f2l-3",
+      "name": "F2L 3",
+      "description": "F2L 3: free pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "free-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F' U' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_3"
+    },
+    {
+      "id": "f2l-4",
+      "name": "F2L 4",
+      "description": "F2L 4: free pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "free-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_4"
+    },
+    {
+      "id": "f2l-5",
+      "name": "F2L 5",
+      "description": "F2L 5: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U R' U2 R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_5"
+    },
+    {
+      "id": "f2l-6",
+      "name": "F2L 6",
+      "description": "F2L 6: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' Rw U' R' U R U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_6"
+    },
+    {
+      "id": "f2l-7",
+      "name": "F2L 7",
+      "description": "F2L 7: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U2 R' U' R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_7"
+    },
+    {
+      "id": "f2l-8",
+      "name": "F2L 8",
+      "description": "F2L 8: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U2 R2 U R2 U Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_8"
+    },
+    {
+      "id": "f2l-9",
+      "name": "F2L 9",
+      "description": "F2L 9: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U' R' U F' U' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_9"
+    },
+    {
+      "id": "f2l-10",
+      "name": "F2L 10",
+      "description": "F2L 10: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U R' U R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_10"
+    },
+    {
+      "id": "f2l-11",
+      "name": "F2L 11",
+      "description": "F2L 11: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U2 R' U F' U' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_11"
+    },
+    {
+      "id": "f2l-12",
+      "name": "F2L 12",
+      "description": "F2L 12: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U R U' R' U2 R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_12"
+    },
+    {
+      "id": "f2l-13",
+      "name": "F2L 13",
+      "description": "F2L 13: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' U R' U R U' R' U' R y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_13"
+    },
+    {
+      "id": "f2l-14",
+      "name": "F2L 14",
+      "description": "F2L 14: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U' R' U R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_14"
+    },
+    {
+      "id": "f2l-15",
+      "name": "F2L 15",
+      "description": "F2L 15: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L U Rw U' Rw' U' 2L'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_15"
+    },
+    {
+      "id": "f2l-16",
+      "name": "F2L 16",
+      "description": "F2L 16: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U2 F' U' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_16"
+    },
+    {
+      "id": "f2l-17",
+      "name": "F2L 17",
+      "description": "F2L 17: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_17"
+    },
+    {
+      "id": "f2l-18",
+      "name": "F2L 18",
+      "description": "F2L 18: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' R' U2 R U R' U' R y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_18"
+    },
+    {
+      "id": "f2l-19",
+      "name": "F2L 19",
+      "description": "F2L 19: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U2 R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_19"
+    },
+    {
+      "id": "f2l-20",
+      "name": "F2L 20",
+      "description": "F2L 20: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y' U' R' U2 R U' R' U R y"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_20"
+    },
+    {
+      "id": "f2l-21",
+      "name": "F2L 21",
+      "description": "F2L 21: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 R U R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_21"
+    },
+    {
+      "id": "f2l-22",
+      "name": "F2L 22",
+      "description": "F2L 22: disconnected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "disconnected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U' Rw' U2 Rw U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_22"
+    },
+    {
+      "id": "f2l-23",
+      "name": "F2L 23",
+      "description": "F2L 23: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U' R' U' R U' R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_23"
+    },
+    {
+      "id": "f2l-24",
+      "name": "F2L 24",
+      "description": "F2L 24: connected pairs. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "connected-pairs"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U' R' F' R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_24"
+    },
+    {
+      "id": "f2l-25",
+      "name": "F2L 25",
+      "description": "F2L 25: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R' F R F' R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_25"
+    },
+    {
+      "id": "f2l-26",
+      "name": "F2L 26",
+      "description": "F2L 26: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U' R' F R' F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_26"
+    },
+    {
+      "id": "f2l-27",
+      "name": "F2L 27",
+      "description": "F2L 27: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_27"
+    },
+    {
+      "id": "f2l-28",
+      "name": "F2L 28",
+      "description": "F2L 28: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' F R' F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_28"
+    },
+    {
+      "id": "f2l-29",
+      "name": "F2L 29",
+      "description": "F2L 29: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F R F' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_29"
+    },
+    {
+      "id": "f2l-30",
+      "name": "F2L 30",
+      "description": "F2L 30: corner in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "corner-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_30"
+    },
+    {
+      "id": "f2l-31",
+      "name": "F2L 31",
+      "description": "F2L 31: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R' F R F' R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_31"
+    },
+    {
+      "id": "f2l-32",
+      "name": "F2L 32",
+      "description": "F2L 32: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U' R' U R U' R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_32"
+    },
+    {
+      "id": "f2l-33",
+      "name": "F2L 33",
+      "description": "F2L 33: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U' R' U2 R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_33"
+    },
+    {
+      "id": "f2l-34",
+      "name": "F2L 34",
+      "description": "F2L 34: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U R' U2 R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_34"
+    },
+    {
+      "id": "f2l-35",
+      "name": "F2L 35",
+      "description": "F2L 35: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U R' U F' U' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_35"
+    },
+    {
+      "id": "f2l-36",
+      "name": "F2L 36",
+      "description": "F2L 36: edge in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "edge-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U F' U' F U' R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_36"
+    },
+    {
+      "id": "f2l-37",
+      "name": "F2L 37",
+      "description": "F2L 37: pieces in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "pieces-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U2 F R2 F' U2 R' U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_37"
+    },
+    {
+      "id": "f2l-38",
+      "name": "F2L 38",
+      "description": "F2L 38: pieces in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "pieces-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U' R U R' U2 R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_38"
+    },
+    {
+      "id": "f2l-39",
+      "name": "F2L 39",
+      "description": "F2L 39: pieces in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "pieces-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U R U2 R' U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_39"
+    },
+    {
+      "id": "f2l-40",
+      "name": "F2L 40",
+      "description": "F2L 40: pieces in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "pieces-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U' Rw' U2 Rw U Rw' R U R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_40"
+    },
+    {
+      "id": "f2l-41",
+      "name": "F2L 41",
+      "description": "F2L 41: pieces in slot. Solve the front-right corner and edge together, preserving the cross and other three slots. The viewer shows the exact setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "f2l",
+          "section_ids": [
+            "pieces-in-slot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' Rw U' Rw' U2 Rw U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/F2L/F2L_41"
+    },
+    {
+      "id": "cmll-o-adjacent",
+      "name": "O Adjacent",
+      "description": "O Adjacent. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "solved"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' F' R U R' U' R' F R2 U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/O_Adjacent"
+    },
+    {
+      "id": "cmll-o-diagonal",
+      "name": "O Diagonal",
+      "description": "O Diagonal. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "solved"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U' R' U' R U R' F' R U R' U' R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/O_Diagonal"
+    },
+    {
+      "id": "cmll-h-columns",
+      "name": "H Columns",
+      "description": "H Columns. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "h"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U R' U R U' R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/H_Columns"
+    },
+    {
+      "id": "cmll-h-rows",
+      "name": "H Rows",
+      "description": "H Rows. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "h"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' R U R' U' R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/H_Rows"
+    },
+    {
+      "id": "cmll-h-column",
+      "name": "H Column",
+      "description": "H Column. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "h"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F2 D R2 U R2 D' F2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/H_Column"
+    },
+    {
+      "id": "cmll-h-row",
+      "name": "H Row",
+      "description": "H Row. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "h"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 Rw U' Rw2 D' Rw U' Rw' D Rw2 U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/H_Row"
+    },
+    {
+      "id": "cmll-pi-right-bar",
+      "name": "Pi Right Bar",
+      "description": "Pi Right Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_Right_Bar"
+    },
+    {
+      "id": "cmll-pi-down-slash",
+      "name": "Pi Down Slash",
+      "description": "Pi Down Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U F R' F' R U2 R U' R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_Down_Slash"
+    },
+    {
+      "id": "cmll-pi-x",
+      "name": "Pi X",
+      "description": "Pi X. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F2 D R2 U' R2 D' F2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_X"
+    },
+    {
+      "id": "cmll-pi-up-slash",
+      "name": "Pi Up Slash",
+      "description": "Pi Up Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U R' U2 R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_Up_Slash"
+    },
+    {
+      "id": "cmll-pi-columns",
+      "name": "Pi Columns",
+      "description": "Pi Columns. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' Rw U' Rw2 D' Rw U Rw' D Rw2 U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_Columns"
+    },
+    {
+      "id": "cmll-pi-left-bar",
+      "name": "Pi Left Bar",
+      "description": "Pi Left Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "pi"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R' U' R' F R F' R U' R' U2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Pi_Left_Bar"
+    },
+    {
+      "id": "cmll-u-up-slash",
+      "name": "U Up Slash",
+      "description": "U Up Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 R2 D R' U2 R D' R' U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_Up_Slash"
+    },
+    {
+      "id": "cmll-u-down-slash",
+      "name": "U Down Slash",
+      "description": "U Down Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 D' R U2 R' D R U2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_Down_Slash"
+    },
+    {
+      "id": "cmll-u-bottom-row",
+      "name": "U Bottom Row",
+      "description": "U Bottom Row. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R' U2 R2 U R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_Bottom_Row"
+    },
+    {
+      "id": "cmll-u-rows",
+      "name": "U Rows",
+      "description": "U Rows. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' F R2 D R' U R D' R2 U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_Rows"
+    },
+    {
+      "id": "cmll-u-x",
+      "name": "U X",
+      "description": "U X. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 Rw U' Rw' U Rw' D' Rw U' Rw' D Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_X"
+    },
+    {
+      "id": "cmll-u-upper-row",
+      "name": "U Upper Row",
+      "description": "U Upper Row. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "u"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' F R U R' U' F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/U_Upper_Row"
+    },
+    {
+      "id": "cmll-t-left-bar",
+      "name": "T Left Bar",
+      "description": "T Left Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U R' U' R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Left_Bar"
+    },
+    {
+      "id": "cmll-t-right-bar",
+      "name": "T Right Bar",
+      "description": "T Right Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U L' U' L U L F' L' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Right_Bar"
+    },
+    {
+      "id": "cmll-t-rows",
+      "name": "T Rows",
+      "description": "T Rows. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U' R2 U2 R U R' U R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Rows"
+    },
+    {
+      "id": "cmll-t-bottom-row",
+      "name": "T Bottom Row",
+      "description": "T Bottom Row. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U Rw U2 R2 F R F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Bottom_Row"
+    },
+    {
+      "id": "cmll-t-top-row",
+      "name": "T Top Row",
+      "description": "T Top Row. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' D' Rw U Rw' D Rw U' Rw U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Top_Row"
+    },
+    {
+      "id": "cmll-t-columns",
+      "name": "T Columns",
+      "description": "T Columns. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "t"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 Rw U' Rw2 D' Rw U2 Rw' D Rw2 U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/T_Columns"
+    },
+    {
+      "id": "cmll-sune-left-bar",
+      "name": "Sune Left Bar",
+      "description": "Sune Left Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_Left_Bar"
+    },
+    {
+      "id": "cmll-sune-x",
+      "name": "Sune X",
+      "description": "Sune X. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U L' U2 L U2 Rw U' Rw' F"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_X"
+    },
+    {
+      "id": "cmll-sune-up-slash",
+      "name": "Sune Up Slash",
+      "description": "Sune Up Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U F R' F' R U2 R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_Up_Slash"
+    },
+    {
+      "id": "cmll-sune-columns",
+      "name": "Sune Columns",
+      "description": "Sune Columns. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U R' U' R' F R F' R U R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_Columns"
+    },
+    {
+      "id": "cmll-sune-right-bar",
+      "name": "Sune Right Bar",
+      "description": "Sune Right Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U R' U R' F R F' R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_Right_Bar"
+    },
+    {
+      "id": "cmll-sune-down-slash",
+      "name": "Sune Down Slash",
+      "description": "Sune Down Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U Rw U' Rw' F R' F' R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Sune_Down_Slash"
+    },
+    {
+      "id": "cmll-anti-sune-right-bar",
+      "name": "Anti Sune Right Bar",
+      "description": "Anti Sune Right Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R' U' R U' R' U2 R"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_Right_Bar"
+    },
+    {
+      "id": "cmll-anti-sune-columns",
+      "name": "Anti Sune Columns",
+      "description": "Anti Sune Columns. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 R U R2 F' Rw F R U' Rw2 F Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_Columns"
+    },
+    {
+      "id": "cmll-anti-sune-down-slash",
+      "name": "Anti Sune Down Slash",
+      "description": "Anti Sune Down Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' F' L F L' U2 L' U2 L"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_Down_Slash"
+    },
+    {
+      "id": "cmll-anti-sune-x",
+      "name": "Anti Sune X",
+      "description": "Anti Sune X. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R U2 R' U2 R' F R F'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_X"
+    },
+    {
+      "id": "cmll-anti-sune-up-slash",
+      "name": "Anti Sune Up Slash",
+      "description": "Anti Sune Up Slash. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' R' F R F' Rw U Rw'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_Up_Slash"
+    },
+    {
+      "id": "cmll-anti-sune-left-bar",
+      "name": "Anti Sune Left Bar",
+      "description": "Anti Sune Left Bar. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "anti-sune"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R U2 R' F R' F' R U' R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/Anti_Sune_Left_Bar"
+    },
+    {
+      "id": "cmll-l-best",
+      "name": "L Best",
+      "description": "L Best. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U' F' Rw U Rw' U' Rw' F Rw"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Best"
+    },
+    {
+      "id": "cmll-l-good",
+      "name": "L Good",
+      "description": "L Good. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 F R' F' R U R U' R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Good"
+    },
+    {
+      "id": "cmll-l-pure",
+      "name": "L Pure",
+      "description": "L Pure. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U' R' U R U' R' U R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Pure"
+    },
+    {
+      "id": "cmll-l-front-commutator",
+      "name": "L Front Commutator",
+      "description": "L Front Commutator. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 R U2 R D R' U2 R D' R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Front_Commutator"
+    },
+    {
+      "id": "cmll-l-diagonal",
+      "name": "L Diagonal",
+      "description": "L Diagonal. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U2 R U2 R2 F R F' R U2 R'"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Diagonal"
+    },
+    {
+      "id": "cmll-l-back-commutator",
+      "name": "L Back Commutator",
+      "description": "L Back Commutator. Recognize the top-corner orientation, then compare the side-color pairs. Solve all four corners while keeping both lower side blocks intact.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "cmll",
+          "section_ids": [
+            "l"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "U R' U2 R' D' R U2 R' D R2"
+        }
+      ],
+      "source": "https://speedcubedb.com/a/3x3/CMLL/L_Back_Commutator"
+    },
+    {
+      "id": "edge-line",
+      "name": "Edge line",
+      "description": "Orient the top edges while preserving F2L. Match the displayed setup; ignore corners for this step.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "edge-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/2look/oll"
+    },
+    {
+      "id": "edge-elbow",
+      "name": "Edge elbow",
+      "description": "Orient the top edges while preserving F2L. Match the displayed setup; ignore corners for this step.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "edge-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Fw R U R' U' Fw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/2look/oll"
+    },
+    {
+      "id": "edge-dot",
+      "name": "Edge dot",
+      "description": "Orient the top edges while preserving F2L. Match the displayed setup; ignore corners for this step.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "2-look-oll",
+          "section_ids": [
+            "edge-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' F' Fw R U R' U' Fw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/2look/oll"
+    },
+    {
+      "id": "oh-oll-1",
+      "name": "OLL 1 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' R' F R F' U2 R' F R F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-2",
+      "name": "OLL 2 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U Rw' U2 Rw U2 R' U2 R U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-3",
+      "name": "OLL 3 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' R2 U R' U Rw U2 Rw' U R' Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-4",
+      "name": "OLL 4 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' R U' Rw U2 Rw' U' R U' R2 Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-5",
+      "name": "OLL 5 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "square-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U2 R U R' U Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-6",
+      "name": "OLL 6 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "square-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U2 R' U' R U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-7",
+      "name": "OLL 7 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U R U2 Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-8",
+      "name": "OLL 8 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U' R U' R' U2 Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-9",
+      "name": "OLL 9 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "fish-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' F R2 U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-10",
+      "name": "OLL 10 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "fish-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U R U' R' U' Rw' R U R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-11",
+      "name": "OLL 11 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' R2 U R' U R U2 R' U R' Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-12",
+      "name": "OLL 12 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw R2 U' R U' R' U2 R U' Rw' R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-13",
+      "name": "OLL 13 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "knight-move-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U' R2 F' R U R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-14",
+      "name": "OLL 14 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "knight-move-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F R U R' F' R y' R U' R' y"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-15",
+      "name": "OLL 15 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "knight-move-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U' R' Rw U' R U Rw' U Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-16",
+      "name": "OLL 16 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "knight-move-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U Rw' R U R' U' Rw U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-17",
+      "name": "OLL 17 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R' F' R2 Rw' U R U' R' U' R' Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-18",
+      "name": "OLL 18 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U R U2 Rw2 U' R U' R' U2 Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-19",
+      "name": "OLL 19 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U2 R' U' R U' Rw2 U2 R U R' U Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-20",
+      "name": "OLL 20 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "dot"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' Rw2 R2 U R U' R' U' R' Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-21",
+      "name": "OLL 21 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U R' U' R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-22",
+      "name": "OLL 22 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R2 U' R2 U' R2 U2 R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-23",
+      "name": "OLL 23 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U2 R2 U' R U' R' U2 R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-24",
+      "name": "OLL 24 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' Rw' F R F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-25",
+      "name": "OLL 25 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R' F' Rw U R U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-26",
+      "name": "OLL 26 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-27",
+      "name": "OLL 27 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "cross"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U2 R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-28",
+      "name": "OLL 28 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "corners-oriented"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U R' U' Rw' R U R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-29",
+      "name": "OLL 29 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "awkward-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R U' R' F' U' F R U R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-30",
+      "name": "OLL 30 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "awkward-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U2 R' U' R U2 R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-31",
+      "name": "OLL 31 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "p-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' F U R U' R' F' R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-32",
+      "name": "OLL 32 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "p-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "L U F' U' L' U L F L'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-33",
+      "name": "OLL 33 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "t-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' F R F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-34",
+      "name": "OLL 34 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "c-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R2 U' R' F R U R U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-35",
+      "name": "OLL 35 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "fish-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' R' F R F' R U2 R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-36",
+      "name": "OLL 36 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "w-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R' U R U x' R U' R' U x"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-37",
+      "name": "OLL 37 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "fish-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U' R' U' R U R' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-38",
+      "name": "OLL 38 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "w-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U' R' U' R' F R F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-39",
+      "name": "OLL 39 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "big-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U' Rw' U' Rw y R U R' Fw' y'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-40",
+      "name": "OLL 40 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "big-lightning-bolt"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' F R U R' U' F' U R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-41",
+      "name": "OLL 41 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "awkward-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U2 R' F R U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-42",
+      "name": "OLL 42 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "awkward-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R' U2 R F R U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-43",
+      "name": "OLL 43 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "p-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F' U' L' U L F"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-44",
+      "name": "OLL 44 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "p-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U' R' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-45",
+      "name": "OLL 45 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "t-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-46",
+      "name": "OLL 46 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "c-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R' F R F' U R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-47",
+      "name": "OLL 47 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' x R' U R U' R' U R U' x' U R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-48",
+      "name": "OLL 48 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F R U R' U' R U R' U' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-49",
+      "name": "OLL 49 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R x' U' z Uw2 R Uw2 R Uw2 R' Uw z'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-50",
+      "name": "OLL 50 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U Rw2 U' Rw2 U' Rw2 U Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-51",
+      "name": "OLL 51 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "i-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "F U R U' R' U R U' R' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-52",
+      "name": "OLL 52 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "i-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U' y R U' R' F' y'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-53",
+      "name": "OLL 53 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw' U2 R U R' U' R U R' U Rw"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-54",
+      "name": "OLL 54 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "small-l-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U2 R' U' R U R' U' R U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-55",
+      "name": "OLL 55 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "i-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "y R U2 R2 U' R U' R' U2 F R F' y'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-56",
+      "name": "OLL 56 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "i-shape"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "Rw U Rw' U R U' R' U R U' R' Rw U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-oll-57",
+      "name": "OLL 57 · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-oll",
+          "section_ids": [
+            "corners-oriented"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' Rw U R U' Rw'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/oll"
+    },
+    {
+      "id": "oh-pll-h",
+      "name": "H · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U2 R U2 R2 U2 R2 U2 R U2 R2"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-z",
+      "name": "Z · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R U R U' R' U R U R2 U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ua",
+      "name": "Ua · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R U R U R U' R' U' R2"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ub",
+      "name": "Ub · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "edges-only"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "L' U L' U' L' U' L' U L U L2"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-aa",
+      "name": "Aa · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "x R' U R' D2 R U' R' D2 R2 x'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ab",
+      "name": "Ab · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "x R2 D2 R U R' D2 R U' R x'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-e",
+      "name": "E · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "diagonal-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "x' R U' R' D R U R' D' R U R' D R U' R' D' x"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-f",
+      "name": "F · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' U R U2 R' L' U R U' L U' R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ja",
+      "name": "Ja · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U2 R U R' U2 L U' R U L'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-jb",
+      "name": "Jb · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U2 R' U' R U2 L' U R' U' Rw x'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ra",
+      "name": "Ra · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U' R' U' R U R D R' U' R D' R' U2 R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-rb",
+      "name": "Rb · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U2 R' D' R U' R' D R U R U' R' U' R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-t",
+      "name": "T · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' R' F R2 U' R' U' R U R' F'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-y",
+      "name": "Y · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "diagonal-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U' R' U R U' x' U' z' U' R U' R' U' Rw B y"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-v",
+      "name": "V · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "diagonal-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U R U' x' U R U2 R' U' R U' R' U2 R U R' U' x"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-na",
+      "name": "Na · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "diagonal-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U R U2 R' U' R U2 L' U R' U' L U' R U' R'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-nb",
+      "name": "Nb · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "diagonal-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U' R' U2 R U R' U2 L U' R U L' U R' U R"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-ga",
+      "name": "Ga · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U R' U R' U' R U' R2 U' D R' U R D'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-gb",
+      "name": "Gb · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R' U' R U D' R2 U R' U R U' R U' R2 D"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-gc",
+      "name": "Gc · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R2 U' R U' R U R' U R2 U D' R U' R' D"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "oh-pll-gd",
+      "name": "Gd · OH",
+      "description": "Practice this case slowly with your solving hand. Identify comfortable R/U finger tricks and plan any regrip before timing. Use the viewer to recognize the exact angle.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "oh-pll",
+          "section_ids": [
+            "adjacent-corner-swap"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "R U R' U' D R2 U' R U' R' U R' U R2 D'"
+        }
+      ],
+      "source": "https://jperm.net/algs/oh/pll"
+    },
+    {
+      "id": "lse-front-arrow",
+      "name": "Front arrow",
+      "description": "Orient the displayed four-bad-edge arrow. Recheck all six edges against the U/D centers.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "edge-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L' U' 2L' x2"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
+    },
+    {
+      "id": "lse-back-arrow",
+      "name": "Back arrow",
+      "description": "Orient the back arrow shown by the inverse setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "edge-orientation"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L U 2L'"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
+    },
+    {
+      "id": "lse-front-swap",
+      "name": "Front swap",
+      "description": "Exchange top and bottom workspace edges without changing orientation. Align the desired edge first.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "ul-and-ur"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L' U2 2L"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
+    },
+    {
+      "id": "lse-back-swap",
+      "name": "Back swap",
+      "description": "Use the back workspace to exchange oriented edges.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "ul-and-ur"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L U2 2L'"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
+    },
+    {
+      "id": "lse-cycle",
+      "name": "Last-four cycle",
+      "description": "Cycle middle-layer edges. Select the direction and restore center alignment.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "last-four-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L' U2 2L U2"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
+    },
+    {
+      "id": "lse-opposite",
+      "name": "Opposite edges",
+      "description": "Solve the displayed opposite-edge pattern. Other center alignments require a different setup.",
+      "puzzle_size": 3,
+      "memberships": [
+        {
+          "set_id": "roux-lse",
+          "section_ids": [
+            "last-four-edges"
+          ]
+        }
+      ],
+      "variations": [
+        {
+          "id": "normal",
+          "name": "Standard",
+          "moves": "2L2 U2 2L2 U2"
+        }
+      ],
+      "source": "https://tutorial.rouxers.com/beginners/lse.html"
     }
   ]
 }

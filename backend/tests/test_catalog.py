@@ -17,5 +17,5 @@ def test_parity_catalog_and_legacy_client_compatibility():
         assert algorithm['set_ids'] == [membership['set_id'] for membership in algorithm['memberships']]
         assert algorithm['variations'][0]['moves']
     legacy = client.get('/api/algorithms').json()
-    assert {item['id'] for item in legacy} == {'sune', 'reverse-sune', 'j-perm', 't-perm'}
+    assert {item['id'] for item in legacy} == {item['id'] for item in catalog['algorithms'] if item['puzzle_size'] == 3}
     assert all(item['set'] and item['moves'] for item in legacy)
