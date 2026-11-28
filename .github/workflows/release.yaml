@@ -247,7 +247,8 @@ jobs:
       - run: docker compose -f compose.yaml -f compose.ci.yaml down
         if: always()
   deploy:
-    if: github.ref == 'refs/heads/master'
+    # Explicit status check prevents skipped optional builds from skipping publication.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/master' && needs.integration.result == 'success' }}
     needs: integration
     runs-on: ubuntu-24.04
     permissions:

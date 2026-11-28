@@ -102,3 +102,16 @@ test('diffs include failed intervening changes and both ends of cross-service re
     assert.deepEqual(changedFiles(released, current, directory).sort(), ['backend/file', 'frontend/file']);
   } finally {fs.rmSync(directory, {recursive: true, force: true});}
 });
+
+// GitHub applies success() by default to job conditions. A deployment after
+// optional skipped builds must explicitly opt out while still requiring the
+// exact-image integration job to succeed.
+test('deployment runs after successful integration even when optional builds skip', () => {
+  const workflow = fs.readFileSync(path.join(__dirname, '../workflows/release.yaml'), 'utf8');
+  const deploy = workflow.split('\n  deploy:\n')[1];
+  assert.ok(deploy, 'deployment job must exist');
+  const condition = deploy.match(/^    if: (.+)$/m)?.[1];
+  assert.ok(condition?.includes('!cancelled()'), 'explicit status check must override implicit success()');
+  assert.ok(condition.includes("needs.integration.result == 'success'"), 'failed integrations must never publish');
+  assert.ok(condition.includes("github.ref == 'refs/heads/master'"), 'only master may publish');
+});
